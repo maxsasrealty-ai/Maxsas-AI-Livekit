@@ -1,24 +1,32 @@
 import React from "react";
 import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import GlassCard from "../../../components/lexus/GlassCard";
 import PillButton from "../../../components/lexus/PillButton";
 import SectionHeader from "../../../components/lexus/SectionHeader";
 import StatusPill from "../../../components/lexus/StatusPill";
 import { C } from "../../../components/lexus/theme";
+import { useCalls } from "../../../hooks/useCalls";
+import { useCapabilities } from "../../../hooks/useCapabilities";
 
 const defaultAlert = (msg: string) => {
   Alert.alert("Coming soon", msg);
 };
 
 export default function LexusProfile() {
+  const { calls, isLoading, isBootstrapping, error } = useCalls();
+  const { limits, can, planLabel, premiumPlanLabel, upgradeLabel, vocabulary } = useCapabilities();
+  const activeCalls = calls.filter((call) => call.state === "active").length;
+
+  const planBadge = planLabel;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -29,7 +37,7 @@ export default function LexusProfile() {
             <Text style={styles.avatarText}>M</Text>
           </View>
           <Text style={styles.profileName}>Maxsas AI</Text>
-          <Text style={styles.profileSubtitle}>Basic Plan Account</Text>
+          <Text style={styles.profileSubtitle}>{planBadge} Plan Account</Text>
           <StatusPill label="Active" tone="success" style={{ marginTop: 4 }} />
         </View>
 
@@ -53,29 +61,49 @@ export default function LexusProfile() {
           <View style={styles.divider} />
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Plan</Text>
-            <Text style={styles.summaryValue}>Basic</Text>
+            <Text style={styles.summaryValue}>{planBadge}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Country / region</Text>
-            <Text style={styles.summaryValue}>United States</Text>
+            <Text style={styles.summaryLabel}>Monthly minutes</Text>
+            <Text style={styles.summaryValue}>{limits?.monthlyCallMinutes ?? 0}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Concurrent calls</Text>
+            <Text style={styles.summaryValue}>{limits?.maxConcurrentCalls ?? 0}</Text>
           </View>
         </GlassCard>
 
         {/* Plan Card */}
         <GlassCard style={styles.planCard} padded={true}>
           <View style={styles.planHeader}>
-            <Text style={styles.planCardTitle}>Current Plan: Basic</Text>
+            <Text style={styles.planCardTitle}>Current Plan: {planBadge}</Text>
           </View>
           <Text style={styles.planBenefits}>
-            More calls, CRM sync, automation and priority support
+            {`${vocabulary.callsLabel} tracked: ${calls.length} · Active now: ${activeCalls}`}
           </Text>
+          <View style={styles.featureRow}>
+            <StatusPill label={`Live calls: ${can("calls.live") ? "On" : "Off"}`} tone={can("calls.live") ? "success" : "neutral"} />
+            <StatusPill label={`Call history: ${can("calls.history") ? "On" : "Off"}`} tone={can("calls.history") ? "success" : "neutral"} />
+          </View>
+          <View style={styles.featureRow}>
+            <StatusPill label={`Transcript full: ${can("transcripts.full") ? "On" : "Off"}`} tone={can("transcripts.full") ? "success" : "neutral"} />
+            <StatusPill label={`Recordings: ${can("recordings.playback") ? "On" : "Off"}`} tone={can("recordings.playback") ? "success" : "neutral"} />
+          </View>
           <PillButton
-            title="Upgrade to Diamond"
+            title={upgradeLabel}
             variant="primary"
-            onPress={() => defaultAlert("Upgrade flow")}
+            onPress={() => defaultAlert(`Billing and subscription management backend is not available in this phase. ${premiumPlanLabel} remains visible as a locked upgrade path.`)}
           />
         </GlassCard>
+
+        {(isLoading || isBootstrapping) && (
+          <Text style={styles.infoText}>Refreshing profile capabilities...</Text>
+        )}
+        {!isLoading && !isBootstrapping && error && (
+          <Text style={styles.infoText}>Failed to refresh capabilities: {error}</Text>
+        )}
 
         {/* Quick Actions List */}
         <SectionHeader title="Quick Actions" />
@@ -146,6 +174,8 @@ const styles = StyleSheet.create({
   planHeader: { marginBottom: 8 },
   planCardTitle: { fontSize: 18, fontWeight: "bold", color: C.blue },
   planBenefits: { fontSize: 14, color: C.text, marginBottom: 16, lineHeight: 20 },
+  featureRow: { flexDirection: "row", gap: 8, marginBottom: 10 },
+  infoText: { color: C.textFaint, textAlign: "center", marginBottom: 12 },
   actionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 12 },
   actionText: { fontSize: 15, color: C.text },
   chevron: { fontSize: 20, color: C.textMuted, lineHeight: 20 },

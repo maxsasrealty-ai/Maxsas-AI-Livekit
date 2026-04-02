@@ -1,14 +1,13 @@
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Platform,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -532,7 +531,7 @@ export default function LandingScreen() {
             <View style={{ flexDirection: 'row', gap: 20, justifyContent: 'center', alignItems: 'flex-start' }}>
               {[
                 { n: 'Basic', em: '🌱', p: '₹4,999', f: ['Up to 500 AI calls/month', 'Lead qualification scoring', 'Basic transcripts', '1 AI agent voice'], c: 'rgba(79,140,255,0.1)', b: 'rgba(79,140,255,0.2)' },
-                { n: 'Diamond', em: '💎', p: '₹12,999', tg: 'Most Popular', f: ['Up to 3,000 AI calls/month', 'Advanced lead qualification AI', 'Full conversation transcripts', 'Auto CRM integration', 'Priority support + onboarding'], pop: true, c: 'rgba(79,140,255,0.15)', b: '#4F8CFF' },
+                { n: 'Prestige', em: '💎', p: '₹12,999', tg: 'Most Popular', f: ['Up to 3,000 AI calls/month', 'Advanced lead qualification AI', 'Full conversation transcripts', 'Auto CRM integration', 'Priority support + onboarding'], pop: true, c: 'rgba(79,140,255,0.15)', b: '#4F8CFF' },
                 { n: 'Enterprise', em: '🏢', p: 'Custom', f: ['Unlimited AI calls', 'Dedicated account manager', 'White-label option', 'Custom CRM & API connection'], c: 'rgba(0,208,132,0.05)', b: 'rgba(0,208,132,0.25)' },
               ].map((tier, i) => (
                 <View key={i} style={{ flex: 1, maxWidth: 350, backgroundImage: `linear-gradient(145deg,${tier.c},rgba(10,22,40,0.9))` as any, padding: 32, borderRadius: 20, borderWidth: 1, borderColor: tier.b, transform: [{ scale: tier.pop ? 1.03 : 1 }], boxShadow: tier.pop ? '0 0 40px rgba(79,140,255,0.15)' : 'none' } as any}>

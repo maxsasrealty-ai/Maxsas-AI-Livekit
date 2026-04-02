@@ -1,34 +1,37 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Text, View, Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { CallsProvider } from '../../../context/CallsContext';
+import { useCapabilities } from '../../../hooks/useCapabilities';
 
-export default function LexusLayout() {
+function LexusTabs() {
+  const { vocabulary } = useCapabilities();
+
   return (
-    <View style={s.webWrapper}>
-      <Tabs
-        screenOptions={{
-          sceneStyle: { backgroundColor: '#040c18' },
-          headerShown: false,
-          tabBarStyle: {
-            position: 'absolute',
-            bottom: Platform.OS === 'web' ? 24 : 12, // bump up slightly on web
-            alignSelf: 'center', // center absolute item
-            width: Platform.OS === 'web' ? '95%' : 'auto', // restrict on web
-            maxWidth: 1024, // SaaS constraint
-            marginHorizontal: Platform.OS === 'web' ? 'auto' : 16,
-            left: Platform.OS === 'web' ? 0 : 16,
-            right: Platform.OS === 'web' ? 0 : 16,
-            height: 64,
-            borderRadius: 24,
-            backgroundColor: 'rgba(4,12,24,0.94)',
-            borderWidth: 1,
-            borderColor: 'rgba(79,140,255,0.25)',
-            shadowColor: '#000',
-            shadowOpacity: 0.35,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 8 },
-            elevation: 12,
-          },
+    <Tabs
+      screenOptions={{
+        sceneStyle: { backgroundColor: '#040c18' },
+        headerShown: false,
+        tabBarStyle: {
+          position: 'absolute',
+          bottom: Platform.OS === 'web' ? 24 : 12,
+          alignSelf: 'center',
+          width: Platform.OS === 'web' ? '95%' : 'auto',
+          maxWidth: 1024,
+          marginHorizontal: Platform.OS === 'web' ? 'auto' : 16,
+          left: Platform.OS === 'web' ? 0 : 16,
+          right: Platform.OS === 'web' ? 0 : 16,
+          height: 64,
+          borderRadius: 24,
+          backgroundColor: 'rgba(4,12,24,0.94)',
+          borderWidth: 1,
+          borderColor: 'rgba(79,140,255,0.25)',
+          shadowColor: '#000',
+          shadowOpacity: 0.35,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 12,
+        },
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#4F8CFF',
         tabBarInactiveTintColor: 'rgba(232,237,245,0.55)',
@@ -53,7 +56,7 @@ export default function LexusLayout() {
               <Text style={{ color, fontSize: 20 }}>📞</Text>
             </View>
           ),
-          tabBarLabel: 'Leads',
+          tabBarLabel: vocabulary.leadsLabel,
         }}
       />
       <Tabs.Screen
@@ -89,8 +92,17 @@ export default function LexusLayout() {
           tabBarLabel: 'Profile',
         }}
       />
-      </Tabs>
-    </View>
+    </Tabs>
+  );
+}
+
+export default function LexusLayout() {
+  return (
+    <CallsProvider>
+      <View style={s.webWrapper}>
+        <LexusTabs />
+      </View>
+    </CallsProvider>
   );
 }
 

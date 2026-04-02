@@ -1,25 +1,35 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { C } from '../../../components/lexus/theme';
 import GlassCard from '../../../components/lexus/GlassCard';
+import LiveStageStrip from '../../../components/lexus/live/LiveStageStrip';
 import PillButton from '../../../components/lexus/PillButton';
 import SectionHeader from '../../../components/lexus/SectionHeader';
 import StatusPill from '../../../components/lexus/StatusPill';
-
-const todayStats = [
-  { label: 'In Progress', icon: '📞', value: 0, color: '#FF6B9A' },
-  { label: 'Pending', icon: '⏳', value: 0, color: '#FFD36B' },
-  { label: 'Completed', icon: '✅', value: 0, color: '#00D084' },
-];
-
-const recentActivity = [
-  { icon: '🟢', text: 'Batch #d2d6357b started • 1 contact', time: '2m ago' },
-  { icon: '💰', text: 'Wallet recharged ₹500', time: '1h ago' },
-  { icon: '🔥', text: 'Lead 9876543211 marked as Hot', time: '3h ago' },
-];
+import { C } from '../../../components/lexus/theme';
+import { useCalls } from '../../../hooks/useCalls';
+import { useCapabilities } from '../../../hooks/useCapabilities';
+import { formatTime, getQuickStats } from '../../../lib/adapters/calls';
+import { connectionLabel } from '../../../lib/adapters/liveEvents';
 
 export default function LexusHome() {
+  const { calls, isLoading, isBootstrapping, error, liveByCallId, liveConnectionState } = useCalls();
+  const { can, planLabel, vocabulary } = useCapabilities();
+  const stats = getQuickStats(calls);
+  const activeCalls = calls.filter((call) => ["initiated", "dispatching", "ringing", "connected", "active"].includes(call.state));
+
+  const todayStats = [
+    { label: 'In Progress', icon: '📞', value: stats.inProgress, color: '#FF6B9A' },
+    { label: 'Failed', icon: '⛔', value: stats.failed, color: '#FFD36B' },
+    { label: 'Completed', icon: '✅', value: stats.completed, color: '#00D084' },
+  ];
+
+  const recentActivity = calls.slice(0, 3).map((call) => ({
+    icon: call.state === 'completed' ? '✅' : call.state === 'failed' ? '🔴' : '🟢',
+    text: `Call ${call.callId.slice(0, 8)}... in room ${call.roomId} is ${call.state}`,
+    time: formatTime(call.initiatedAt),
+  }));
+
   return (
     <SafeAreaView style={S.safe}>
       <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
@@ -35,14 +45,42 @@ export default function LexusHome() {
                 <View style={S.demoSwitchDot} />
               </View>
             </View>
-            <Text style={S.demoSubtext}>Waiting for call system response...</Text>
+              <Text style={S.demoSubtext}>
+                {isBootstrapping || isLoading
+                  ? 'Loading call system data...'
+                  : error
+                  ? `Backend error: ${error}`
+                  : `Plan ${planLabel} • ${stats.total} persisted calls`}
+              </Text>
           </GlassCard>
         </View>
 
         {/* Live Status Banner */}
         <View style={{ alignSelf: 'center', marginBottom: 22 }}>
-          <StatusPill label="● Live Updates Active" tone="success" />
+            <StatusPill label={can('calls.history') ? '● Live Updates Active' : '● Limited Plan Access'} tone={can('calls.history') ? 'success' : 'warning'} />
         </View>
+
+        <GlassCard padded={true} radius={14} style={{ marginBottom: 16 }}>
+          <Text style={S.demoLabel}>{connectionLabel(liveConnectionState)}</Text>
+          <Text style={S.demoSubtext}>{activeCalls.length} active call operations</Text>
+        </GlassCard>
+
+        <SectionHeader title="Active Operations" />
+        {activeCalls.length === 0 ? (
+          <GlassCard padded={true} radius={14} style={{ marginBottom: 16 }}>
+            <Text style={S.activityText}>No calls are actively processing right now.</Text>
+          </GlassCard>
+        ) : (
+          activeCalls.slice(0, 2).map((call) => (
+            <GlassCard key={call.callId} padded={true} radius={14} style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                <Text style={S.uploadTitle}>{call.roomId}</Text>
+                <StatusPill label={call.state} tone="info" />
+              </View>
+              {liveByCallId[call.callId] && <LiveStageStrip snapshot={liveByCallId[call.callId]} />}
+            </GlassCard>
+          ))
+        )}
 
         {/* Today Activity */}
         <SectionHeader title="Today Activity" />
@@ -56,30 +94,30 @@ export default function LexusHome() {
           ))}
         </View>
 
-        {/* Upload Leads CTA */}
+        {/* Upload CTA */}
         <GlassCard padded={true} radius={16} style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
             <View style={S.uploadIconWrap}><Text style={S.uploadIcon}>📤</Text></View>
             <View style={{ flex: 1 }}>
-              <Text style={S.uploadTitle}>Upload New Leads</Text>
-              <Text style={S.uploadSubtitle}>Import CSV from portal and start AI calling.</Text>
+              <Text style={S.uploadTitle}>{`Upload New ${vocabulary.leadsLabel}`}</Text>
+              <Text style={S.uploadSubtitle}>{`Import CSV from portal and start AI ${vocabulary.callsLabel.toLowerCase()}.`}</Text>
             </View>
           </View>
           <PillButton 
-            title="Upload Leads" 
+            title={`Upload ${vocabulary.leadsLabel}`}
             onPress={() => router.push('/(protected)/lexus/leads-upload' as any)} 
           />
         </GlassCard>
 
-        {/* Completed Batches Shortcut */}
+        {/* Completed Campaign Shortcut */}
         <GlassCard padded={true} radius={16} style={{ marginBottom: 26 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
             <View style={[S.uploadIconWrap, { backgroundColor: 'rgba(0,208,132,0.13)' }]}>
               <Text style={[S.uploadIcon, { color: C.green }]}>📂</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={S.uploadTitle}>Completed Batches</Text>
-              <Text style={S.uploadSubtitle}>Review finished campaigns and lead temperatures</Text>
+              <Text style={S.uploadTitle}>{`Completed ${vocabulary.batchesLabel}`}</Text>
+              <Text style={S.uploadSubtitle}>{`Review finished ${vocabulary.campaignsLabel.toLowerCase()} and lead temperatures`}</Text>
             </View>
           </View>
           <PillButton 
@@ -92,7 +130,7 @@ export default function LexusHome() {
         {/* Recent Activity */}
         <SectionHeader title="Recent Activity" />
         <View style={S.activityList}>
-          {recentActivity.map((item, i) => (
+          {(recentActivity.length ? recentActivity : [{ icon: 'ℹ️', text: 'No recent call activity yet.', time: '-' }]).map((item, i) => (
             <GlassCard key={i} style={S.activityCard} padded={false} radius={12}>
               <Text style={S.activityIcon}>{item.icon}</Text>
               <Text style={S.activityText}>{item.text}</Text>

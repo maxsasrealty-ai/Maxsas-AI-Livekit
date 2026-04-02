@@ -5,17 +5,17 @@
  * Expo / React Native compatible (no external dependencies)
  */
 
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
-  StatusBar,
-  Platform,
-  Dimensions,
+    Animated,
+    Dimensions,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -43,7 +43,23 @@ const C = {
 // ── DATA ──────────────────────────────────────────────────────────────────────
 const LAST_UPDATED = "June 1, 2025";
 
-const sections = [
+type PrivacySectionContent = {
+  heading: string;
+  body: string;
+};
+
+type PrivacySection = {
+  id: string;
+  icon: string;
+  title: string;
+  content: PrivacySectionContent[];
+};
+
+type ScreenNavigation = {
+  goBack?: () => void;
+};
+
+const sections: PrivacySection[] = [
   {
     id: "01",
     icon: "🏠",
@@ -169,7 +185,7 @@ const sections = [
 
 // ── SUB-COMPONENTS ────────────────────────────────────────────────────────────
 
-const Header = ({ onBack }) => {
+const Header = ({ onBack }: { onBack: (() => void) | null }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
@@ -215,7 +231,7 @@ const Header = ({ onBack }) => {
   );
 };
 
-const SectionCard = ({ section, index }) => {
+const SectionCard = ({ section, index }: { section: PrivacySection; index: number }) => {
   const slideAnim = useRef(new Animated.Value(30)).current;
   const fadeAnim  = useRef(new Animated.Value(0)).current;
 
@@ -245,7 +261,7 @@ const SectionCard = ({ section, index }) => {
       <View style={styles.sectionDivider} />
 
       {/* Content items */}
-      {section.content.map((item, i) => (
+      {section.content.map((item: PrivacySectionContent, i: number) => (
         <View key={i} style={styles.contentItem}>
           <View style={styles.contentBullet} />
           <View style={styles.contentBody}>
@@ -277,8 +293,8 @@ const Footer = () => (
 );
 
 // ── SCREEN ────────────────────────────────────────────────────────────────────
-export default function PrivacyPolicyScreen({ navigation }) {
-  const onBack = navigation?.goBack ? () => navigation.goBack() : null;
+export default function PrivacyPolicyScreen({ navigation }: { navigation?: ScreenNavigation }) {
+  const onBack = navigation?.goBack ? () => navigation.goBack?.() : null;
 
   return (
     <View style={styles.container}>

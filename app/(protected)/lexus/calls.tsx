@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React from "react";
 import {
     Alert,
@@ -7,44 +8,57 @@ import {
     Text,
     View
 } from "react-native";
-import { router } from "expo-router";
-import { C } from "../../../components/lexus/theme";
 import GlassCard from "../../../components/lexus/GlassCard";
+import LiveStageStrip from "../../../components/lexus/live/LiveStageStrip";
+import LockedModuleCard from "../../../components/lexus/locks/LockedModuleCard";
 import PillButton from "../../../components/lexus/PillButton";
 import SectionHeader from "../../../components/lexus/SectionHeader";
 import StatusPill from "../../../components/lexus/StatusPill";
-
-const KPI_STATS = [
-  { label: "Total Calls", value: 1420 },
-  { label: "Connected", value: 890 },
-  { label: "Hot Leads", value: 145 },
-];
-
-const RECENT_CALLS = [
-  { id: "1", phone: "9876543211", status: "completed", duration: "1m 45s", time: "10:30 am", batch: "Batch #d2d6357b", note: "Interested in 3BHK" },
-  { id: "2", phone: "9123456789", status: "failed", duration: "0s", time: "10:28 am", batch: "Batch #d2d6357b", note: "User busy" },
-  { id: "3", phone: "8765432109", status: "retrying", duration: "0s", time: "10:15 am", batch: "Batch #a1b2c3d4", note: "Not reachable" },
-  { id: "4", phone: "9988776655", status: "completed", duration: "4m 12s", time: "09:55 am", batch: "Batch #a1b2c3d4", note: "Not interested" },
-];
+import { C } from "../../../components/lexus/theme";
+import { useCalls } from "../../../hooks/useCalls";
+import { useCapabilities } from "../../../hooks/useCapabilities";
+import { formatTime, getQuickStats, statusTone } from "../../../lib/adapters/calls";
+import { connectionLabel } from "../../../lib/adapters/liveEvents";
 
 export default function LexusCallsStats() {
-  const getStatusTone = (status: string) => {
-    switch(status) {
-      case "completed": return "success";
-      case "failed": return "danger";
-      case "retrying": return "warning";
-      default: return "neutral";
-    }
-  };
+  const {
+    calls,
+    refreshCalls,
+    isLoading,
+    isBootstrapping,
+    capabilities,
+    error,
+    liveByCallId,
+    liveConnectionState,
+  } = useCalls();
+  const { can, planLabel, upgradeLabel, vocabulary } = useCapabilities();
+
+  const stats = getQuickStats(calls);
+  const canViewHistory = can("calls.history");
+  const canViewTranscript = can("transcripts.full");
+  const canRetry = can("calls.live");
+
+  const activeCalls = calls.filter((call) => ["initiated", "dispatching", "ringing", "connected", "active"].includes(call.state));
+  const failedCalls = calls.filter((call) => call.state === "failed");
+
+  const kpiStats = [
+    { label: "Total Calls", value: stats.total },
+    { label: "In Progress", value: stats.inProgress },
+    { label: "Completed", value: stats.completed },
+  ];
 
   return (
     <SafeAreaView style={S.safe}>
       <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
         <SectionHeader title="Call Analytics" subtitle="Your AI campaign performance" style={{ marginTop: 18 }} />
 
+        <GlassCard style={S.callCard} padded={true} radius={12}>
+          <Text style={S.callNote}>{connectionLabel(liveConnectionState)} • Plan {planLabel}</Text>
+        </GlassCard>
+
         {/* Top KPIs */}
         <View style={S.kpiRow}>
-          {KPI_STATS.map((stat, i) => (
+          {kpiStats.map((stat, i) => (
             <GlassCard key={i} style={S.kpiCard} padded={false}>
               <Text style={S.kpiValue}>{stat.value}</Text>
               <Text style={S.kpiLabel}>{stat.label}</Text>
@@ -57,53 +71,108 @@ export default function LexusCallsStats() {
           <Text style={S.trendTitle}>Conversion Trend</Text>
           <Text style={S.trendSubtitle}>Last 30 days performance</Text>
           <View style={S.trendChartArea}>
-            <Text style={S.trendPlaceholderText}>Graph Component Here</Text>
+            <Text style={S.trendPlaceholderText}>Using persisted calls data</Text>
             <View style={S.trendStatsRow}>
               <View style={S.trendStatCol}>
-                <Text style={S.trendStatVal}>16.5%</Text>
-                <Text style={S.trendStatLab}>Conversion Rate</Text>
+                <Text style={S.trendStatVal}>{calls.length ? `${Math.round((stats.completed / calls.length) * 100)}%` : "0%"}</Text>
+                <Text style={S.trendStatLab}>Completion Rate</Text>
               </View>
               <View style={S.trendStatCol}>
-                <Text style={S.trendStatVal}>48s</Text>
-                <Text style={S.trendStatLab}>Avg Duration</Text>
+                <Text style={S.trendStatVal}>{capabilities?.limits.monthlyCallMinutes ?? 0}</Text>
+                <Text style={S.trendStatLab}>Monthly Minutes</Text>
               </View>
             </View>
           </View>
         </GlassCard>
 
         {/* Recent Calls Log */}
-        <SectionHeader title="Recent Calls Log" actionLabel="View All" onAction={() => Alert.alert("View all calls")} />
+        <SectionHeader title="Recent Calls Log" actionLabel="Refresh" onAction={() => void refreshCalls()} />
+
+        <SectionHeader title="Live Dispatch" subtitle="Queue and in-progress operations" />
+        {activeCalls.length === 0 ? (
+          <GlassCard style={S.callCard} padded={true} radius={12}>
+            <Text style={S.callNote}>No active operations right now. New calls will stream here in realtime.</Text>
+          </GlassCard>
+        ) : (
+          activeCalls.map((call) => (
+            <GlassCard key={`active-${call.callId}`} style={S.callCard} padded={true} radius={12}>
+              <View style={S.callTopRow}>
+                <Text style={S.callPhone}>{call.roomId}</Text>
+                <StatusPill label={call.state} tone={statusTone(call.state)} />
+              </View>
+              <Text style={S.callMeta}>Started {formatTime(call.initiatedAt)}</Text>
+              {liveByCallId[call.callId] && <LiveStageStrip snapshot={liveByCallId[call.callId]} />}
+            </GlassCard>
+          ))
+        )}
+
+        {!canRetry && failedCalls.length > 0 && (
+          <LockedModuleCard
+            title="Retry Failed Calls"
+            description="Retry actions are available on Prestige plans. Failed calls remain visible for triage."
+            ctaLabel={upgradeLabel}
+            onPress={() => Alert.alert("Upgrade", `Enable retries with ${upgradeLabel}.`)}
+          />
+        )}
+
+        {!canViewHistory && (
+          <GlassCard style={S.callCard} padded={true} radius={12}>
+            <Text style={S.callNote}>Your current plan does not include call history access.</Text>
+          </GlassCard>
+        )}
+
+        {(isLoading || isBootstrapping) && canViewHistory && (
+          <GlassCard style={S.callCard} padded={true} radius={12}>
+            <Text style={S.callNote}>Loading calls...</Text>
+          </GlassCard>
+        )}
+
+        {!isLoading && !isBootstrapping && canViewHistory && error && (
+          <GlassCard style={S.callCard} padded={true} radius={12}>
+            <Text style={S.callNote}>Failed to load calls: {error}</Text>
+          </GlassCard>
+        )}
+
+        {!isLoading && !isBootstrapping && canViewHistory && !error && calls.length === 0 && (
+          <GlassCard style={S.callCard} padded={true} radius={12}>
+            <Text style={S.callNote}>{`No ${vocabulary.callsLabel.toLowerCase()} found yet. Start a call from ${vocabulary.leadsLabel} Upload to populate this log.`}</Text>
+          </GlassCard>
+        )}
 
         <View style={S.list}>
-          {RECENT_CALLS.map((call) => (
-            <GlassCard key={call.id} style={S.callCard} padded={false} radius={12}>
+          {canViewHistory && calls.map((call) => (
+            <GlassCard key={call.callId} style={S.callCard} padded={false} radius={12}>
               <View style={S.callTopRow}>
-                <Text style={S.callPhone}>{call.phone}</Text>
-                <StatusPill label={call.status} tone={getStatusTone(call.status)} />
+                <Text style={S.callPhone}>{call.roomId}</Text>
+                <StatusPill label={call.state} tone={statusTone(call.state)} />
               </View>
               <View style={S.callMidRow}>
-                <Text style={S.callMeta}>⏱ {call.duration}</Text>
-                <Text style={S.callMeta}>📅 {call.time}</Text>
-                <Text style={S.callMeta}>🏷 {call.batch}</Text>
+                <Text style={S.callMeta}>🆔 {call.callId.slice(0, 8)}...</Text>
+                <Text style={S.callMeta}>📅 {formatTime(call.initiatedAt)}</Text>
+                <Text style={S.callMeta}>🏷 {call.tenantId}</Text>
               </View>
-              <Text style={S.callNote}>📝 {call.note}</Text>
+              <Text style={S.callNote}>State changed to {call.state}. Tap below for detail screen.</Text>
               
               {/* Footer Actions */}
               <View style={S.callActionsRow}>
-                {call.status === "failed" && (
+                {call.state === "failed" && (
                   <PillButton 
                     title="Retry Now" 
-                    variant="primary" 
+                    variant={canRetry ? "primary" : "ghost"}
                     style={{ height: 32, paddingHorizontal: 16, marginRight: 8 }} 
-                    onPress={() => Alert.alert("Retry initiated")} 
+                    onPress={() =>
+                      canRetry
+                        ? Alert.alert("Retry orchestration endpoint is not available yet.")
+                        : Alert.alert("Locked", `Retry is available on ${planLabel === "Lexus" ? "Prestige" : planLabel} plans.`)
+                    }
                   />
                 )}
-                {call.status === "completed" && (
+                {call.state === "completed" && (
                   <PillButton 
-                    title="View Transcript" 
+                    title={canViewTranscript ? "View Transcript" : "View Result"}
                     variant="ghost" 
                     style={{ height: 32, paddingHorizontal: 16 }} 
-                    onPress={() => Alert.alert("Transcript feature coming soon")} 
+                    onPress={() => router.push(`/(protected)/lexus/completed/${call.callId}` as any)}
                   />
                 )}
               </View>

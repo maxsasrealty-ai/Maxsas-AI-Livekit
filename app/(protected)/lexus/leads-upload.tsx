@@ -10,32 +10,59 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { C } from "../../../components/lexus/theme";
 import GlassCard from "../../../components/lexus/GlassCard";
 import PillButton from "../../../components/lexus/PillButton";
-import SectionHeader from "../../../components/lexus/SectionHeader";
+import { C } from "../../../components/lexus/theme";
+import { useCalls } from "../../../hooks/useCalls";
+import { useCapabilities } from "../../../hooks/useCapabilities";
 
 export default function LexusUploadLeads() {
+  const { can, premiumPlanLabel, vocabulary } = useCapabilities();
+  const { initiateCall, error } = useCalls();
+
+  const canStartLiveCall = can("calls.live");
+
+  const handleSingleLead = async () => {
+    if (!canStartLiveCall) {
+      Alert.alert("Feature unavailable", "Live calling is not enabled on your current plan.");
+      return;
+    }
+
+    const callId = await initiateCall({
+      roomId: `manual-${Date.now()}`,
+      phoneNumber: null,
+      agentName: "lexus-agent",
+      direction: "outbound",
+    });
+
+    if (!callId) {
+      Alert.alert("Call initiation failed", error || "Unable to create call session.");
+      return;
+    }
+
+    router.push(`/(protected)/lexus/completed/${encodeURIComponent(callId)}` as any);
+  };
+
   return (
     <SafeAreaView style={S.safe}>
       <View style={S.headerRow}>
         <TouchableOpacity style={S.backBtn} onPress={() => router.back()}>
           <Text style={S.backIcon}>‹</Text>
         </TouchableOpacity>
-        <Text style={S.headerTitle}>Upload Leads</Text>
+        <Text style={S.headerTitle}>{`Upload ${vocabulary.leadsLabel}`}</Text>
         <View style={{ width: 36 }} />
       </View>
       <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
         {/* Main Upload Card */}
         <GlassCard style={S.cardMain} padded={true}>
           <View style={S.iconCircle}><Text style={S.iconMain}>📤</Text></View>
-          <Text style={S.cardTitle}>Upload CSV from your portal</Text>
+          <Text style={S.cardTitle}>{`Upload ${vocabulary.leadsLabel} CSV from your portal`}</Text>
           <Text style={S.cardSubtitle}>
-            Import leads from 99acres, MagicBricks or internal CRM to start AI calling.
+            {`Import ${vocabulary.leadsLabel.toLowerCase()} from 99acres, MagicBricks or internal CRM to start AI ${vocabulary.callsLabel.toLowerCase()}.`}
           </Text>
           <PillButton 
             title="Choose CSV File" 
-            onPress={() => Alert.alert("File picker integration pending")}
+            onPress={() => Alert.alert("CSV ingestion endpoint is not available yet. This stage remains UI-only.")}
             style={{ width: '100%', marginBottom: 10 }}
           />
           <Text style={S.supportedText}>
@@ -47,18 +74,24 @@ export default function LexusUploadLeads() {
         <GlassCard style={S.cardSecondary} padded={false} radius={14}>
           <View style={S.iconCircleSmall}><Text style={S.iconSecondary}>✍️</Text></View>
           <View style={{ flex: 1 }}>
-            <Text style={S.cardTitleSmall}>Create Single Lead</Text>
+              <Text style={S.cardTitleSmall}>{`Create Single ${vocabulary.leadsLabel.slice(0, -1)}`}</Text>
             <Text style={S.cardSubtitleSmall}>
-              Quickly add one manual lead and test AI calling.
+                {`Quickly add one manual ${vocabulary.leadsLabel.slice(0, -1).toLowerCase()} and test AI ${vocabulary.callsLabel.toLowerCase()}.`}
             </Text>
           </View>
           <TouchableOpacity
             style={S.chevronBtn}
-            onPress={() => Alert.alert("Manual lead creation coming soon")}
+            onPress={() => void handleSingleLead()}
           >
             <Text style={S.chevronIcon}>›</Text>
           </TouchableOpacity>
         </GlassCard>
+
+        {!canStartLiveCall && (
+          <GlassCard style={S.cardSecondary} padded={true} radius={14}>
+            <Text style={S.cardSubtitleSmall}>{`Live ${vocabulary.callsLabel.toLowerCase()} are unavailable on your plan. Upgrade to ${premiumPlanLabel} to start calls from this screen.`}</Text>
+          </GlassCard>
+        )}
 
         {/* Info / Tips Section */}
         <Text style={S.tipsText}>

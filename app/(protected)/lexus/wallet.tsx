@@ -8,18 +8,14 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import { C } from "../../../components/lexus/theme";
 import GlassCard from "../../../components/lexus/GlassCard";
 import PillButton from "../../../components/lexus/PillButton";
 import SectionHeader from "../../../components/lexus/SectionHeader";
 import StatusPill from "../../../components/lexus/StatusPill";
-
-const MOCK_TXNS = [
-  { id: "1", type: "credit", amount: 500, label: "Wallet recharge", date: "2 Mar 2026, 10:15 am", method: "UPI", status: "Success" },
-  { id: "2", type: "debit", amount: 120, label: "AI calling usage", date: "2 Mar 2026, 06:40 pm", method: "Campaign #d2d6357b", status: "Completed" },
-  { id: "3", type: "debit", amount: 80, label: "AI calling usage", date: "1 Mar 2026, 04:10 pm", method: "Campaign #a1b2c3d4", status: "Completed" },
-  { id: "4", type: "credit", amount: 1000, label: "Wallet recharge", date: "28 Feb 2026, 09:00 am", method: "Card", status: "Success" },
-];
+import { C } from "../../../components/lexus/theme";
+import { useCalls } from "../../../hooks/useCalls";
+import { useCapabilities } from "../../../hooks/useCapabilities";
+import { formatTime } from "../../../lib/adapters/calls";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -30,11 +26,30 @@ const FILTERS = [
 const PRESETS = [500, 1000, 2000];
 
 export default function LexusWallet() {
+  const { calls, error, isLoading, isBootstrapping } = useCalls();
+  const { planLabel, limits, vocabulary } = useCapabilities();
   const [filter, setFilter] = useState<"all" | "credit" | "debit">("all");
-  const filteredTxns = useMemo(
-    () => filter === "all" ? MOCK_TXNS : MOCK_TXNS.filter((t) => t.type === filter),
-    [filter]
+  
+  const usageRows = useMemo(
+    () =>
+      calls.map((call) => ({
+        id: call.callId,
+        type: "debit" as const,
+        amount: 1,
+        label: "AI calling usage",
+        date: formatTime(call.initiatedAt),
+        method: `Room #${call.roomId}`,
+        status: call.state,
+      })),
+    [calls]
   );
+
+  const filteredTxns = useMemo(() => {
+    if (filter === "credit") {
+      return [];
+    }
+    return usageRows;
+  }, [filter, usageRows]);
 
   return (
     <SafeAreaView style={S.safe}>
@@ -48,17 +63,17 @@ export default function LexusWallet() {
         {/* Balance Card */}
         <GlassCard style={S.balanceCard} padded={true}>
           <Text style={S.balanceLabel}>Current Balance</Text>
-          <Text style={S.balanceValue}>₹1,240</Text>
-          <Text style={S.balanceSubtext}>Basic Plan · Pay-as-you-go calls</Text>
+          <Text style={S.balanceValue}>₹--</Text>
+          <Text style={S.balanceSubtext}>{planLabel} Plan · Billing backend pending</Text>
           <View style={S.balanceChipsRow}>
-            <View style={S.balanceChip}><Text style={S.balanceChipText}>Calls this month: 120</Text></View>
-            <View style={S.balanceChip}><Text style={S.balanceChipText}>Avg cost / call: ₹2.10</Text></View>
+            <View style={S.balanceChip}><Text style={S.balanceChipText}>{`${vocabulary.callsLabel} tracked: ${calls.length}`}</Text></View>
+            <View style={S.balanceChip}><Text style={S.balanceChipText}>Monthly minutes: {limits?.monthlyCallMinutes ?? 0}</Text></View>
           </View>
           <PillButton 
             title="Recharge Wallet" 
             variant="primary" 
             style={{ width: '100%', marginTop: 6 }} 
-            onPress={() => Alert.alert("Recharge flow coming soon")} 
+            onPress={() => Alert.alert("Recharge requires billing backend support (not available in this phase)")} 
           />
         </GlassCard>
 
@@ -76,6 +91,14 @@ export default function LexusWallet() {
         </View>
 
         <SectionHeader title="Transactions" style={{ paddingHorizontal: 20, marginTop: 10 }} />
+
+        {(isLoading || isBootstrapping) && (
+          <Text style={[S.emptyText, { marginVertical: 8 }]}>Loading wallet usage...</Text>
+        )}
+
+        {!isLoading && !isBootstrapping && error && (
+          <Text style={[S.emptyText, { marginVertical: 8 }]}>Failed to load usage: {error}</Text>
+        )}
 
         {/* Filter Tabs */}
         <View style={S.filterTabsRow}>
@@ -97,11 +120,8 @@ export default function LexusWallet() {
           ) : (
             filteredTxns.map((txn) => (
               <GlassCard key={txn.id} style={S.txnCard} padded={false} radius={12}>
-                <View style={[
-                  S.txnIconCircle,
-                  txn.type === "credit" ? { backgroundColor: 'rgba(0,208,132,0.18)' } : { backgroundColor: 'rgba(79,140,255,0.13)' }
-                ]}>
-                  <Text style={S.txnIcon}>{txn.type === "credit" ? "💳" : "📞"}</Text>
+                <View style={[S.txnIconCircle, { backgroundColor: 'rgba(79,140,255,0.13)' }]}>
+                  <Text style={S.txnIcon}>📞</Text>
                 </View>
                 <View style={S.txnCenterCol}>
                   <Text style={S.txnLabel}>{txn.label}</Text>
@@ -109,12 +129,10 @@ export default function LexusWallet() {
                   <Text style={S.txnDate}>{txn.date}</Text>
                 </View>
                 <View style={S.txnRightCol}>
-                  <Text style={txn.type === "credit" ? S.txnAmountCredit : S.txnAmountDebit}>
-                    {txn.type === "credit" ? "+" : "-"}₹{txn.amount}
-                  </Text>
+                  <Text style={S.txnAmountDebit}>-₹{txn.amount}</Text>
                   <StatusPill 
-                    label={txn.status} 
-                    tone={txn.type === "credit" ? "success" : "info"} 
+                    label={txn.status}
+                    tone={txn.status === "failed" ? "danger" : "info"}
                     style={{ alignSelf: 'flex-end', paddingHorizontal: 8, paddingVertical: 2 }} 
                   />
                 </View>

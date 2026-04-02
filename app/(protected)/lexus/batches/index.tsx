@@ -9,14 +9,17 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import { C } from "../../../../components/lexus/theme";
 import GlassCard from "../../../../components/lexus/GlassCard";
 import PillButton from "../../../../components/lexus/PillButton";
 import SectionHeader from "../../../../components/lexus/SectionHeader";
 import StatusPill from "../../../../components/lexus/StatusPill";
+import { C } from "../../../../components/lexus/theme";
+import { useCalls } from "../../../../hooks/useCalls";
+import { useCapabilities } from "../../../../hooks/useCapabilities";
+import { formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
 
 const FILTERS = [
-  { key: "all", label: "All Batches" },
+  { key: "all", label: "All" },
   { key: "draft", label: "Draft" },
   { key: "scheduled", label: "Scheduled" },
   { key: "running", label: "Running" },
@@ -25,16 +28,46 @@ const FILTERS = [
 
 type BatchStatus = "draft" | "scheduled" | "running" | "completed";
 
-const MOCK_BATCHES = [
-  { id: "d2d6357b", label: "Batch #d2d6357b", status: "running" as BatchStatus, contacts: 1, createdAt: "2/3/2026 09:14 am", info: "Calling in progress...", stats: { running: 0, completed: 1, pending: 0, failed: 0 } },
-  { id: "a1b2c3d4", label: "Batch #a1b2c3d4", status: "draft" as BatchStatus, contacts: 12, createdAt: "2/2/2026 11:00 am", info: "Ready to start calling.", stats: { running: 0, completed: 0, pending: 12, failed: 0 } },
-  { id: "e5f6g7h8", label: "Batch #e5f6g7h8", status: "completed" as BatchStatus, contacts: 8, createdAt: "1/30/2026 04:45 pm", info: "All calls completed.", stats: { running: 0, completed: 8, pending: 0, failed: 0 } },
-  { id: "i9j0k1l2", label: "Batch #i9j0k1l2", status: "scheduled" as BatchStatus, contacts: 5, createdAt: "2/4/2026 10:00 am", info: "Scheduled for tomorrow.", stats: { running: 0, completed: 0, pending: 5, failed: 0 } },
-];
-
 export default function LexusBatchList() {
+  const { calls, isLoading, isBootstrapping, error, refreshCalls } = useCalls();
+  const { can, vocabulary } = useCapabilities();
   const [filter, setFilter] = useState<"all" | BatchStatus>("all");
-  const filtered = filter === "all" ? MOCK_BATCHES : MOCK_BATCHES.filter(b => b.status === filter);
+
+  // TODO: Replace this adapter with true batch endpoints once backend batch APIs are available.
+  const adaptedBatches = groupCallsByRoom(calls).map((group) => {
+    const status: BatchStatus =
+      group.inProgress > 0
+        ? "running"
+        : group.completed > 0 && group.failed === 0
+        ? "completed"
+        : group.total === 0
+        ? "draft"
+        : "scheduled";
+
+    return {
+      id: group.roomId,
+      label: `${vocabulary.batchesLabel.slice(0, -1)} #${group.roomId}`,
+      status,
+      contacts: group.total,
+      createdAt: formatTime(group.latestAt),
+      info:
+        status === "running"
+          ? "Calling in progress..."
+          : status === "completed"
+          ? "All calls completed."
+          : status === "scheduled"
+          ? "Awaiting retries or pending completion."
+          : "Draft batch placeholder.",
+      stats: {
+        running: group.inProgress,
+        completed: group.completed,
+        pending: Math.max(group.total - group.completed - group.failed, 0),
+        failed: group.failed,
+      },
+    };
+  });
+
+  const filtered = filter === "all" ? adaptedBatches : adaptedBatches.filter((b) => b.status === filter);
 
   const getTone = (status: string) => {
     switch (status) {
@@ -49,14 +82,36 @@ export default function LexusBatchList() {
     <SafeAreaView style={S.safe}>
       <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
         <SectionHeader 
-          title="Batch Dashboard" 
-          subtitle="Manage your calling batches"
+          title={`${vocabulary.batchesLabel} Dashboard`}
+          subtitle={`Manage your calling ${vocabulary.batchesLabel.toLowerCase()}`}
           style={{ marginTop: 18, marginBottom: 10 }}
           actionLabel="Open Results"
           onAction={() => router.push("/(protected)/lexus/completed" as any)}
         />
 
+        {!can("calls.history") && (
+          <GlassCard style={S.card} padded={true}>
+            <Text style={S.emptyText}>{`${vocabulary.batchesLabel} insights are unavailable on your current plan.`}</Text>
+          </GlassCard>
+        )}
+
+        {(isLoading || isBootstrapping) && can("calls.history") && (
+          <GlassCard style={S.card} padded={true}>
+            <Text style={S.emptyText}>{`Loading ${vocabulary.batchesLabel.toLowerCase()} data from call sessions...`}</Text>
+          </GlassCard>
+        )}
+
+        {!isLoading && !isBootstrapping && can("calls.history") && error && (
+          <GlassCard style={S.card} padded={true}>
+            <Text style={S.emptyText}>{`Failed to load ${vocabulary.batchesLabel.toLowerCase()} data: ${error}`}</Text>
+            <View style={{ marginTop: 8 }}>
+              <PillButton title="Retry" variant="secondary" onPress={() => void refreshCalls()} />
+            </View>
+          </GlassCard>
+        )}
+
         {/* Filter Tabs */}
+        {can("calls.history") && !isLoading && !isBootstrapping && !error && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.filterRow}>
           {FILTERS.map(tab => (
             <TouchableOpacity
@@ -71,10 +126,12 @@ export default function LexusBatchList() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        )}
 
+        {can("calls.history") && !isLoading && !isBootstrapping && !error && (
         <View style={{ marginTop: 10 }}>
           {filtered.length === 0 ? (
-            <View style={S.emptyWrap}><Text style={S.emptyText}>No batches in this state yet.</Text></View>
+            <View style={S.emptyWrap}><Text style={S.emptyText}>{`No ${vocabulary.batchesLabel.toLowerCase()} in this state yet.`}</Text></View>
           ) : (
             filtered.map(batch => (
               <GlassCard key={batch.id} style={S.card} padded={true}>
@@ -105,9 +162,9 @@ export default function LexusBatchList() {
                 <View style={S.cardFooterRow}>
                   <View style={{ flex: 1, marginRight: 8 }}>
                     <PillButton 
-                      title="Call Now" 
+                      title="Call Now"
                       variant={batch.status === "draft" ? "primary" : "secondary"}
-                      onPress={() => batch.status === "draft" && Alert.alert(`Call Now tapped for batch ${batch.label}`)}
+                      onPress={() => batch.status === "draft" && Alert.alert(`Batch-specific dispatch is pending batch API support for ${batch.label}`)}
                     />
                   </View>
                   <View style={{ flex: 1, marginLeft: 8 }}>
@@ -116,9 +173,9 @@ export default function LexusBatchList() {
                       variant="ghost" 
                       onPress={() => {
                         if (batch.status === "completed") {
-                          router.push(`/(protected)/lexus/completed/${batch.id}` as any);
+                          router.push(`/(protected)/lexus/completed/${encodeURIComponent(batch.id)}` as any);
                         } else {
-                          router.push(`/(protected)/lexus/batches/${batch.id}` as any);
+                          router.push(`/(protected)/lexus/batches/${encodeURIComponent(batch.id)}` as any);
                         }
                       }}
                     />
@@ -128,6 +185,7 @@ export default function LexusBatchList() {
             ))
           )}
         </View>
+        )}
         <View style={{ height: 60 }} />
       </ScrollView>
     </SafeAreaView>

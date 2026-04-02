@@ -1,76 +1,57 @@
+import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { router } from "expo-router";
 
-import { C } from "../../../../components/lexus/theme";
 import GlassCard from "../../../../components/lexus/GlassCard";
 import PillButton from "../../../../components/lexus/PillButton";
 import SectionHeader from "../../../../components/lexus/SectionHeader";
 import StatusPill from "../../../../components/lexus/StatusPill";
-
-// ── MOCK DATA ─────────────────────────────────────────────────────────────
-const MOCK_COMPLETED_BATCHES = [
-  {
-    id: "B-8839",
-    label: "March 2026 Buyers",
-    completedAt: "10 Mar 2026, 04:30 pm",
-    totalLeads: 45,
-    hot: 8,
-    warm: 12,
-    cold: 25,
-    qualified: 8,
-    conversionRate: 17.7,
-  },
-  {
-    id: "B-8840",
-    label: "NRI Investors - Q1",
-    completedAt: "08 Mar 2026, 11:15 am",
-    totalLeads: 30,
-    hot: 15,
-    warm: 10,
-    cold: 5,
-    qualified: 15,
-    conversionRate: 50.0, // High Conversion
-  },
-  {
-    id: "B-8841",
-    label: "Old Leads Revival",
-    completedAt: "05 Mar 2026, 02:45 pm",
-    totalLeads: 120,
-    hot: 4,
-    warm: 16,
-    cold: 100,
-    qualified: 4,
-    conversionRate: 3.3, // Needs Follow-up
-  },
-  {
-    id: "B-8842",
-    label: "Villa Launch Submissions",
-    completedAt: "02 Mar 2026, 09:00 am",
-    totalLeads: 55,
-    hot: 14,
-    warm: 20,
-    cold: 21,
-    qualified: 14,
-    conversionRate: 25.4,
-  },
-];
+import { C } from "../../../../components/lexus/theme";
+import { useCalls } from "../../../../hooks/useCalls";
+import { useCapabilities } from "../../../../hooks/useCapabilities";
+import { formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
 
 const FILTERS = ["All", "Recent", "High Conversion", "Needs Follow-up"];
 
 // ── SCREEN COMPONENT ──────────────────────────────────────────────────────
 export default function LexusCompletedBatches() {
+  const { calls, isLoading, isBootstrapping, refreshCalls, error } = useCalls();
+  const { can, vocabulary } = useCapabilities();
   const [activeFilter, setActiveFilter] = useState("All");
 
+  const completedCalls = calls.filter((item) => item.state === "completed");
+  const grouped = groupCallsByRoom(completedCalls);
+
+  const completedBatches = grouped.map((group) => {
+    const total = group.total;
+    const qualified = group.completed;
+    const hot = Math.min(qualified, Math.max(1, Math.floor(qualified * 0.5)));
+    const warm = Math.max(0, qualified - hot);
+    const cold = Math.max(0, total - qualified);
+    const conversionRate = total ? (qualified / total) * 100 : 0;
+
+    return {
+      id: group.roomId,
+      label: `Room ${group.roomId}`,
+      completedAt: formatTime(group.latestAt),
+      totalLeads: total,
+      hot,
+      warm,
+      cold,
+      qualified,
+      conversionRate,
+    };
+  });
+
   const filteredBatches = useMemo(() => {
-    let result = [...MOCK_COMPLETED_BATCHES];
+    let result = [...completedBatches];
     if (activeFilter === "All") return result;
 
     if (activeFilter === "Recent") {
@@ -84,7 +65,7 @@ export default function LexusCompletedBatches() {
       return result.filter((b) => b.conversionRate < 10 || b.hot < 5);
     }
     return result;
-  }, [activeFilter]);
+  }, [activeFilter, completedBatches]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -93,12 +74,42 @@ export default function LexusCompletedBatches() {
         showsVerticalScrollIndicator={false}
       >
         <SectionHeader
-          title="Completed Batches"
-          subtitle="Review finished AI calling campaigns"
+          title={`Completed ${vocabulary.batchesLabel}`}
+          subtitle={`Review finished AI ${vocabulary.campaignsLabel.toLowerCase()}`}
           style={{ paddingHorizontal: 16, marginTop: 16, marginBottom: 8 }}
+          actionLabel="Refresh"
+          onAction={() => void refreshCalls()}
         />
 
+        {!can("calls.history") && (
+          <View style={styles.listWrap}>
+            <GlassCard style={styles.emptyCard} padded={true}>
+              <Text style={styles.emptyIcon}>🔒</Text>
+              <Text style={styles.emptyTitle}>Call history is unavailable on your plan.</Text>
+              <Text style={styles.emptySubtitle}>{`Upgrade your plan to view completed ${vocabulary.campaignsLabel.toLowerCase()} results.`}</Text>
+            </GlassCard>
+          </View>
+        )}
+
+        {(isLoading || isBootstrapping) && can("calls.history") && (
+          <View style={styles.listWrap}>
+            <GlassCard style={styles.emptyCard} padded={true}>
+              <Text style={styles.emptyTitle}>Loading completed calls...</Text>
+            </GlassCard>
+          </View>
+        )}
+
+        {!isLoading && !isBootstrapping && can("calls.history") && error && (
+          <View style={styles.listWrap}>
+            <GlassCard style={styles.emptyCard} padded={true}>
+              <Text style={styles.emptyTitle}>Failed to load completed calls.</Text>
+              <Text style={styles.emptySubtitle}>{error}</Text>
+            </GlassCard>
+          </View>
+        )}
+
         {/* ── FILTERS ── */}
+        {can("calls.history") && !isLoading && !isBootstrapping && !error && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -130,13 +141,15 @@ export default function LexusCompletedBatches() {
             );
           })}
         </ScrollView>
+        )}
 
         {/* ── BATCH LIST ── */}
+        {can("calls.history") && !isLoading && !isBootstrapping && !error && (
         <View style={styles.listWrap}>
           {filteredBatches.length === 0 ? (
             <GlassCard style={styles.emptyCard} padded={true}>
               <Text style={styles.emptyIcon}>📭</Text>
-              <Text style={styles.emptyTitle}>No completed batches found.</Text>
+              <Text style={styles.emptyTitle}>{`No completed ${vocabulary.callsLabel.toLowerCase()} found.`}</Text>
               <Text style={styles.emptySubtitle}>
                 Try selecting a different filter above.
               </Text>
@@ -160,7 +173,7 @@ export default function LexusCompletedBatches() {
                 <View style={styles.kpiRow}>
                   <View style={styles.kpiCol}>
                     <Text style={styles.kpiVal}>{batch.totalLeads}</Text>
-                    <Text style={styles.kpiLab}>Total</Text>
+                    <Text style={styles.kpiLab}>{`Total ${vocabulary.leadsLabel}`}</Text>
                   </View>
                   <View style={styles.kpiDivider} />
                   <View style={styles.kpiCol}>
@@ -195,13 +208,14 @@ export default function LexusCompletedBatches() {
                   variant="primary"
                   style={{ marginTop: 16 }}
                   onPress={() =>
-                    router.push(`/(protected)/lexus/completed/${batch.id}` as any)
+                      router.push(`/(protected)/lexus/completed/${encodeURIComponent(batch.id)}` as any)
                   }
                 />
               </GlassCard>
             ))
           )}
         </View>
+        )}
 
         <View style={{ height: 60 }} />
       </ScrollView>

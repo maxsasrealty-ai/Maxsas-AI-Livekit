@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanKey {
+  basic
+  pro
+  enterprise
+}
+
+enum CallLifecycleStatus {
+  initiated
+  dispatching
+  ringing
+  connected
+  active
+  completed
+  failed
+}
+
+enum Speaker {
+  user
+  agent
+}
+
+enum CampaignStatus {
+  draft
+  queued
+  active
+  completed
+  archived
+}
+
+model Tenant {
+  id          String        @id
+  name        String?
+  plan        PlanKey       @default(basic)
+  workspaceConfigJson String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  callSessions CallSession[]
+  campaigns   Campaign[]
+}
+
+model CallSession {
+  id              String              @id
+  tenantId        String
+  roomId          String
+  phoneNumber     String?
+  agentName       String?
+  direction       String?
+  status          CallLifecycleStatus @default(initiated)
+  initiatedAt     DateTime            @default(now())
+  connectedAt     DateTime?
+  completedAt     DateTime?
+  failedAt        DateTime?
+  durationSec     Float?
+  transcriptTurns Int?
+  recordingUrl    String?
+  lastError       String?
+  estimatedCost   Float?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  tenant             Tenant              @relation(fields: [tenantId], references: [id])
+  events             CallEvent[]
+  transcriptSegments TranscriptSegment[]
+  leadExtraction     LeadExtraction?
+  campaignLinks      CampaignCall[]
+  sourceContacts     CampaignContact[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, initiatedAt])
+}
+
+model CallEvent {
+  id            String   @id @default(cuid())
+  callId        String
+  tenantId      String
+  eventType     String
+  occurredAt    DateTime
+  eventId       String
+  payloadJson   String
+  rawEnvelope   String
+  rawHeaders    String
+  createdAt     DateTime @default(now())
+
+  callSession CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, eventType, occurredAt])
+  @@index([tenantId, callId, eventType])
+}
+
+model TranscriptSegment {
+  id                String   @id @default(cuid())
+  callId            String
+  tenantId          String
+  speaker           Speaker
+  text              String
+  isFinal           Boolean  @default(false)
+  sequenceNo        Int
+  providerMessageId String?
+  rawJson           String?
+  occurredAt        DateTime
+  createdAt         DateTime @default(now())
+
+  callSession CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, sequenceNo])
+  @@index([tenantId, callId, createdAt])
+}
+
+model LeadExtraction {
+  id          String   @id @default(cuid())
+  callId       String   @unique
+  tenantId     String
+  extractedAt  DateTime
+  name         String?
+  phone        String?
+  summary      String
+  confidence   Float?
+  rawJson      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  callSession CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, extractedAt])
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  status      CampaignStatus @default(draft)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tenant   Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  calls    CampaignCall[]
+  contacts CampaignContact[]
+
+  @@index([tenantId, status, createdAt])
+}
+
+model CampaignCall {
+  campaignId String
+  callId     String
+  tenantId   String
+  createdAt  DateTime @default(now())
+
+  campaign Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  call     CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, callId])
+  @@index([tenantId, campaignId])
+  @@index([tenantId, callId])
+}
+
+model CampaignContact {
+  id           String   @id @default(cuid())
+  campaignId   String
+  tenantId     String
+  sourceCallId String?
+  name         String?
+  phone        String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaign Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  sourceCall CallSession? @relation(fields: [sourceCallId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, campaignId, createdAt])
+  @@unique([campaignId, sourceCallId])
+}

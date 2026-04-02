@@ -1,0 +1,90 @@
+import { CallState, CallSummary, PlanCapabilities } from "../../shared/contracts";
+
+export function formatDuration(durationSec?: number | null): string {
+  if (!durationSec || durationSec <= 0) {
+    return "0s";
+  }
+
+  const minutes = Math.floor(durationSec / 60);
+  const seconds = Math.floor(durationSec % 60);
+
+  if (minutes <= 0) {
+    return `${seconds}s`;
+  }
+
+  return `${minutes}m ${seconds}s`;
+}
+
+export function formatTime(iso?: string): string {
+  if (!iso) {
+    return "-";
+  }
+
+  const date = new Date(iso);
+  return date.toLocaleString();
+}
+
+export function statusTone(state: CallState): "success" | "warning" | "danger" | "info" | "neutral" {
+  switch (state) {
+    case "completed":
+      return "success";
+    case "failed":
+      return "danger";
+    case "ringing":
+    case "dispatching":
+      return "warning";
+    case "connected":
+    case "active":
+      return "info";
+    case "initiated":
+    default:
+      return "neutral";
+  }
+}
+
+export function getQuickStats(calls: CallSummary[]) {
+  const inProgressStates: CallState[] = ["initiated", "dispatching", "ringing", "connected", "active"];
+  const inProgress = calls.filter((item) => inProgressStates.includes(item.state)).length;
+  const completed = calls.filter((item) => item.state === "completed").length;
+  const failed = calls.filter((item) => item.state === "failed").length;
+
+  return {
+    inProgress,
+    completed,
+    failed,
+    total: calls.length,
+  };
+}
+
+export function isCapabilityEnabled(
+  capabilities: PlanCapabilities | null,
+  key: keyof PlanCapabilities["features"]
+): boolean {
+  return capabilities?.features[key] === true;
+}
+
+export function groupCallsByRoom(calls: CallSummary[]) {
+  const byRoom = new Map<string, CallSummary[]>();
+
+  calls.forEach((call) => {
+    const roomCalls = byRoom.get(call.roomId) || [];
+    roomCalls.push(call);
+    byRoom.set(call.roomId, roomCalls);
+  });
+
+  return Array.from(byRoom.entries()).map(([roomId, roomCalls]) => {
+    const completed = roomCalls.filter((item) => item.state === "completed").length;
+    const failed = roomCalls.filter((item) => item.state === "failed").length;
+    const inProgress = roomCalls.filter((item) => ["initiated", "dispatching", "ringing", "connected", "active"].includes(item.state)).length;
+
+    return {
+      roomId,
+      calls: roomCalls,
+      total: roomCalls.length,
+      completed,
+      failed,
+      inProgress,
+      latestAt: roomCalls[0]?.initiatedAt,
+    };
+  });
+}
