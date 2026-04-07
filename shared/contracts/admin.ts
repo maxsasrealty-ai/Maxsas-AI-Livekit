@@ -60,3 +60,12 @@ export interface TenantUsageSummary {
     archived: number;
   };
 }
+
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  fullName: string;
+  tenantId: string;
+  tenantName?: string | null;
+  createdAt: string;
+}

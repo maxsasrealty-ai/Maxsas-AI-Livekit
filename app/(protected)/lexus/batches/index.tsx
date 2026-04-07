@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -16,7 +15,7 @@ import StatusPill from "../../../../components/lexus/StatusPill";
 import { C } from "../../../../components/lexus/theme";
 import { useCalls } from "../../../../hooks/useCalls";
 import { useCapabilities } from "../../../../hooks/useCapabilities";
-import { formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
+import { formatBatchName, formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -33,7 +32,6 @@ export default function LexusBatchList() {
   const { can, vocabulary } = useCapabilities();
   const [filter, setFilter] = useState<"all" | BatchStatus>("all");
 
-  // TODO: Replace this adapter with true batch endpoints once backend batch APIs are available.
   const adaptedBatches = groupCallsByRoom(calls).map((group) => {
     const status: BatchStatus =
       group.inProgress > 0
@@ -46,18 +44,18 @@ export default function LexusBatchList() {
 
     return {
       id: group.roomId,
-      label: `${vocabulary.batchesLabel.slice(0, -1)} #${group.roomId}`,
+      label: formatBatchName(group.roomId),
       status,
       contacts: group.total,
       createdAt: formatTime(group.latestAt),
       info:
         status === "running"
-          ? "Calling in progress..."
+          ? "Calls are in progress"
           : status === "completed"
-          ? "All calls completed."
+          ? "All calls completed"
           : status === "scheduled"
-          ? "Awaiting retries or pending completion."
-          : "Draft batch placeholder.",
+          ? "Scheduled for processing"
+          : "Draft batch",
       stats: {
         running: group.inProgress,
         completed: group.completed,
@@ -160,26 +158,17 @@ export default function LexusBatchList() {
                 </View>
                 {/* Footer Buttons */}
                 <View style={S.cardFooterRow}>
-                  <View style={{ flex: 1, marginRight: 8 }}>
-                    <PillButton 
-                      title="Call Now"
-                      variant={batch.status === "draft" ? "primary" : "secondary"}
-                      onPress={() => batch.status === "draft" && Alert.alert(`Batch-specific dispatch is pending batch API support for ${batch.label}`)}
-                    />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: 8 }}>
-                    <PillButton 
-                      title={batch.status === "completed" ? "Results" : "View"} 
-                      variant="ghost" 
-                      onPress={() => {
-                        if (batch.status === "completed") {
-                          router.push(`/(protected)/lexus/completed/${encodeURIComponent(batch.id)}` as any);
-                        } else {
-                          router.push(`/(protected)/lexus/batches/${encodeURIComponent(batch.id)}` as any);
-                        }
-                      }}
-                    />
-                  </View>
+                  <PillButton 
+                    title={batch.status === "completed" ? "Open Results" : "Open Batch"} 
+                    variant="ghost" 
+                    onPress={() => {
+                      if (batch.status === "completed") {
+                        router.push(`/(protected)/lexus/completed/${encodeURIComponent(batch.id)}` as any);
+                      } else {
+                        router.push(`/(protected)/lexus/batches/${encodeURIComponent(batch.id)}` as any);
+                      }
+                    }}
+                  />
                 </View>
               </GlassCard>
             ))

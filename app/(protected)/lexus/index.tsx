@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import GlassCard from '../../../components/lexus/GlassCard';
 import LiveStageStrip from '../../../components/lexus/live/LiveStageStrip';
 import PillButton from '../../../components/lexus/PillButton';
@@ -9,7 +9,7 @@ import StatusPill from '../../../components/lexus/StatusPill';
 import { C } from '../../../components/lexus/theme';
 import { useCalls } from '../../../hooks/useCalls';
 import { useCapabilities } from '../../../hooks/useCapabilities';
-import { formatTime, getQuickStats } from '../../../lib/adapters/calls';
+import { formatBatchName, formatTime, getQuickStats } from '../../../lib/adapters/calls';
 import { connectionLabel } from '../../../lib/adapters/liveEvents';
 
 export default function LexusHome() {
@@ -40,12 +40,7 @@ export default function LexusHome() {
           <Text style={S.title}>MAXSAS AI</Text>
           <Text style={S.subtitle}>Your AI lead strategist is ready.</Text>
           <GlassCard padded={true} radius={16} style={{ width: '100%', padding: 14 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={S.demoLabel}>Try AI Demo Call</Text>
-              <View style={S.demoSwitchPill}>
-                <View style={S.demoSwitchDot} />
-              </View>
-            </View>
+            <Text style={S.demoLabel}>System Overview</Text>
               <Text style={S.demoSubtext}>
                 {isBootstrapping || isLoading
                   ? 'Loading call system data...'
@@ -73,13 +68,19 @@ export default function LexusHome() {
           </GlassCard>
         ) : (
           activeCalls.slice(0, 2).map((call) => (
-            <GlassCard key={call.callId} padded={true} radius={14} style={{ marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-                <Text style={S.uploadTitle}>{call.roomId}</Text>
-                <StatusPill label={call.state} tone="info" />
-              </View>
-              {liveByCallId[call.callId] && <LiveStageStrip snapshot={liveByCallId[call.callId]} />}
-            </GlassCard>
+            <TouchableOpacity
+              key={call.callId}
+              activeOpacity={0.85}
+              onPress={() => router.push(`/(protected)/lexus/batches/${encodeURIComponent(call.roomId)}` as any)}
+            >
+              <GlassCard padded={true} radius={14} style={{ marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <Text style={S.uploadTitle}>{formatBatchName(call.roomId)}</Text>
+                  <StatusPill label={call.state} tone="info" />
+                </View>
+                {liveByCallId[call.callId] && <LiveStageStrip snapshot={liveByCallId[call.callId]} />}
+              </GlassCard>
+            </TouchableOpacity>
           ))
         )}
 
@@ -156,8 +157,6 @@ const S = StyleSheet.create({
   title: { color: C.text, fontWeight: '700', fontSize: 20, marginBottom: 2, letterSpacing: 1 },
   subtitle: { color: C.textMuted, fontSize: 14, marginBottom: 14 },
   demoLabel: { color: C.text, fontWeight: '600', fontSize: 15 },
-  demoSwitchPill: { width: 36, height: 20, borderRadius: 12, backgroundColor: 'rgba(79,140,255,0.18)', alignItems: 'flex-end', justifyContent: 'center', padding: 3 },
-  demoSwitchDot: { width: 14, height: 14, borderRadius: 7, backgroundColor: C.blue },
   demoSubtext: { color: C.textFaint, fontSize: 12, marginTop: 6, fontStyle: 'italic' },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 22 },
   statCard: { flex: 1, alignItems: 'center', paddingVertical: 14 },

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 
-import { CreateTenantAdminInput, UpdateTenantAdminInput } from "../../../shared/contracts";
+import { AdminUserRecord, CreateTenantAdminInput, UpdateTenantAdminInput } from "../../../shared/contracts";
 import { prisma } from "../lib/prisma";
 import { requireAdminAccess } from "../middleware/requireAdminAccess";
 import { listCampaigns } from "../repositories/campaignRepository";
@@ -61,7 +61,7 @@ adminRouter.get("/live-events/stream", async (req: Request, res: Response) => {
         res.write(`id: ${item.streamEventId}\n`);
         res.write("event: admin_live_event\n");
         res.write(`data: ${JSON.stringify(item)}\n\n`);
-      } catch (err) {
+      } catch {
         // Connection already closed
         break;
       }
@@ -70,7 +70,7 @@ adminRouter.get("/live-events/stream", async (req: Request, res: Response) => {
     const heartbeat = setInterval(() => {
       try {
         res.write(`event: heartbeat\ndata: ${JSON.stringify({ ts: new Date().toISOString() })}\n\n`);
-      } catch (err) {
+      } catch {
         clearInterval(heartbeat);
         unsubscribe();
       }
@@ -81,7 +81,7 @@ adminRouter.get("/live-events/stream", async (req: Request, res: Response) => {
         res.write(`id: ${event.streamEventId}\n`);
         res.write("event: admin_live_event\n");
         res.write(`data: ${JSON.stringify(event)}\n\n`);
-      } catch (err) {
+      } catch {
         // Connection closed, cleanup will happen in req.on("close")
       }
     });
@@ -91,7 +91,7 @@ adminRouter.get("/live-events/stream", async (req: Request, res: Response) => {
       unsubscribe();
       res.end();
     });
-  } catch (err) {
+  } catch {
     if (!res.headersSent) {
       res.status(500).json({
         success: false,
@@ -139,6 +139,55 @@ adminRouter.get("/live-events/recent", async (req: Request, res: Response) => {
       requestId: req.requestContext?.requestId,
       timestamp: new Date().toISOString(),
       totalCount: events.length,
+    },
+  });
+});
+
+adminRouter.get("/users", async (req: Request, res: Response) => {
+  const limit = Math.max(1, Math.min(Number(req.query.limit || 50), 200));
+  const query = typeof req.query.query === "string" ? req.query.query.trim().toLowerCase() : "";
+
+  const users = await prisma.user.findMany({
+    where: query
+      ? {
+          OR: [
+            { email: { contains: query, mode: "insensitive" } },
+            { fullName: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      tenantId: true,
+      createdAt: true,
+      tenant: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const data: AdminUserRecord[] = users.map((user) => ({
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    tenantId: user.tenantId,
+    tenantName: user.tenant?.name ?? null,
+    createdAt: user.createdAt.toISOString(),
+  }));
+
+  res.status(200).json({
+    success: true,
+    data,
+    meta: {
+      requestId: req.requestContext?.requestId,
+      timestamp: new Date().toISOString(),
+      totalCount: data.length,
     },
   });
 });

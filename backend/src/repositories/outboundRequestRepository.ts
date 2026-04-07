@@ -14,17 +14,23 @@ export async function createOutboundCallRequest(args: {
 }) {
   assertUuid(args.tenantId, "tenantId");
   const db = args.db ?? prisma;
-
-  return db.outboundCallRequest.create({
-    data: {
-      tenantId: args.tenantId,
-      phoneNumber: args.phoneNumber,
-      roomId: args.roomId,
-      agentName: args.agentName,
-      status: "queued",
-      payloadJson: args.payloadJson,
-    },
-  });
+  try {
+    const result = await db.outboundCallRequest.create({
+      data: {
+        tenantId: args.tenantId,
+        phoneNumber: args.phoneNumber,
+        roomId: args.roomId,
+        agentName: args.agentName,
+        status: "queued",
+        payloadJson: args.payloadJson,
+      },
+    });
+    console.log("[CALLS] OutboundCallRequest row created", { id: result.id, tenantId: result.tenantId });
+    return result;
+  } catch (err) {
+    console.log("[CALLS] OutboundCallRequest creation failed", { error: err instanceof Error ? err.message : err });
+    throw err;
+  }
 }
 
 export async function getOutboundCallRequestById(args: {

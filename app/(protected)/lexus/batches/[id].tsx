@@ -18,7 +18,7 @@ import StatusPill from "../../../../components/lexus/StatusPill";
 import { C } from "../../../../components/lexus/theme";
 import { useCalls } from "../../../../hooks/useCalls";
 import { useCapabilities } from "../../../../hooks/useCapabilities";
-import { formatTime, statusTone } from "../../../../lib/adapters/calls";
+import { formatBatchName, formatTime, statusTone } from "../../../../lib/adapters/calls";
 
 const CONTACT_TABS = [
   { key: "pending", label: "Pending" },
@@ -29,6 +29,7 @@ const CONTACT_TABS = [
 export default function LexusBatchDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const roomId = typeof id === "string" ? decodeURIComponent(id) : "";
+  const batchLabel = formatBatchName(roomId);
 
   const { calls, isLoading, isBootstrapping, error } = useCalls();
   const { can } = useCapabilities();
@@ -49,7 +50,6 @@ export default function LexusBatchDetail() {
     return {
       id: roomId,
       status: completed === batchCalls.length && batchCalls.length > 0 ? "completed" : "running",
-      type: "CALL_SESSION_ADAPTER",
       createdAt: formatTime(batchCalls[0]?.initiatedAt),
       totalContacts: batchCalls.length,
       completed,
@@ -101,7 +101,7 @@ export default function LexusBatchDetail() {
         {can("calls.history") && !isLoading && !isBootstrapping && !error && (
           <>
             <View style={S.headerSubtitleRow}>
-              <Text style={S.headerSubtitle}>{batch.status.toUpperCase()} • {batch.type}</Text>
+              <Text style={S.headerSubtitle}>{batchLabel} • {batch.status.toUpperCase()}</Text>
             </View>
 
             <GlassCard style={S.cardMain} padded={true}>
@@ -163,8 +163,8 @@ export default function LexusBatchDetail() {
                   <GlassCard key={call.callId} style={S.contactRow} padded={false} radius={12}>
                     <View style={S.contactCircle}><Text style={S.contactCircleText}>{i + 1}.</Text></View>
                     <View style={S.contactCol}>
-                      <Text style={S.contactPhone}>{call.callId.slice(0, 8)}...</Text>
-                      <Text style={S.contactRetry}>Room: {call.roomId}</Text>
+                      <Text style={S.contactPhone}>Lead {i + 1}</Text>
+                      <Text style={S.contactRetry}>Call: {call.callId.slice(0, 8)}...</Text>
                       <Text style={S.contactNote}>Started: {formatTime(call.initiatedAt)}</Text>
                     </View>
                     <View style={S.contactStatusCol}>

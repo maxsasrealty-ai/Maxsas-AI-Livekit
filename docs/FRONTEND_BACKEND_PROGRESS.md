@@ -1,8 +1,126 @@
+---
+
+## CALL PIPELINE STEP 1 AUDIT (April 2026)
+
+### Objective
+Verify that when a user triggers a call from the UI, the request reliably reaches the backend, is validated, and results in an OutboundCallRequest row and queue enqueue, with minimal observability for this phase.
+
+### Files Inspected
+- context/CallsContext.tsx
+- lib/api/calls.ts
+- backend/src/routes/calls/create.ts
+- backend/src/services/callService.ts
+- backend/src/repositories/outboundRequestRepository.ts
+- backend/src/queue/producer.ts
+
+### Findings
+- The UI triggers `initiateCall` in context/CallsContext.tsx, which calls `createCall` in lib/api/calls.ts (POST /api/calls).
+- backend/src/routes/calls/create.ts validates the payload and calls `initiateCallSession` in callService.ts.
+- callService.ts creates an OutboundCallRequest row (outboundRequestRepository.ts) and enqueues the job (queue/producer.ts).
+- If any step fails, a 400 or 500 is returned and no row is created.
+- If all steps succeed, a 201 is returned and the row is created.
+
+### Temporary Logs Added
+- [CALLS] Incoming POST /api/calls (route)
+- [CALLS] Validation failed (route)
+- [CALLS] Call accepted, responding to frontend (route)
+- [CALLS] Call initiation failed (route)
+- [CALLS] OutboundCallRequest row created (repository)
+- [CALLS] OutboundCallRequest creation failed (repository)
+- [CALLS] Enqueued outbound call request (queue/producer)
+- [CALLS] Queue disabled, running call job synchronously (queue/producer)
+- [CALLS] Failed to enqueue outbound call request (queue/producer)
+
+### Known Unresolved Issues
+- If the network fails after the POST is sent but before the response is received, the UI may not know if the call was accepted.
+- If the UI does not check for `success: true` in the response, it may show a call as started even if the backend rejected it.
+- If the queue is unavailable and fallback direct processing fails, the call may not be processed (but this is logged).
+
+### Test Method (Production-like)
+1. Trigger a call from the UI and observe the browser network tab for the POST /api/calls payload and response.
+2. Check backend logs for all [CALLS] entries for the requestId.
+3. Verify a row is created in the OutboundCallRequest table (via DB or logs).
+4. Simulate validation errors (missing fields) and network errors to confirm correct error handling and logging.
+5. Simulate queue unavailability to confirm fallback and logging.
+
+### Step 1 Reliability
+- Step 1 is reliable if the UI checks for `success: true` and the backend logs confirm row creation and queue enqueue for every accepted call.
+- Failure points: validation errors, DB write failure, queue enqueue failure, network errors between frontend and backend.
 # FRONTEND / BACKEND IMPLEMENTATION PROGRESS (Single Source of Truth)
 
 **Last updated:** April 2026 — reflects all changes through recent conversations (telephony, payment, admin, UX improvements).
 
 This document captures what is currently implemented across frontend and backend. It is the canonical technical handoff for continuation work and must be updated whenever routes, contracts, or architecture change.
+
+---
+
+## CALL PIPELINE AUDIT (April 2026)
+
+### End-to-End Flow (UI trigger → DB save → UI update)
+
+**Frontend:**
+- User triggers call (e.g., via modal in `leads-upload.tsx` or similar).
+- `context/CallsContext.tsx` → `initiateCall()` calls `lib/api/calls.ts:createCall()`.
+- API POST `/api/calls` (handled by backend).
+
+**Backend:**
+- `routes/calls/create.ts` → `callService.ts:initiateCallSession()`
+  - Upserts tenant, normalizes phone, creates `OutboundCallRequest` (status: `queued`).
+  - Enqueues job via `queue/producer.ts`.
+- `queue/worker.ts` processes job:
+  - Claims request, dispatches to telephony (`telephonyService.ts:dispatchToTelephonyEngine()`).
+  - On success, creates/updates `CallSession` (status: `initiated`/`dispatching`).
+- Telephony triggers events (via webhook):
+  - `routes/webhooks/voice.ts` → `voiceEventService.ts`
+    - Normalizes, persists event, updates `CallSession` state, creates `CallEvent`, updates transcript/lead if needed.
+    - Publishes realtime event via `realtimeService.ts`.
+- SSE (`routes/realtime.ts`) streams events to frontend.
+- `context/CallsContext.tsx` merges live events into UI state.
+
+---
+
+### Relevant Files List
+
+**Core:**
+- Backend: `routes/calls/create.ts`, `callService.ts`, `queue/producer.ts`, `queue/worker.ts`, `telephonyService.ts`, `voiceEventService.ts`, `realtimeService.ts`, `repositories/callRepository.ts`, `repositories/outboundRequestRepository.ts`
+- Frontend: `context/CallsContext.tsx`, `lib/api/calls.ts`, `lib/realtime/client.ts`, `hooks/useCalls.ts`, `hooks/useCallDetail.ts`
+
+**Supporting:**
+- Backend: `routes/webhooks/voice.ts`, `routes/realtime.ts`, `repositories/eventRepository.ts`, `repositories/leadRepository.ts`, `repositories/transcriptRepository.ts`, `middleware/requireTenant.ts`, `middleware/requireCapability.ts`
+- Frontend: `app/(protected)/lexus/*`, `app/(protected)/enterprise/*`, `components/lexus/*`, `components/enterprise/*`
+
+**Legacy/Unknown:**
+- `app/(tabs)/*` (legacy), stubs in `lib/adapters/`, `lib/firebase.ts`, `backend/src/services/vapiService.ts` (not active in pipeline)
+
+---
+
+### API Route List (Method + Purpose)
+
+- `POST /api/calls` — Initiate outbound call (trigger pipeline)
+- `GET /api/calls` — List calls (for UI state)
+- `GET /api/calls/:callId` — Call detail
+- `GET /api/calls/:callId/transcript` — Transcript
+- `GET /api/calls/:callId/recording` — Recording
+- `GET /api/calls/:callId/lead` — Lead extraction
+- `GET /api/realtime/calls/stream` — SSE: call events
+- `POST /api/webhooks/voice/events` — Ingest telephony events
+
+---
+
+### State Transition List
+
+**Outbound Request:**
+- `queued` → `dispatching` (claimed by worker) → `dispatched` (telephony accepted) or `failed`
+
+**Call Session:**
+- `queued` → `initiated` → `dispatching` → `ringing` → `connected` → `active` → `completed`/`failed`
+- State transitions enforced by `callStateMachine.ts` and `voiceEventService.ts`
+
+---
+
+### Source-of-Truth Policy
+
+All findings and the canonical map are maintained in this file. Update this section for any future changes to the call pipeline, API, or state model.
 
 ## 1) Scope and Ground Rules
 

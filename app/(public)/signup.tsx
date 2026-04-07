@@ -1,19 +1,22 @@
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
+import {
+    Animated,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useResponsive } from "../../hooks/useResponsive";
 import {
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+    loginWithEmailPassword,
+    signupWithEmailPassword,
+} from "../../lib/api/auth";
 
 const { height } = Dimensions.get("window");
 
@@ -288,12 +291,53 @@ const InputField = ({ label, placeholder, value, onChangeText, secureTextEntry, 
 export default function PremiumSignupScreen() {
   const { isDesktop } = useResponsive();
   const [mode, setMode] = useState<'login' | 'signup'>("signup");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleAuth = () => {
-    // Navigate straight to dashboard for standard dev
-    router.replace('/(protected)/lexus');
+  const handleAuth = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedFullName = fullName.trim();
+
+    if (!normalizedEmail || !password) {
+      setErrorMessage("Email and password are required.");
+      return;
+    }
+
+    if (mode === "signup" && !normalizedFullName) {
+      setErrorMessage("Full name is required for signup.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response =
+        mode === "signup"
+          ? await signupWithEmailPassword({
+              fullName: normalizedFullName,
+              email: normalizedEmail,
+              password,
+            })
+          : await loginWithEmailPassword({
+              email: normalizedEmail,
+              password,
+            });
+
+      if (!response.success) {
+        setErrorMessage(response.error.message || "Authentication failed.");
+        return;
+      }
+
+      router.replace('/(protected)/lexus');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to connect to server.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formCardBg = Platform.OS === 'web'
@@ -432,7 +476,13 @@ export default function PremiumSignupScreen() {
 
               {/* Core Inputs */}
               {mode === 'signup' && (
-                <InputField label="Full Name" placeholder="Rahul Sharma" icon="👤" />
+                <InputField
+                  label="Full Name"
+                  placeholder="Rahul Sharma"
+                  value={fullName}
+                  onChangeText={setFullName}
+                  icon="👤"
+                />
               )}
               <InputField label="Email Address" placeholder="rahul@example.com" value={email} onChangeText={setEmail} icon="✉️" />
               <InputField label="Password" placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry icon="🔒" />
@@ -444,15 +494,22 @@ export default function PremiumSignupScreen() {
               {/* Actions */}
               <TouchableOpacity 
                 onPress={handleAuth}
+                disabled={isSubmitting}
                 style={[
-                  { height: 50, borderRadius: 10, justifyContent: 'center', alignItems: 'center', shadowColor: C.blue, shadowOpacity: 0.35, shadowRadius: 30, shadowOffset: { width: 0, height: 0 }, elevation: 10, marginBottom: 12 },
+                  { height: 50, borderRadius: 10, justifyContent: 'center', alignItems: 'center', shadowColor: C.blue, shadowOpacity: 0.35, shadowRadius: 30, shadowOffset: { width: 0, height: 0 }, elevation: 10, marginBottom: 12, opacity: isSubmitting ? 0.7 : 1 },
                   primaryBtnBg
                 ]}
               >
                 <Text style={{ color: C.white, fontSize: 15, fontWeight: '700' }}>
-                  {mode === 'login' ? 'Log In to Workspace' : 'Create Free Account'}
+                  {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Log In to Workspace' : 'Create Free Account'}
                 </Text>
               </TouchableOpacity>
+
+              {!!errorMessage && (
+                <Text style={{ color: C.errorRed, fontSize: 12, textAlign: 'center', marginBottom: 12 }}>
+                  {errorMessage}
+                </Text>
+              )}
 
               <Text style={{ color: C.textMuted, fontSize: 12, textAlign: 'center', marginBottom: 24 }}>
                 🔒 Secure access for your campaigns, leads and calling data.

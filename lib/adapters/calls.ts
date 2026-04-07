@@ -24,6 +24,31 @@ export function formatTime(iso?: string): string {
   return date.toLocaleString();
 }
 
+export function formatBatchName(roomId: string): string {
+  const batchPattern = /^batch-(\d{8})-(\d{4})/;
+  const match = roomId.match(batchPattern);
+
+  if (!match) {
+    return `Batch ${roomId.slice(0, 8)}`;
+  }
+
+  const datePart = match[1];
+  const timePart = match[2];
+  const year = Number(datePart.slice(0, 4));
+  const month = Number(datePart.slice(4, 6)) - 1;
+  const day = Number(datePart.slice(6, 8));
+  const hours = Number(timePart.slice(0, 2));
+  const minutes = Number(timePart.slice(2, 4));
+
+  const date = new Date(year, month, day, hours, minutes, 0);
+  return `Batch ${date.toLocaleString(undefined, {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
 export function statusTone(state: CallState): "success" | "warning" | "danger" | "info" | "neutral" {
   switch (state) {
     case "completed":

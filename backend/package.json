@@ -8,6 +8,7 @@
     "start": "node --env-file=.env --loader tsx src/index.ts",
     "prisma:generate": "npx prisma generate --schema=./prisma/schema.prisma",
     "prisma:migrate": "npx prisma migrate dev --schema=./prisma/schema.prisma",
+    "test:lead-normalization": "npx tsx scripts/test-lead-normalization.ts",
     "test:voice-webhook": "node ./scripts/test-voice-webhook.mjs",
     "test:outbound-call": "node ./scripts/test-outbound-call.mjs",
     "test:e2e": "node ./scripts/test-e2e.mjs",
@@ -21,6 +22,7 @@
     "ioredis": "^5.4.1",
     "livekit-server-sdk": "^2.15.0",
     "razorpay": "^2.9.6",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

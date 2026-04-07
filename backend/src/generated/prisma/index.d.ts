@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Tenant = $Result.DefaultSelection<Prisma.$TenantPayload>
 /**
+ * Model User
+ * 
+ */
+export type User = $Result.DefaultSelection<Prisma.$UserPayload>
+/**
  * Model CallSession
  * 
  */
@@ -342,6 +347,16 @@ export class PrismaClient<
     * ```
     */
   get tenant(): Prisma.TenantDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.user`: Exposes CRUD operations for the **User** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Users
+    * const users = await prisma.user.findMany()
+    * ```
+    */
+  get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.callSession`: Exposes CRUD operations for the **CallSession** model.
@@ -884,6 +899,7 @@ export namespace Prisma {
 
   export const ModelName: {
     Tenant: 'Tenant',
+    User: 'User',
     CallSession: 'CallSession',
     CallEvent: 'CallEvent',
     TranscriptSegment: 'TranscriptSegment',
@@ -912,7 +928,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "tenant" | "callSession" | "callEvent" | "transcriptSegment" | "leadExtraction" | "campaign" | "campaignCall" | "campaignContact" | "walletTransaction" | "outboundCallRequest" | "usageRecord"
+      modelProps: "tenant" | "user" | "callSession" | "callEvent" | "transcriptSegment" | "leadExtraction" | "campaign" | "campaignCall" | "campaignContact" | "walletTransaction" | "outboundCallRequest" | "usageRecord"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -987,6 +1003,80 @@ export namespace Prisma {
           count: {
             args: Prisma.TenantCountArgs<ExtArgs>
             result: $Utils.Optional<TenantCountAggregateOutputType> | number
+          }
+        }
+      }
+      User: {
+        payload: Prisma.$UserPayload<ExtArgs>
+        fields: Prisma.UserFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          findFirst: {
+            args: Prisma.UserFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          findMany: {
+            args: Prisma.UserFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
+          }
+          create: {
+            args: Prisma.UserCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          createMany: {
+            args: Prisma.UserCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
+          }
+          delete: {
+            args: Prisma.UserDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          update: {
+            args: Prisma.UserUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          aggregate: {
+            args: Prisma.UserAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUser>
+          }
+          groupBy: {
+            args: Prisma.UserGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserCountArgs<ExtArgs>
+            result: $Utils.Optional<UserCountAggregateOutputType> | number
           }
         }
       }
@@ -1827,6 +1917,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     tenant?: TenantOmit
+    user?: UserOmit
     callSession?: CallSessionOmit
     callEvent?: CallEventOmit
     transcriptSegment?: TranscriptSegmentOmit
@@ -1917,29 +2008,31 @@ export namespace Prisma {
    */
 
   export type TenantCountOutputType = {
-    callSessions: number
     callEvents: number
-    transcriptSegments: number
-    leadExtractions: number
+    callSessions: number
     campaigns: number
     campaignCalls: number
     campaignContacts: number
-    walletTransactions: number
+    leadExtractions: number
     outboundCallRequests: number
+    transcriptSegments: number
     usageRecords: number
+    users: number
+    walletTransactions: number
   }
 
   export type TenantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    callSessions?: boolean | TenantCountOutputTypeCountCallSessionsArgs
     callEvents?: boolean | TenantCountOutputTypeCountCallEventsArgs
-    transcriptSegments?: boolean | TenantCountOutputTypeCountTranscriptSegmentsArgs
-    leadExtractions?: boolean | TenantCountOutputTypeCountLeadExtractionsArgs
+    callSessions?: boolean | TenantCountOutputTypeCountCallSessionsArgs
     campaigns?: boolean | TenantCountOutputTypeCountCampaignsArgs
     campaignCalls?: boolean | TenantCountOutputTypeCountCampaignCallsArgs
     campaignContacts?: boolean | TenantCountOutputTypeCountCampaignContactsArgs
-    walletTransactions?: boolean | TenantCountOutputTypeCountWalletTransactionsArgs
+    leadExtractions?: boolean | TenantCountOutputTypeCountLeadExtractionsArgs
     outboundCallRequests?: boolean | TenantCountOutputTypeCountOutboundCallRequestsArgs
+    transcriptSegments?: boolean | TenantCountOutputTypeCountTranscriptSegmentsArgs
     usageRecords?: boolean | TenantCountOutputTypeCountUsageRecordsArgs
+    users?: boolean | TenantCountOutputTypeCountUsersArgs
+    walletTransactions?: boolean | TenantCountOutputTypeCountWalletTransactionsArgs
   }
 
   // Custom InputTypes
@@ -1956,13 +2049,6 @@ export namespace Prisma {
   /**
    * TenantCountOutputType without action
    */
-  export type TenantCountOutputTypeCountCallSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CallSessionWhereInput
-  }
-
-  /**
-   * TenantCountOutputType without action
-   */
   export type TenantCountOutputTypeCountCallEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CallEventWhereInput
   }
@@ -1970,15 +2056,8 @@ export namespace Prisma {
   /**
    * TenantCountOutputType without action
    */
-  export type TenantCountOutputTypeCountTranscriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TranscriptSegmentWhereInput
-  }
-
-  /**
-   * TenantCountOutputType without action
-   */
-  export type TenantCountOutputTypeCountLeadExtractionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: LeadExtractionWhereInput
+  export type TenantCountOutputTypeCountCallSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallSessionWhereInput
   }
 
   /**
@@ -2005,8 +2084,8 @@ export namespace Prisma {
   /**
    * TenantCountOutputType without action
    */
-  export type TenantCountOutputTypeCountWalletTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: WalletTransactionWhereInput
+  export type TenantCountOutputTypeCountLeadExtractionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeadExtractionWhereInput
   }
 
   /**
@@ -2019,8 +2098,29 @@ export namespace Prisma {
   /**
    * TenantCountOutputType without action
    */
+  export type TenantCountOutputTypeCountTranscriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TranscriptSegmentWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
   export type TenantCountOutputTypeCountUsageRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UsageRecordWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+  }
+
+  /**
+   * TenantCountOutputType without action
+   */
+  export type TenantCountOutputTypeCountWalletTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WalletTransactionWhereInput
   }
 
 
@@ -2030,19 +2130,19 @@ export namespace Prisma {
 
   export type CallSessionCountOutputType = {
     events: number
-    transcriptSegments: number
     campaignLinks: number
     sourceContacts: number
     outboundRequests: number
+    transcriptSegments: number
     usageRecords: number
   }
 
   export type CallSessionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     events?: boolean | CallSessionCountOutputTypeCountEventsArgs
-    transcriptSegments?: boolean | CallSessionCountOutputTypeCountTranscriptSegmentsArgs
     campaignLinks?: boolean | CallSessionCountOutputTypeCountCampaignLinksArgs
     sourceContacts?: boolean | CallSessionCountOutputTypeCountSourceContactsArgs
     outboundRequests?: boolean | CallSessionCountOutputTypeCountOutboundRequestsArgs
+    transcriptSegments?: boolean | CallSessionCountOutputTypeCountTranscriptSegmentsArgs
     usageRecords?: boolean | CallSessionCountOutputTypeCountUsageRecordsArgs
   }
 
@@ -2067,13 +2167,6 @@ export namespace Prisma {
   /**
    * CallSessionCountOutputType without action
    */
-  export type CallSessionCountOutputTypeCountTranscriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TranscriptSegmentWhereInput
-  }
-
-  /**
-   * CallSessionCountOutputType without action
-   */
   export type CallSessionCountOutputTypeCountCampaignLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CampaignCallWhereInput
   }
@@ -2090,6 +2183,13 @@ export namespace Prisma {
    */
   export type CallSessionCountOutputTypeCountOutboundRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OutboundCallRequestWhereInput
+  }
+
+  /**
+   * CallSessionCountOutputType without action
+   */
+  export type CallSessionCountOutputTypeCountTranscriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TranscriptSegmentWhereInput
   }
 
   /**
@@ -2358,16 +2458,17 @@ export namespace Prisma {
     walletBalancePaise?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    callSessions?: boolean | Tenant$callSessionsArgs<ExtArgs>
     callEvents?: boolean | Tenant$callEventsArgs<ExtArgs>
-    transcriptSegments?: boolean | Tenant$transcriptSegmentsArgs<ExtArgs>
-    leadExtractions?: boolean | Tenant$leadExtractionsArgs<ExtArgs>
+    callSessions?: boolean | Tenant$callSessionsArgs<ExtArgs>
     campaigns?: boolean | Tenant$campaignsArgs<ExtArgs>
     campaignCalls?: boolean | Tenant$campaignCallsArgs<ExtArgs>
     campaignContacts?: boolean | Tenant$campaignContactsArgs<ExtArgs>
-    walletTransactions?: boolean | Tenant$walletTransactionsArgs<ExtArgs>
+    leadExtractions?: boolean | Tenant$leadExtractionsArgs<ExtArgs>
     outboundCallRequests?: boolean | Tenant$outboundCallRequestsArgs<ExtArgs>
+    transcriptSegments?: boolean | Tenant$transcriptSegmentsArgs<ExtArgs>
     usageRecords?: boolean | Tenant$usageRecordsArgs<ExtArgs>
+    users?: boolean | Tenant$usersArgs<ExtArgs>
+    walletTransactions?: boolean | Tenant$walletTransactionsArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tenant"]>
 
@@ -2406,16 +2507,17 @@ export namespace Prisma {
 
   export type TenantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "plan" | "workspaceConfigJson" | "featuresJson" | "walletBalancePaise" | "createdAt" | "updatedAt", ExtArgs["result"]["tenant"]>
   export type TenantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    callSessions?: boolean | Tenant$callSessionsArgs<ExtArgs>
     callEvents?: boolean | Tenant$callEventsArgs<ExtArgs>
-    transcriptSegments?: boolean | Tenant$transcriptSegmentsArgs<ExtArgs>
-    leadExtractions?: boolean | Tenant$leadExtractionsArgs<ExtArgs>
+    callSessions?: boolean | Tenant$callSessionsArgs<ExtArgs>
     campaigns?: boolean | Tenant$campaignsArgs<ExtArgs>
     campaignCalls?: boolean | Tenant$campaignCallsArgs<ExtArgs>
     campaignContacts?: boolean | Tenant$campaignContactsArgs<ExtArgs>
-    walletTransactions?: boolean | Tenant$walletTransactionsArgs<ExtArgs>
+    leadExtractions?: boolean | Tenant$leadExtractionsArgs<ExtArgs>
     outboundCallRequests?: boolean | Tenant$outboundCallRequestsArgs<ExtArgs>
+    transcriptSegments?: boolean | Tenant$transcriptSegmentsArgs<ExtArgs>
     usageRecords?: boolean | Tenant$usageRecordsArgs<ExtArgs>
+    users?: boolean | Tenant$usersArgs<ExtArgs>
+    walletTransactions?: boolean | Tenant$walletTransactionsArgs<ExtArgs>
     _count?: boolean | TenantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TenantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2424,16 +2526,17 @@ export namespace Prisma {
   export type $TenantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Tenant"
     objects: {
-      callSessions: Prisma.$CallSessionPayload<ExtArgs>[]
       callEvents: Prisma.$CallEventPayload<ExtArgs>[]
-      transcriptSegments: Prisma.$TranscriptSegmentPayload<ExtArgs>[]
-      leadExtractions: Prisma.$LeadExtractionPayload<ExtArgs>[]
+      callSessions: Prisma.$CallSessionPayload<ExtArgs>[]
       campaigns: Prisma.$CampaignPayload<ExtArgs>[]
       campaignCalls: Prisma.$CampaignCallPayload<ExtArgs>[]
       campaignContacts: Prisma.$CampaignContactPayload<ExtArgs>[]
-      walletTransactions: Prisma.$WalletTransactionPayload<ExtArgs>[]
+      leadExtractions: Prisma.$LeadExtractionPayload<ExtArgs>[]
       outboundCallRequests: Prisma.$OutboundCallRequestPayload<ExtArgs>[]
+      transcriptSegments: Prisma.$TranscriptSegmentPayload<ExtArgs>[]
       usageRecords: Prisma.$UsageRecordPayload<ExtArgs>[]
+      users: Prisma.$UserPayload<ExtArgs>[]
+      walletTransactions: Prisma.$WalletTransactionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2838,16 +2941,17 @@ export namespace Prisma {
    */
   export interface Prisma__TenantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    callSessions<T extends Tenant$callSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$callSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     callEvents<T extends Tenant$callEventsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$callEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    transcriptSegments<T extends Tenant$transcriptSegmentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$transcriptSegmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranscriptSegmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    leadExtractions<T extends Tenant$leadExtractionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$leadExtractionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadExtractionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    callSessions<T extends Tenant$callSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$callSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     campaigns<T extends Tenant$campaignsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$campaignsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     campaignCalls<T extends Tenant$campaignCallsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$campaignCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignCallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     campaignContacts<T extends Tenant$campaignContactsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$campaignContactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    walletTransactions<T extends Tenant$walletTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$walletTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WalletTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    leadExtractions<T extends Tenant$leadExtractionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$leadExtractionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeadExtractionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outboundCallRequests<T extends Tenant$outboundCallRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$outboundCallRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OutboundCallRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    transcriptSegments<T extends Tenant$transcriptSegmentsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$transcriptSegmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranscriptSegmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     usageRecords<T extends Tenant$usageRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$usageRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UsageRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    users<T extends Tenant$usersArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    walletTransactions<T extends Tenant$walletTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, Tenant$walletTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WalletTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3273,30 +3377,6 @@ export namespace Prisma {
   }
 
   /**
-   * Tenant.callSessions
-   */
-  export type Tenant$callSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CallSession
-     */
-    select?: CallSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the CallSession
-     */
-    omit?: CallSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CallSessionInclude<ExtArgs> | null
-    where?: CallSessionWhereInput
-    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
-    cursor?: CallSessionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
-  }
-
-  /**
    * Tenant.callEvents
    */
   export type Tenant$callEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3321,51 +3401,27 @@ export namespace Prisma {
   }
 
   /**
-   * Tenant.transcriptSegments
+   * Tenant.callSessions
    */
-  export type Tenant$transcriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Tenant$callSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TranscriptSegment
+     * Select specific fields to fetch from the CallSession
      */
-    select?: TranscriptSegmentSelect<ExtArgs> | null
+    select?: CallSessionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the TranscriptSegment
+     * Omit specific fields from the CallSession
      */
-    omit?: TranscriptSegmentOmit<ExtArgs> | null
+    omit?: CallSessionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TranscriptSegmentInclude<ExtArgs> | null
-    where?: TranscriptSegmentWhereInput
-    orderBy?: TranscriptSegmentOrderByWithRelationInput | TranscriptSegmentOrderByWithRelationInput[]
-    cursor?: TranscriptSegmentWhereUniqueInput
+    include?: CallSessionInclude<ExtArgs> | null
+    where?: CallSessionWhereInput
+    orderBy?: CallSessionOrderByWithRelationInput | CallSessionOrderByWithRelationInput[]
+    cursor?: CallSessionWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: TranscriptSegmentScalarFieldEnum | TranscriptSegmentScalarFieldEnum[]
-  }
-
-  /**
-   * Tenant.leadExtractions
-   */
-  export type Tenant$leadExtractionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LeadExtraction
-     */
-    select?: LeadExtractionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LeadExtraction
-     */
-    omit?: LeadExtractionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LeadExtractionInclude<ExtArgs> | null
-    where?: LeadExtractionWhereInput
-    orderBy?: LeadExtractionOrderByWithRelationInput | LeadExtractionOrderByWithRelationInput[]
-    cursor?: LeadExtractionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: LeadExtractionScalarFieldEnum | LeadExtractionScalarFieldEnum[]
+    distinct?: CallSessionScalarFieldEnum | CallSessionScalarFieldEnum[]
   }
 
   /**
@@ -3441,27 +3497,27 @@ export namespace Prisma {
   }
 
   /**
-   * Tenant.walletTransactions
+   * Tenant.leadExtractions
    */
-  export type Tenant$walletTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Tenant$leadExtractionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the WalletTransaction
+     * Select specific fields to fetch from the LeadExtraction
      */
-    select?: WalletTransactionSelect<ExtArgs> | null
+    select?: LeadExtractionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the WalletTransaction
+     * Omit specific fields from the LeadExtraction
      */
-    omit?: WalletTransactionOmit<ExtArgs> | null
+    omit?: LeadExtractionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: WalletTransactionInclude<ExtArgs> | null
-    where?: WalletTransactionWhereInput
-    orderBy?: WalletTransactionOrderByWithRelationInput | WalletTransactionOrderByWithRelationInput[]
-    cursor?: WalletTransactionWhereUniqueInput
+    include?: LeadExtractionInclude<ExtArgs> | null
+    where?: LeadExtractionWhereInput
+    orderBy?: LeadExtractionOrderByWithRelationInput | LeadExtractionOrderByWithRelationInput[]
+    cursor?: LeadExtractionWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: WalletTransactionScalarFieldEnum | WalletTransactionScalarFieldEnum[]
+    distinct?: LeadExtractionScalarFieldEnum | LeadExtractionScalarFieldEnum[]
   }
 
   /**
@@ -3489,6 +3545,30 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.transcriptSegments
+   */
+  export type Tenant$transcriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranscriptSegment
+     */
+    select?: TranscriptSegmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranscriptSegment
+     */
+    omit?: TranscriptSegmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptSegmentInclude<ExtArgs> | null
+    where?: TranscriptSegmentWhereInput
+    orderBy?: TranscriptSegmentOrderByWithRelationInput | TranscriptSegmentOrderByWithRelationInput[]
+    cursor?: TranscriptSegmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TranscriptSegmentScalarFieldEnum | TranscriptSegmentScalarFieldEnum[]
+  }
+
+  /**
    * Tenant.usageRecords
    */
   export type Tenant$usageRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3513,6 +3593,54 @@ export namespace Prisma {
   }
 
   /**
+   * Tenant.users
+   */
+  export type Tenant$usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * Tenant.walletTransactions
+   */
+  export type Tenant$walletTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WalletTransaction
+     */
+    select?: WalletTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WalletTransaction
+     */
+    omit?: WalletTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WalletTransactionInclude<ExtArgs> | null
+    where?: WalletTransactionWhereInput
+    orderBy?: WalletTransactionOrderByWithRelationInput | WalletTransactionOrderByWithRelationInput[]
+    cursor?: WalletTransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WalletTransactionScalarFieldEnum | WalletTransactionScalarFieldEnum[]
+  }
+
+  /**
    * Tenant without action
    */
   export type TenantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3528,6 +3656,1090 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: TenantInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model User
+   */
+
+  export type AggregateUser = {
+    _count: UserCountAggregateOutputType | null
+    _min: UserMinAggregateOutputType | null
+    _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserMinAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    email: string | null
+    fullName: string | null
+    passwordHash: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserMaxAggregateOutputType = {
+    id: string | null
+    tenantId: string | null
+    email: string | null
+    fullName: string | null
+    passwordHash: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserCountAggregateOutputType = {
+    id: number
+    tenantId: number
+    email: number
+    fullName: number
+    passwordHash: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserMinAggregateInputType = {
+    id?: true
+    tenantId?: true
+    email?: true
+    fullName?: true
+    passwordHash?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserMaxAggregateInputType = {
+    id?: true
+    tenantId?: true
+    email?: true
+    fullName?: true
+    passwordHash?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserCountAggregateInputType = {
+    id?: true
+    tenantId?: true
+    email?: true
+    fullName?: true
+    passwordHash?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which User to aggregate.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Users
+    **/
+    _count?: true | UserCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserMaxAggregateInputType
+  }
+
+  export type GetUserAggregateType<T extends UserAggregateArgs> = {
+        [P in keyof T & keyof AggregateUser]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUser[P]>
+      : GetScalarType<T[P], AggregateUser[P]>
+  }
+
+
+
+
+  export type UserGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithAggregationInput | UserOrderByWithAggregationInput[]
+    by: UserScalarFieldEnum[] | UserScalarFieldEnum
+    having?: UserScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserCountAggregateInputType | true
+    _min?: UserMinAggregateInputType
+    _max?: UserMaxAggregateInputType
+  }
+
+  export type UserGroupByOutputType = {
+    id: string
+    tenantId: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt: Date
+    updatedAt: Date
+    _count: UserCountAggregateOutputType | null
+    _min: UserMinAggregateOutputType | null
+    _max: UserMaxAggregateOutputType | null
+  }
+
+  type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserGroupByOutputType[P]>
+            : GetScalarType<T[P], UserGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    email?: boolean
+    fullName?: boolean
+    passwordHash?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["user"]>
+
+  export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    email?: boolean
+    fullName?: boolean
+    passwordHash?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["user"]>
+
+  export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenantId?: boolean
+    email?: boolean
+    fullName?: boolean
+    passwordHash?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["user"]>
+
+  export type UserSelectScalar = {
+    id?: boolean
+    tenantId?: boolean
+    email?: boolean
+    fullName?: boolean
+    passwordHash?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "email" | "fullName" | "passwordHash" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+  export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
+  }
+
+  export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "User"
+    objects: {
+      tenant: Prisma.$TenantPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenantId: string
+      email: string
+      fullName: string
+      passwordHash: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["user"]>
+    composites: {}
+  }
+
+  type UserGetPayload<S extends boolean | null | undefined | UserDefaultArgs> = $Result.GetResult<Prisma.$UserPayload, S>
+
+  type UserCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserCountAggregateInputType | true
+    }
+
+  export interface UserDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['User'], meta: { name: 'User' } }
+    /**
+     * Find zero or one User that matches the filter.
+     * @param {UserFindUniqueArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserFindUniqueArgs>(args: SelectSubset<T, UserFindUniqueArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one User that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserFindUniqueOrThrowArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserFindUniqueOrThrowArgs>(args: SelectSubset<T, UserFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first User that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindFirstArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserFindFirstArgs>(args?: SelectSubset<T, UserFindFirstArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first User that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindFirstOrThrowArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserFindFirstOrThrowArgs>(args?: SelectSubset<T, UserFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Users that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Users
+     * const users = await prisma.user.findMany()
+     * 
+     * // Get first 10 Users
+     * const users = await prisma.user.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userWithIdOnly = await prisma.user.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserFindManyArgs>(args?: SelectSubset<T, UserFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a User.
+     * @param {UserCreateArgs} args - Arguments to create a User.
+     * @example
+     * // Create one User
+     * const User = await prisma.user.create({
+     *   data: {
+     *     // ... data to create a User
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserCreateArgs>(args: SelectSubset<T, UserCreateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Users.
+     * @param {UserCreateManyArgs} args - Arguments to create many Users.
+     * @example
+     * // Create many Users
+     * const user = await prisma.user.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserCreateManyArgs>(args?: SelectSubset<T, UserCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Users and returns the data saved in the database.
+     * @param {UserCreateManyAndReturnArgs} args - Arguments to create many Users.
+     * @example
+     * // Create many Users
+     * const user = await prisma.user.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Users and only return the `id`
+     * const userWithIdOnly = await prisma.user.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserCreateManyAndReturnArgs>(args?: SelectSubset<T, UserCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a User.
+     * @param {UserDeleteArgs} args - Arguments to delete one User.
+     * @example
+     * // Delete one User
+     * const User = await prisma.user.delete({
+     *   where: {
+     *     // ... filter to delete one User
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserDeleteArgs>(args: SelectSubset<T, UserDeleteArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one User.
+     * @param {UserUpdateArgs} args - Arguments to update one User.
+     * @example
+     * // Update one User
+     * const user = await prisma.user.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserUpdateArgs>(args: SelectSubset<T, UserUpdateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Users.
+     * @param {UserDeleteManyArgs} args - Arguments to filter Users to delete.
+     * @example
+     * // Delete a few Users
+     * const { count } = await prisma.user.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserDeleteManyArgs>(args?: SelectSubset<T, UserDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Users.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Users
+     * const user = await prisma.user.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserUpdateManyArgs>(args: SelectSubset<T, UserUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Users and returns the data updated in the database.
+     * @param {UserUpdateManyAndReturnArgs} args - Arguments to update many Users.
+     * @example
+     * // Update many Users
+     * const user = await prisma.user.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Users and only return the `id`
+     * const userWithIdOnly = await prisma.user.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserUpdateManyAndReturnArgs>(args: SelectSubset<T, UserUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one User.
+     * @param {UserUpsertArgs} args - Arguments to update or create a User.
+     * @example
+     * // Update or create a User
+     * const user = await prisma.user.upsert({
+     *   create: {
+     *     // ... data to create a User
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the User we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserUpsertArgs>(args: SelectSubset<T, UserUpsertArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Users.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserCountArgs} args - Arguments to filter Users to count.
+     * @example
+     * // Count the number of Users
+     * const count = await prisma.user.count({
+     *   where: {
+     *     // ... the filter for the Users we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserCountArgs>(
+      args?: Subset<T, UserCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a User.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserAggregateArgs>(args: Subset<T, UserAggregateArgs>): Prisma.PrismaPromise<GetUserAggregateType<T>>
+
+    /**
+     * Group by User.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserGroupByArgs['orderBy'] }
+        : { orderBy?: UserGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the User model
+   */
+  readonly fields: UserFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for User.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the User model
+   */
+  interface UserFieldRefs {
+    readonly id: FieldRef<"User", 'String'>
+    readonly tenantId: FieldRef<"User", 'String'>
+    readonly email: FieldRef<"User", 'String'>
+    readonly fullName: FieldRef<"User", 'String'>
+    readonly passwordHash: FieldRef<"User", 'String'>
+    readonly createdAt: FieldRef<"User", 'DateTime'>
+    readonly updatedAt: FieldRef<"User", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * User findUnique
+   */
+  export type UserFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User findUniqueOrThrow
+   */
+  export type UserFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User findFirst
+   */
+  export type UserFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Users.
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Users.
+     */
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * User findFirstOrThrow
+   */
+  export type UserFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Users.
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Users.
+     */
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * User findMany
+   */
+  export type UserFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * Filter, which Users to fetch.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Users.
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * User create
+   */
+  export type UserCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * The data needed to create a User.
+     */
+    data: XOR<UserCreateInput, UserUncheckedCreateInput>
+  }
+
+  /**
+   * User createMany
+   */
+  export type UserCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Users.
+     */
+    data: UserCreateManyInput | UserCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * User createManyAndReturn
+   */
+  export type UserCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * The data used to create many Users.
+     */
+    data: UserCreateManyInput | UserCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * User update
+   */
+  export type UserUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * The data needed to update a User.
+     */
+    data: XOR<UserUpdateInput, UserUncheckedUpdateInput>
+    /**
+     * Choose, which User to update.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User updateMany
+   */
+  export type UserUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Users.
+     */
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>
+    /**
+     * Filter which Users to update
+     */
+    where?: UserWhereInput
+    /**
+     * Limit how many Users to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * User updateManyAndReturn
+   */
+  export type UserUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * The data used to update Users.
+     */
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>
+    /**
+     * Filter which Users to update
+     */
+    where?: UserWhereInput
+    /**
+     * Limit how many Users to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * User upsert
+   */
+  export type UserUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * The filter to search for the User to update in case it exists.
+     */
+    where: UserWhereUniqueInput
+    /**
+     * In case the User found by the `where` argument doesn't exist, create a new User with this data.
+     */
+    create: XOR<UserCreateInput, UserUncheckedCreateInput>
+    /**
+     * In case the User was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserUpdateInput, UserUncheckedUpdateInput>
+  }
+
+  /**
+   * User delete
+   */
+  export type UserDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
+     * Filter which User to delete.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User deleteMany
+   */
+  export type UserDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Users to delete
+     */
+    where?: UserWhereInput
+    /**
+     * Limit how many Users to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * User without action
+   */
+  export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
   }
 
 
@@ -3849,13 +5061,13 @@ export namespace Prisma {
     lastError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     events?: boolean | CallSession$eventsArgs<ExtArgs>
-    transcriptSegments?: boolean | CallSession$transcriptSegmentsArgs<ExtArgs>
-    leadExtraction?: boolean | CallSession$leadExtractionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     campaignLinks?: boolean | CallSession$campaignLinksArgs<ExtArgs>
     sourceContacts?: boolean | CallSession$sourceContactsArgs<ExtArgs>
+    leadExtraction?: boolean | CallSession$leadExtractionArgs<ExtArgs>
     outboundRequests?: boolean | CallSession$outboundRequestsArgs<ExtArgs>
+    transcriptSegments?: boolean | CallSession$transcriptSegmentsArgs<ExtArgs>
     usageRecords?: boolean | CallSession$usageRecordsArgs<ExtArgs>
     _count?: boolean | CallSessionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["callSession"]>
@@ -3930,13 +5142,13 @@ export namespace Prisma {
 
   export type CallSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "externalCallId" | "roomId" | "phoneNumber" | "agentName" | "direction" | "status" | "initiatedAt" | "connectedAt" | "completedAt" | "failedAt" | "durationSec" | "transcriptTurns" | "recordingUrl" | "estimatedCost" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["callSession"]>
   export type CallSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     events?: boolean | CallSession$eventsArgs<ExtArgs>
-    transcriptSegments?: boolean | CallSession$transcriptSegmentsArgs<ExtArgs>
-    leadExtraction?: boolean | CallSession$leadExtractionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     campaignLinks?: boolean | CallSession$campaignLinksArgs<ExtArgs>
     sourceContacts?: boolean | CallSession$sourceContactsArgs<ExtArgs>
+    leadExtraction?: boolean | CallSession$leadExtractionArgs<ExtArgs>
     outboundRequests?: boolean | CallSession$outboundRequestsArgs<ExtArgs>
+    transcriptSegments?: boolean | CallSession$transcriptSegmentsArgs<ExtArgs>
     usageRecords?: boolean | CallSession$usageRecordsArgs<ExtArgs>
     _count?: boolean | CallSessionCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3950,13 +5162,13 @@ export namespace Prisma {
   export type $CallSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CallSession"
     objects: {
-      tenant: Prisma.$TenantPayload<ExtArgs>
       events: Prisma.$CallEventPayload<ExtArgs>[]
-      transcriptSegments: Prisma.$TranscriptSegmentPayload<ExtArgs>[]
-      leadExtraction: Prisma.$LeadExtractionPayload<ExtArgs> | null
+      tenant: Prisma.$TenantPayload<ExtArgs>
       campaignLinks: Prisma.$CampaignCallPayload<ExtArgs>[]
       sourceContacts: Prisma.$CampaignContactPayload<ExtArgs>[]
+      leadExtraction: Prisma.$LeadExtractionPayload<ExtArgs> | null
       outboundRequests: Prisma.$OutboundCallRequestPayload<ExtArgs>[]
+      transcriptSegments: Prisma.$TranscriptSegmentPayload<ExtArgs>[]
       usageRecords: Prisma.$UsageRecordPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -4373,13 +5585,13 @@ export namespace Prisma {
    */
   export interface Prisma__CallSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     events<T extends CallSession$eventsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    transcriptSegments<T extends CallSession$transcriptSegmentsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$transcriptSegmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranscriptSegmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    leadExtraction<T extends CallSession$leadExtractionArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$leadExtractionArgs<ExtArgs>>): Prisma__LeadExtractionClient<$Result.GetResult<Prisma.$LeadExtractionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     campaignLinks<T extends CallSession$campaignLinksArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$campaignLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignCallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sourceContacts<T extends CallSession$sourceContactsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$sourceContactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CampaignContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    leadExtraction<T extends CallSession$leadExtractionArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$leadExtractionArgs<ExtArgs>>): Prisma__LeadExtractionClient<$Result.GetResult<Prisma.$LeadExtractionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     outboundRequests<T extends CallSession$outboundRequestsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$outboundRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OutboundCallRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    transcriptSegments<T extends CallSession$transcriptSegmentsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$transcriptSegmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TranscriptSegmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     usageRecords<T extends CallSession$usageRecordsArgs<ExtArgs> = {}>(args?: Subset<T, CallSession$usageRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UsageRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4849,49 +6061,6 @@ export namespace Prisma {
   }
 
   /**
-   * CallSession.transcriptSegments
-   */
-  export type CallSession$transcriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TranscriptSegment
-     */
-    select?: TranscriptSegmentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TranscriptSegment
-     */
-    omit?: TranscriptSegmentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TranscriptSegmentInclude<ExtArgs> | null
-    where?: TranscriptSegmentWhereInput
-    orderBy?: TranscriptSegmentOrderByWithRelationInput | TranscriptSegmentOrderByWithRelationInput[]
-    cursor?: TranscriptSegmentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TranscriptSegmentScalarFieldEnum | TranscriptSegmentScalarFieldEnum[]
-  }
-
-  /**
-   * CallSession.leadExtraction
-   */
-  export type CallSession$leadExtractionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the LeadExtraction
-     */
-    select?: LeadExtractionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the LeadExtraction
-     */
-    omit?: LeadExtractionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LeadExtractionInclude<ExtArgs> | null
-    where?: LeadExtractionWhereInput
-  }
-
-  /**
    * CallSession.campaignLinks
    */
   export type CallSession$campaignLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4940,6 +6109,25 @@ export namespace Prisma {
   }
 
   /**
+   * CallSession.leadExtraction
+   */
+  export type CallSession$leadExtractionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeadExtraction
+     */
+    select?: LeadExtractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LeadExtraction
+     */
+    omit?: LeadExtractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeadExtractionInclude<ExtArgs> | null
+    where?: LeadExtractionWhereInput
+  }
+
+  /**
    * CallSession.outboundRequests
    */
   export type CallSession$outboundRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4961,6 +6149,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: OutboundCallRequestScalarFieldEnum | OutboundCallRequestScalarFieldEnum[]
+  }
+
+  /**
+   * CallSession.transcriptSegments
+   */
+  export type CallSession$transcriptSegmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TranscriptSegment
+     */
+    select?: TranscriptSegmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TranscriptSegment
+     */
+    omit?: TranscriptSegmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TranscriptSegmentInclude<ExtArgs> | null
+    where?: TranscriptSegmentWhereInput
+    orderBy?: TranscriptSegmentOrderByWithRelationInput | TranscriptSegmentOrderByWithRelationInput[]
+    cursor?: TranscriptSegmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TranscriptSegmentScalarFieldEnum | TranscriptSegmentScalarFieldEnum[]
   }
 
   /**
@@ -9879,8 +11091,8 @@ export namespace Prisma {
     callId?: boolean
     tenantId?: boolean
     createdAt?: boolean
-    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     call?: boolean | CallSessionDefaultArgs<ExtArgs>
+    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignCall"]>
 
@@ -9890,8 +11102,8 @@ export namespace Prisma {
     callId?: boolean
     tenantId?: boolean
     createdAt?: boolean
-    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     call?: boolean | CallSessionDefaultArgs<ExtArgs>
+    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignCall"]>
 
@@ -9901,8 +11113,8 @@ export namespace Prisma {
     callId?: boolean
     tenantId?: boolean
     createdAt?: boolean
-    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     call?: boolean | CallSessionDefaultArgs<ExtArgs>
+    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["campaignCall"]>
 
@@ -9916,26 +11128,26 @@ export namespace Prisma {
 
   export type CampaignCallOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "campaignId" | "callId" | "tenantId" | "createdAt", ExtArgs["result"]["campaignCall"]>
   export type CampaignCallInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     call?: boolean | CallSessionDefaultArgs<ExtArgs>
+    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
   export type CampaignCallIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     call?: boolean | CallSessionDefaultArgs<ExtArgs>
+    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
   export type CampaignCallIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     call?: boolean | CallSessionDefaultArgs<ExtArgs>
+    campaign?: boolean | CampaignDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
 
   export type $CampaignCallPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CampaignCall"
     objects: {
-      campaign: Prisma.$CampaignPayload<ExtArgs>
       call: Prisma.$CallSessionPayload<ExtArgs>
+      campaign: Prisma.$CampaignPayload<ExtArgs>
       tenant: Prisma.$TenantPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -10338,8 +11550,8 @@ export namespace Prisma {
    */
   export interface Prisma__CampaignCallClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    campaign<T extends CampaignDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CampaignDefaultArgs<ExtArgs>>): Prisma__CampaignClient<$Result.GetResult<Prisma.$CampaignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     call<T extends CallSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CallSessionDefaultArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    campaign<T extends CampaignDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CampaignDefaultArgs<ExtArgs>>): Prisma__CampaignClient<$Result.GetResult<Prisma.$CampaignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -13325,8 +14537,8 @@ export namespace Prisma {
     callSessionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | OutboundCallRequest$callSessionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["outboundCallRequest"]>
 
   export type OutboundCallRequestSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -13341,8 +14553,8 @@ export namespace Prisma {
     callSessionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | OutboundCallRequest$callSessionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["outboundCallRequest"]>
 
   export type OutboundCallRequestSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -13357,8 +14569,8 @@ export namespace Prisma {
     callSessionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | OutboundCallRequest$callSessionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["outboundCallRequest"]>
 
   export type OutboundCallRequestSelectScalar = {
@@ -13377,23 +14589,23 @@ export namespace Prisma {
 
   export type OutboundCallRequestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "phoneNumber" | "roomId" | "agentName" | "status" | "payloadJson" | "errorMessage" | "callSessionId" | "createdAt" | "updatedAt", ExtArgs["result"]["outboundCallRequest"]>
   export type OutboundCallRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | OutboundCallRequest$callSessionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
   export type OutboundCallRequestIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | OutboundCallRequest$callSessionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
   export type OutboundCallRequestIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | OutboundCallRequest$callSessionArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
 
   export type $OutboundCallRequestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "OutboundCallRequest"
     objects: {
-      tenant: Prisma.$TenantPayload<ExtArgs>
       callSession: Prisma.$CallSessionPayload<ExtArgs> | null
+      tenant: Prisma.$TenantPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -13801,8 +15013,8 @@ export namespace Prisma {
    */
   export interface Prisma__OutboundCallRequestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     callSession<T extends OutboundCallRequest$callSessionArgs<ExtArgs> = {}>(args?: Subset<T, OutboundCallRequest$callSessionArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14514,8 +15726,8 @@ export namespace Prisma {
     notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["usageRecord"]>
 
   export type UsageRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14529,8 +15741,8 @@ export namespace Prisma {
     notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["usageRecord"]>
 
   export type UsageRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14544,8 +15756,8 @@ export namespace Prisma {
     notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["usageRecord"]>
 
   export type UsageRecordSelectScalar = {
@@ -14563,23 +15775,23 @@ export namespace Prisma {
 
   export type UsageRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenantId" | "callId" | "usageType" | "amountPaise" | "status" | "sourceEventId" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["usageRecord"]>
   export type UsageRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
   export type UsageRecordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
   export type UsageRecordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tenant?: boolean | TenantDefaultArgs<ExtArgs>
     callSession?: boolean | CallSessionDefaultArgs<ExtArgs>
+    tenant?: boolean | TenantDefaultArgs<ExtArgs>
   }
 
   export type $UsageRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "UsageRecord"
     objects: {
-      tenant: Prisma.$TenantPayload<ExtArgs>
       callSession: Prisma.$CallSessionPayload<ExtArgs>
+      tenant: Prisma.$TenantPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -14986,8 +16198,8 @@ export namespace Prisma {
    */
   export interface Prisma__UsageRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     callSession<T extends CallSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CallSessionDefaultArgs<ExtArgs>>): Prisma__CallSessionClient<$Result.GetResult<Prisma.$CallSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15469,6 +16681,19 @@ export namespace Prisma {
   export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
 
 
+  export const UserScalarFieldEnum: {
+    id: 'id',
+    tenantId: 'tenantId',
+    email: 'email',
+    fullName: 'fullName',
+    passwordHash: 'passwordHash',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
   export const CallSessionScalarFieldEnum: {
     id: 'id',
     tenantId: 'tenantId',
@@ -15934,16 +17159,17 @@ export namespace Prisma {
     walletBalancePaise?: IntFilter<"Tenant"> | number
     createdAt?: DateTimeFilter<"Tenant"> | Date | string
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
-    callSessions?: CallSessionListRelationFilter
     callEvents?: CallEventListRelationFilter
-    transcriptSegments?: TranscriptSegmentListRelationFilter
-    leadExtractions?: LeadExtractionListRelationFilter
+    callSessions?: CallSessionListRelationFilter
     campaigns?: CampaignListRelationFilter
     campaignCalls?: CampaignCallListRelationFilter
     campaignContacts?: CampaignContactListRelationFilter
-    walletTransactions?: WalletTransactionListRelationFilter
+    leadExtractions?: LeadExtractionListRelationFilter
     outboundCallRequests?: OutboundCallRequestListRelationFilter
+    transcriptSegments?: TranscriptSegmentListRelationFilter
     usageRecords?: UsageRecordListRelationFilter
+    users?: UserListRelationFilter
+    walletTransactions?: WalletTransactionListRelationFilter
   }
 
   export type TenantOrderByWithRelationInput = {
@@ -15955,16 +17181,17 @@ export namespace Prisma {
     walletBalancePaise?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    callSessions?: CallSessionOrderByRelationAggregateInput
     callEvents?: CallEventOrderByRelationAggregateInput
-    transcriptSegments?: TranscriptSegmentOrderByRelationAggregateInput
-    leadExtractions?: LeadExtractionOrderByRelationAggregateInput
+    callSessions?: CallSessionOrderByRelationAggregateInput
     campaigns?: CampaignOrderByRelationAggregateInput
     campaignCalls?: CampaignCallOrderByRelationAggregateInput
     campaignContacts?: CampaignContactOrderByRelationAggregateInput
-    walletTransactions?: WalletTransactionOrderByRelationAggregateInput
+    leadExtractions?: LeadExtractionOrderByRelationAggregateInput
     outboundCallRequests?: OutboundCallRequestOrderByRelationAggregateInput
+    transcriptSegments?: TranscriptSegmentOrderByRelationAggregateInput
     usageRecords?: UsageRecordOrderByRelationAggregateInput
+    users?: UserOrderByRelationAggregateInput
+    walletTransactions?: WalletTransactionOrderByRelationAggregateInput
   }
 
   export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -15979,16 +17206,17 @@ export namespace Prisma {
     walletBalancePaise?: IntFilter<"Tenant"> | number
     createdAt?: DateTimeFilter<"Tenant"> | Date | string
     updatedAt?: DateTimeFilter<"Tenant"> | Date | string
-    callSessions?: CallSessionListRelationFilter
     callEvents?: CallEventListRelationFilter
-    transcriptSegments?: TranscriptSegmentListRelationFilter
-    leadExtractions?: LeadExtractionListRelationFilter
+    callSessions?: CallSessionListRelationFilter
     campaigns?: CampaignListRelationFilter
     campaignCalls?: CampaignCallListRelationFilter
     campaignContacts?: CampaignContactListRelationFilter
-    walletTransactions?: WalletTransactionListRelationFilter
+    leadExtractions?: LeadExtractionListRelationFilter
     outboundCallRequests?: OutboundCallRequestListRelationFilter
+    transcriptSegments?: TranscriptSegmentListRelationFilter
     usageRecords?: UsageRecordListRelationFilter
+    users?: UserListRelationFilter
+    walletTransactions?: WalletTransactionListRelationFilter
   }, "id">
 
   export type TenantOrderByWithAggregationInput = {
@@ -16021,6 +17249,71 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Tenant"> | Date | string
   }
 
+  export type UserWhereInput = {
+    AND?: UserWhereInput | UserWhereInput[]
+    OR?: UserWhereInput[]
+    NOT?: UserWhereInput | UserWhereInput[]
+    id?: StringFilter<"User"> | string
+    tenantId?: StringFilter<"User"> | string
+    email?: StringFilter<"User"> | string
+    fullName?: StringFilter<"User"> | string
+    passwordHash?: StringFilter<"User"> | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeFilter<"User"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+  }
+
+  export type UserOrderByWithRelationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    email?: SortOrder
+    fullName?: SortOrder
+    passwordHash?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    tenant?: TenantOrderByWithRelationInput
+  }
+
+  export type UserWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    email?: string
+    AND?: UserWhereInput | UserWhereInput[]
+    OR?: UserWhereInput[]
+    NOT?: UserWhereInput | UserWhereInput[]
+    tenantId?: StringFilter<"User"> | string
+    fullName?: StringFilter<"User"> | string
+    passwordHash?: StringFilter<"User"> | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeFilter<"User"> | Date | string
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+  }, "id" | "email">
+
+  export type UserOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    email?: SortOrder
+    fullName?: SortOrder
+    passwordHash?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserCountOrderByAggregateInput
+    _max?: UserMaxOrderByAggregateInput
+    _min?: UserMinOrderByAggregateInput
+  }
+
+  export type UserScalarWhereWithAggregatesInput = {
+    AND?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
+    OR?: UserScalarWhereWithAggregatesInput[]
+    NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"User"> | string
+    tenantId?: StringWithAggregatesFilter<"User"> | string
+    email?: StringWithAggregatesFilter<"User"> | string
+    fullName?: StringWithAggregatesFilter<"User"> | string
+    passwordHash?: StringWithAggregatesFilter<"User"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
   export type CallSessionWhereInput = {
     AND?: CallSessionWhereInput | CallSessionWhereInput[]
     OR?: CallSessionWhereInput[]
@@ -16044,13 +17337,13 @@ export namespace Prisma {
     lastError?: StringNullableFilter<"CallSession"> | string | null
     createdAt?: DateTimeFilter<"CallSession"> | Date | string
     updatedAt?: DateTimeFilter<"CallSession"> | Date | string
-    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     events?: CallEventListRelationFilter
-    transcriptSegments?: TranscriptSegmentListRelationFilter
-    leadExtraction?: XOR<LeadExtractionNullableScalarRelationFilter, LeadExtractionWhereInput> | null
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     campaignLinks?: CampaignCallListRelationFilter
     sourceContacts?: CampaignContactListRelationFilter
+    leadExtraction?: XOR<LeadExtractionNullableScalarRelationFilter, LeadExtractionWhereInput> | null
     outboundRequests?: OutboundCallRequestListRelationFilter
+    transcriptSegments?: TranscriptSegmentListRelationFilter
     usageRecords?: UsageRecordListRelationFilter
   }
 
@@ -16074,13 +17367,13 @@ export namespace Prisma {
     lastError?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    tenant?: TenantOrderByWithRelationInput
     events?: CallEventOrderByRelationAggregateInput
-    transcriptSegments?: TranscriptSegmentOrderByRelationAggregateInput
-    leadExtraction?: LeadExtractionOrderByWithRelationInput
+    tenant?: TenantOrderByWithRelationInput
     campaignLinks?: CampaignCallOrderByRelationAggregateInput
     sourceContacts?: CampaignContactOrderByRelationAggregateInput
+    leadExtraction?: LeadExtractionOrderByWithRelationInput
     outboundRequests?: OutboundCallRequestOrderByRelationAggregateInput
+    transcriptSegments?: TranscriptSegmentOrderByRelationAggregateInput
     usageRecords?: UsageRecordOrderByRelationAggregateInput
   }
 
@@ -16108,13 +17401,13 @@ export namespace Prisma {
     lastError?: StringNullableFilter<"CallSession"> | string | null
     createdAt?: DateTimeFilter<"CallSession"> | Date | string
     updatedAt?: DateTimeFilter<"CallSession"> | Date | string
-    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     events?: CallEventListRelationFilter
-    transcriptSegments?: TranscriptSegmentListRelationFilter
-    leadExtraction?: XOR<LeadExtractionNullableScalarRelationFilter, LeadExtractionWhereInput> | null
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     campaignLinks?: CampaignCallListRelationFilter
     sourceContacts?: CampaignContactListRelationFilter
+    leadExtraction?: XOR<LeadExtractionNullableScalarRelationFilter, LeadExtractionWhereInput> | null
     outboundRequests?: OutboundCallRequestListRelationFilter
+    transcriptSegments?: TranscriptSegmentListRelationFilter
     usageRecords?: UsageRecordListRelationFilter
   }, "id" | "tenantId_externalCallId">
 
@@ -16554,8 +17847,8 @@ export namespace Prisma {
     callId?: StringFilter<"CampaignCall"> | string
     tenantId?: StringFilter<"CampaignCall"> | string
     createdAt?: DateTimeFilter<"CampaignCall"> | Date | string
-    campaign?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     call?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    campaign?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }
 
@@ -16565,8 +17858,8 @@ export namespace Prisma {
     callId?: SortOrder
     tenantId?: SortOrder
     createdAt?: SortOrder
-    campaign?: CampaignOrderByWithRelationInput
     call?: CallSessionOrderByWithRelationInput
+    campaign?: CampaignOrderByWithRelationInput
     tenant?: TenantOrderByWithRelationInput
   }
 
@@ -16580,8 +17873,8 @@ export namespace Prisma {
     callId?: StringFilter<"CampaignCall"> | string
     tenantId?: StringFilter<"CampaignCall"> | string
     createdAt?: DateTimeFilter<"CampaignCall"> | Date | string
-    campaign?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     call?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    campaign?: XOR<CampaignScalarRelationFilter, CampaignWhereInput>
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }, "id" | "campaignId_callId">
 
@@ -16797,8 +18090,8 @@ export namespace Prisma {
     callSessionId?: StringNullableFilter<"OutboundCallRequest"> | string | null
     createdAt?: DateTimeFilter<"OutboundCallRequest"> | Date | string
     updatedAt?: DateTimeFilter<"OutboundCallRequest"> | Date | string
-    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     callSession?: XOR<CallSessionNullableScalarRelationFilter, CallSessionWhereInput> | null
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }
 
   export type OutboundCallRequestOrderByWithRelationInput = {
@@ -16813,8 +18106,8 @@ export namespace Prisma {
     callSessionId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    tenant?: TenantOrderByWithRelationInput
     callSession?: CallSessionOrderByWithRelationInput
+    tenant?: TenantOrderByWithRelationInput
   }
 
   export type OutboundCallRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -16832,8 +18125,8 @@ export namespace Prisma {
     callSessionId?: StringNullableFilter<"OutboundCallRequest"> | string | null
     createdAt?: DateTimeFilter<"OutboundCallRequest"> | Date | string
     updatedAt?: DateTimeFilter<"OutboundCallRequest"> | Date | string
-    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     callSession?: XOR<CallSessionNullableScalarRelationFilter, CallSessionWhereInput> | null
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }, "id">
 
   export type OutboundCallRequestOrderByWithAggregationInput = {
@@ -16884,8 +18177,8 @@ export namespace Prisma {
     notes?: StringNullableFilter<"UsageRecord"> | string | null
     createdAt?: DateTimeFilter<"UsageRecord"> | Date | string
     updatedAt?: DateTimeFilter<"UsageRecord"> | Date | string
-    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     callSession?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }
 
   export type UsageRecordOrderByWithRelationInput = {
@@ -16899,8 +18192,8 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    tenant?: TenantOrderByWithRelationInput
     callSession?: CallSessionOrderByWithRelationInput
+    tenant?: TenantOrderByWithRelationInput
   }
 
   export type UsageRecordWhereUniqueInput = Prisma.AtLeast<{
@@ -16918,8 +18211,8 @@ export namespace Prisma {
     notes?: StringNullableFilter<"UsageRecord"> | string | null
     createdAt?: DateTimeFilter<"UsageRecord"> | Date | string
     updatedAt?: DateTimeFilter<"UsageRecord"> | Date | string
-    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
     callSession?: XOR<CallSessionScalarRelationFilter, CallSessionWhereInput>
+    tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
   }, "id" | "tenantId_callId_usageType_sourceEventId">
 
   export type UsageRecordOrderByWithAggregationInput = {
@@ -16965,16 +18258,17 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateInput = {
@@ -16986,16 +18280,17 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUpdateInput = {
@@ -17007,16 +18302,17 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateInput = {
@@ -17028,16 +18324,17 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateManyInput = {
@@ -17073,6 +18370,75 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserCreateInput = {
+    id?: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutUsersInput
+  }
+
+  export type UserUncheckedCreateInput = {
+    id?: string
+    tenantId: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutUsersNestedInput
+  }
+
+  export type UserUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateManyInput = {
+    id?: string
+    tenantId: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CallSessionCreateInput = {
     id?: string
     externalCallId?: string | null
@@ -17092,13 +18458,13 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
 
@@ -17123,11 +18489,11 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
@@ -17150,13 +18516,13 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -17181,11 +18547,11 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -17671,8 +19037,8 @@ export namespace Prisma {
   export type CampaignCallCreateInput = {
     id?: string
     createdAt?: Date | string
-    campaign: CampaignCreateNestedOneWithoutCallsInput
     call: CallSessionCreateNestedOneWithoutCampaignLinksInput
+    campaign: CampaignCreateNestedOneWithoutCallsInput
     tenant: TenantCreateNestedOneWithoutCampaignCallsInput
   }
 
@@ -17687,8 +19053,8 @@ export namespace Prisma {
   export type CampaignCallUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    campaign?: CampaignUpdateOneRequiredWithoutCallsNestedInput
     call?: CallSessionUpdateOneRequiredWithoutCampaignLinksNestedInput
+    campaign?: CampaignUpdateOneRequiredWithoutCallsNestedInput
     tenant?: TenantUpdateOneRequiredWithoutCampaignCallsNestedInput
   }
 
@@ -17916,8 +19282,8 @@ export namespace Prisma {
     errorMessage?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutOutboundCallRequestsInput
     callSession?: CallSessionCreateNestedOneWithoutOutboundRequestsInput
+    tenant: TenantCreateNestedOneWithoutOutboundCallRequestsInput
   }
 
   export type OutboundCallRequestUncheckedCreateInput = {
@@ -17944,8 +19310,8 @@ export namespace Prisma {
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutOutboundCallRequestsNestedInput
     callSession?: CallSessionUpdateOneWithoutOutboundRequestsNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutOutboundCallRequestsNestedInput
   }
 
   export type OutboundCallRequestUncheckedUpdateInput = {
@@ -18011,8 +19377,8 @@ export namespace Prisma {
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutUsageRecordsInput
     callSession: CallSessionCreateNestedOneWithoutUsageRecordsInput
+    tenant: TenantCreateNestedOneWithoutUsageRecordsInput
   }
 
   export type UsageRecordUncheckedCreateInput = {
@@ -18037,8 +19403,8 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutUsageRecordsNestedInput
     callSession?: CallSessionUpdateOneRequiredWithoutUsageRecordsNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutUsageRecordsNestedInput
   }
 
   export type UsageRecordUncheckedUpdateInput = {
@@ -18173,28 +19539,16 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type CallSessionListRelationFilter = {
-    every?: CallSessionWhereInput
-    some?: CallSessionWhereInput
-    none?: CallSessionWhereInput
-  }
-
   export type CallEventListRelationFilter = {
     every?: CallEventWhereInput
     some?: CallEventWhereInput
     none?: CallEventWhereInput
   }
 
-  export type TranscriptSegmentListRelationFilter = {
-    every?: TranscriptSegmentWhereInput
-    some?: TranscriptSegmentWhereInput
-    none?: TranscriptSegmentWhereInput
-  }
-
-  export type LeadExtractionListRelationFilter = {
-    every?: LeadExtractionWhereInput
-    some?: LeadExtractionWhereInput
-    none?: LeadExtractionWhereInput
+  export type CallSessionListRelationFilter = {
+    every?: CallSessionWhereInput
+    some?: CallSessionWhereInput
+    none?: CallSessionWhereInput
   }
 
   export type CampaignListRelationFilter = {
@@ -18215,10 +19569,10 @@ export namespace Prisma {
     none?: CampaignContactWhereInput
   }
 
-  export type WalletTransactionListRelationFilter = {
-    every?: WalletTransactionWhereInput
-    some?: WalletTransactionWhereInput
-    none?: WalletTransactionWhereInput
+  export type LeadExtractionListRelationFilter = {
+    every?: LeadExtractionWhereInput
+    some?: LeadExtractionWhereInput
+    none?: LeadExtractionWhereInput
   }
 
   export type OutboundCallRequestListRelationFilter = {
@@ -18227,10 +19581,28 @@ export namespace Prisma {
     none?: OutboundCallRequestWhereInput
   }
 
+  export type TranscriptSegmentListRelationFilter = {
+    every?: TranscriptSegmentWhereInput
+    some?: TranscriptSegmentWhereInput
+    none?: TranscriptSegmentWhereInput
+  }
+
   export type UsageRecordListRelationFilter = {
     every?: UsageRecordWhereInput
     some?: UsageRecordWhereInput
     none?: UsageRecordWhereInput
+  }
+
+  export type UserListRelationFilter = {
+    every?: UserWhereInput
+    some?: UserWhereInput
+    none?: UserWhereInput
+  }
+
+  export type WalletTransactionListRelationFilter = {
+    every?: WalletTransactionWhereInput
+    some?: WalletTransactionWhereInput
+    none?: WalletTransactionWhereInput
   }
 
   export type SortOrderInput = {
@@ -18238,19 +19610,11 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type CallSessionOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type CallEventOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type TranscriptSegmentOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type LeadExtractionOrderByRelationAggregateInput = {
+  export type CallSessionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18266,7 +19630,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type WalletTransactionOrderByRelationAggregateInput = {
+  export type LeadExtractionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18274,7 +19638,19 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type TranscriptSegmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UsageRecordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WalletTransactionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18417,6 +19793,41 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type TenantScalarRelationFilter = {
+    is?: TenantWhereInput
+    isNot?: TenantWhereInput
+  }
+
+  export type UserCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    email?: SortOrder
+    fullName?: SortOrder
+    passwordHash?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    email?: SortOrder
+    fullName?: SortOrder
+    passwordHash?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenantId?: SortOrder
+    email?: SortOrder
+    fullName?: SortOrder
+    passwordHash?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type EnumCallLifecycleStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.CallLifecycleStatus | EnumCallLifecycleStatusFieldRefInput<$PrismaModel>
     in?: $Enums.CallLifecycleStatus[] | ListEnumCallLifecycleStatusFieldRefInput<$PrismaModel>
@@ -18455,11 +19866,6 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type TenantScalarRelationFilter = {
-    is?: TenantWhereInput
-    isNot?: TenantWhereInput
   }
 
   export type LeadExtractionNullableScalarRelationFilter = {
@@ -19205,13 +20611,6 @@ export namespace Prisma {
     _max?: NestedEnumUsageRecordStatusFilter<$PrismaModel>
   }
 
-  export type CallSessionCreateNestedManyWithoutTenantInput = {
-    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
-    createMany?: CallSessionCreateManyTenantInputEnvelope
-    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-  }
-
   export type CallEventCreateNestedManyWithoutTenantInput = {
     create?: XOR<CallEventCreateWithoutTenantInput, CallEventUncheckedCreateWithoutTenantInput> | CallEventCreateWithoutTenantInput[] | CallEventUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: CallEventCreateOrConnectWithoutTenantInput | CallEventCreateOrConnectWithoutTenantInput[]
@@ -19219,18 +20618,11 @@ export namespace Prisma {
     connect?: CallEventWhereUniqueInput | CallEventWhereUniqueInput[]
   }
 
-  export type TranscriptSegmentCreateNestedManyWithoutTenantInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
-    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-  }
-
-  export type LeadExtractionCreateNestedManyWithoutTenantInput = {
-    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
-    createMany?: LeadExtractionCreateManyTenantInputEnvelope
-    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+  export type CallSessionCreateNestedManyWithoutTenantInput = {
+    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
+    createMany?: CallSessionCreateManyTenantInputEnvelope
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
   }
 
   export type CampaignCreateNestedManyWithoutTenantInput = {
@@ -19254,11 +20646,11 @@ export namespace Prisma {
     connect?: CampaignContactWhereUniqueInput | CampaignContactWhereUniqueInput[]
   }
 
-  export type WalletTransactionCreateNestedManyWithoutTenantInput = {
-    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
-    createMany?: WalletTransactionCreateManyTenantInputEnvelope
-    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+  export type LeadExtractionCreateNestedManyWithoutTenantInput = {
+    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
+    createMany?: LeadExtractionCreateManyTenantInputEnvelope
+    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
   }
 
   export type OutboundCallRequestCreateNestedManyWithoutTenantInput = {
@@ -19268,6 +20660,13 @@ export namespace Prisma {
     connect?: OutboundCallRequestWhereUniqueInput | OutboundCallRequestWhereUniqueInput[]
   }
 
+  export type TranscriptSegmentCreateNestedManyWithoutTenantInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
+    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+  }
+
   export type UsageRecordCreateNestedManyWithoutTenantInput = {
     create?: XOR<UsageRecordCreateWithoutTenantInput, UsageRecordUncheckedCreateWithoutTenantInput> | UsageRecordCreateWithoutTenantInput[] | UsageRecordUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UsageRecordCreateOrConnectWithoutTenantInput | UsageRecordCreateOrConnectWithoutTenantInput[]
@@ -19275,11 +20674,18 @@ export namespace Prisma {
     connect?: UsageRecordWhereUniqueInput | UsageRecordWhereUniqueInput[]
   }
 
-  export type CallSessionUncheckedCreateNestedManyWithoutTenantInput = {
-    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
-    createMany?: CallSessionCreateManyTenantInputEnvelope
-    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+  export type UserCreateNestedManyWithoutTenantInput = {
+    create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
+    createMany?: UserCreateManyTenantInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type WalletTransactionCreateNestedManyWithoutTenantInput = {
+    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
+    createMany?: WalletTransactionCreateManyTenantInputEnvelope
+    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
   }
 
   export type CallEventUncheckedCreateNestedManyWithoutTenantInput = {
@@ -19289,18 +20695,11 @@ export namespace Prisma {
     connect?: CallEventWhereUniqueInput | CallEventWhereUniqueInput[]
   }
 
-  export type TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
-    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-  }
-
-  export type LeadExtractionUncheckedCreateNestedManyWithoutTenantInput = {
-    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
-    createMany?: LeadExtractionCreateManyTenantInputEnvelope
-    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+  export type CallSessionUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
+    createMany?: CallSessionCreateManyTenantInputEnvelope
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
   }
 
   export type CampaignUncheckedCreateNestedManyWithoutTenantInput = {
@@ -19324,11 +20723,11 @@ export namespace Prisma {
     connect?: CampaignContactWhereUniqueInput | CampaignContactWhereUniqueInput[]
   }
 
-  export type WalletTransactionUncheckedCreateNestedManyWithoutTenantInput = {
-    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
-    createMany?: WalletTransactionCreateManyTenantInputEnvelope
-    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+  export type LeadExtractionUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
+    createMany?: LeadExtractionCreateManyTenantInputEnvelope
+    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
   }
 
   export type OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput = {
@@ -19338,11 +20737,32 @@ export namespace Prisma {
     connect?: OutboundCallRequestWhereUniqueInput | OutboundCallRequestWhereUniqueInput[]
   }
 
+  export type TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
+    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+  }
+
   export type UsageRecordUncheckedCreateNestedManyWithoutTenantInput = {
     create?: XOR<UsageRecordCreateWithoutTenantInput, UsageRecordUncheckedCreateWithoutTenantInput> | UsageRecordCreateWithoutTenantInput[] | UsageRecordUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UsageRecordCreateOrConnectWithoutTenantInput | UsageRecordCreateOrConnectWithoutTenantInput[]
     createMany?: UsageRecordCreateManyTenantInputEnvelope
     connect?: UsageRecordWhereUniqueInput | UsageRecordWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
+    createMany?: UserCreateManyTenantInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type WalletTransactionUncheckedCreateNestedManyWithoutTenantInput = {
+    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
+    createMany?: WalletTransactionCreateManyTenantInputEnvelope
+    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -19369,20 +20789,6 @@ export namespace Prisma {
     set?: Date | string
   }
 
-  export type CallSessionUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
-    upsert?: CallSessionUpsertWithWhereUniqueWithoutTenantInput | CallSessionUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: CallSessionCreateManyTenantInputEnvelope
-    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    update?: CallSessionUpdateWithWhereUniqueWithoutTenantInput | CallSessionUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: CallSessionUpdateManyWithWhereWithoutTenantInput | CallSessionUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
-  }
-
   export type CallEventUpdateManyWithoutTenantNestedInput = {
     create?: XOR<CallEventCreateWithoutTenantInput, CallEventUncheckedCreateWithoutTenantInput> | CallEventCreateWithoutTenantInput[] | CallEventUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: CallEventCreateOrConnectWithoutTenantInput | CallEventCreateOrConnectWithoutTenantInput[]
@@ -19397,32 +20803,18 @@ export namespace Prisma {
     deleteMany?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
   }
 
-  export type TranscriptSegmentUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
-    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
-    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutTenantInput | TranscriptSegmentUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
-  }
-
-  export type LeadExtractionUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
-    upsert?: LeadExtractionUpsertWithWhereUniqueWithoutTenantInput | LeadExtractionUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: LeadExtractionCreateManyTenantInputEnvelope
-    set?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    disconnect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    delete?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    update?: LeadExtractionUpdateWithWhereUniqueWithoutTenantInput | LeadExtractionUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: LeadExtractionUpdateManyWithWhereWithoutTenantInput | LeadExtractionUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
+  export type CallSessionUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
+    upsert?: CallSessionUpsertWithWhereUniqueWithoutTenantInput | CallSessionUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: CallSessionCreateManyTenantInputEnvelope
+    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    update?: CallSessionUpdateWithWhereUniqueWithoutTenantInput | CallSessionUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: CallSessionUpdateManyWithWhereWithoutTenantInput | CallSessionUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
   }
 
   export type CampaignUpdateManyWithoutTenantNestedInput = {
@@ -19467,18 +20859,18 @@ export namespace Prisma {
     deleteMany?: CampaignContactScalarWhereInput | CampaignContactScalarWhereInput[]
   }
 
-  export type WalletTransactionUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
-    upsert?: WalletTransactionUpsertWithWhereUniqueWithoutTenantInput | WalletTransactionUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: WalletTransactionCreateManyTenantInputEnvelope
-    set?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    disconnect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    delete?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    update?: WalletTransactionUpdateWithWhereUniqueWithoutTenantInput | WalletTransactionUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: WalletTransactionUpdateManyWithWhereWithoutTenantInput | WalletTransactionUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
+  export type LeadExtractionUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
+    upsert?: LeadExtractionUpsertWithWhereUniqueWithoutTenantInput | LeadExtractionUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: LeadExtractionCreateManyTenantInputEnvelope
+    set?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    disconnect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    delete?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    update?: LeadExtractionUpdateWithWhereUniqueWithoutTenantInput | LeadExtractionUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: LeadExtractionUpdateManyWithWhereWithoutTenantInput | LeadExtractionUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
   }
 
   export type OutboundCallRequestUpdateManyWithoutTenantNestedInput = {
@@ -19495,6 +20887,20 @@ export namespace Prisma {
     deleteMany?: OutboundCallRequestScalarWhereInput | OutboundCallRequestScalarWhereInput[]
   }
 
+  export type TranscriptSegmentUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
+    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
+    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutTenantInput | TranscriptSegmentUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
+  }
+
   export type UsageRecordUpdateManyWithoutTenantNestedInput = {
     create?: XOR<UsageRecordCreateWithoutTenantInput, UsageRecordUncheckedCreateWithoutTenantInput> | UsageRecordCreateWithoutTenantInput[] | UsageRecordUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UsageRecordCreateOrConnectWithoutTenantInput | UsageRecordCreateOrConnectWithoutTenantInput[]
@@ -19509,18 +20915,32 @@ export namespace Prisma {
     deleteMany?: UsageRecordScalarWhereInput | UsageRecordScalarWhereInput[]
   }
 
-  export type CallSessionUncheckedUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
-    upsert?: CallSessionUpsertWithWhereUniqueWithoutTenantInput | CallSessionUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: CallSessionCreateManyTenantInputEnvelope
-    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
-    update?: CallSessionUpdateWithWhereUniqueWithoutTenantInput | CallSessionUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: CallSessionUpdateManyWithWhereWithoutTenantInput | CallSessionUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
+  export type UserUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutTenantInput | UserUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: UserCreateManyTenantInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutTenantInput | UserUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutTenantInput | UserUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type WalletTransactionUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
+    upsert?: WalletTransactionUpsertWithWhereUniqueWithoutTenantInput | WalletTransactionUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: WalletTransactionCreateManyTenantInputEnvelope
+    set?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    disconnect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    delete?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    update?: WalletTransactionUpdateWithWhereUniqueWithoutTenantInput | WalletTransactionUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: WalletTransactionUpdateManyWithWhereWithoutTenantInput | WalletTransactionUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
   }
 
   export type CallEventUncheckedUpdateManyWithoutTenantNestedInput = {
@@ -19537,32 +20957,18 @@ export namespace Prisma {
     deleteMany?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
   }
 
-  export type TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
-    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
-    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutTenantInput | TranscriptSegmentUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
-  }
-
-  export type LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
-    upsert?: LeadExtractionUpsertWithWhereUniqueWithoutTenantInput | LeadExtractionUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: LeadExtractionCreateManyTenantInputEnvelope
-    set?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    disconnect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    delete?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
-    update?: LeadExtractionUpdateWithWhereUniqueWithoutTenantInput | LeadExtractionUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: LeadExtractionUpdateManyWithWhereWithoutTenantInput | LeadExtractionUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
+  export type CallSessionUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput> | CallSessionCreateWithoutTenantInput[] | CallSessionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: CallSessionCreateOrConnectWithoutTenantInput | CallSessionCreateOrConnectWithoutTenantInput[]
+    upsert?: CallSessionUpsertWithWhereUniqueWithoutTenantInput | CallSessionUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: CallSessionCreateManyTenantInputEnvelope
+    set?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    disconnect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    delete?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
+    update?: CallSessionUpdateWithWhereUniqueWithoutTenantInput | CallSessionUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: CallSessionUpdateManyWithWhereWithoutTenantInput | CallSessionUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
   }
 
   export type CampaignUncheckedUpdateManyWithoutTenantNestedInput = {
@@ -19607,18 +21013,18 @@ export namespace Prisma {
     deleteMany?: CampaignContactScalarWhereInput | CampaignContactScalarWhereInput[]
   }
 
-  export type WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput = {
-    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
-    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
-    upsert?: WalletTransactionUpsertWithWhereUniqueWithoutTenantInput | WalletTransactionUpsertWithWhereUniqueWithoutTenantInput[]
-    createMany?: WalletTransactionCreateManyTenantInputEnvelope
-    set?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    disconnect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    delete?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
-    update?: WalletTransactionUpdateWithWhereUniqueWithoutTenantInput | WalletTransactionUpdateWithWhereUniqueWithoutTenantInput[]
-    updateMany?: WalletTransactionUpdateManyWithWhereWithoutTenantInput | WalletTransactionUpdateManyWithWhereWithoutTenantInput[]
-    deleteMany?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
+  export type LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput> | LeadExtractionCreateWithoutTenantInput[] | LeadExtractionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutTenantInput | LeadExtractionCreateOrConnectWithoutTenantInput[]
+    upsert?: LeadExtractionUpsertWithWhereUniqueWithoutTenantInput | LeadExtractionUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: LeadExtractionCreateManyTenantInputEnvelope
+    set?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    disconnect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    delete?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    connect?: LeadExtractionWhereUniqueInput | LeadExtractionWhereUniqueInput[]
+    update?: LeadExtractionUpdateWithWhereUniqueWithoutTenantInput | LeadExtractionUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: LeadExtractionUpdateManyWithWhereWithoutTenantInput | LeadExtractionUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
   }
 
   export type OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput = {
@@ -19635,6 +21041,20 @@ export namespace Prisma {
     deleteMany?: OutboundCallRequestScalarWhereInput | OutboundCallRequestScalarWhereInput[]
   }
 
+  export type TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput> | TranscriptSegmentCreateWithoutTenantInput[] | TranscriptSegmentUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutTenantInput | TranscriptSegmentCreateOrConnectWithoutTenantInput[]
+    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: TranscriptSegmentCreateManyTenantInputEnvelope
+    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput | TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutTenantInput | TranscriptSegmentUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
+  }
+
   export type UsageRecordUncheckedUpdateManyWithoutTenantNestedInput = {
     create?: XOR<UsageRecordCreateWithoutTenantInput, UsageRecordUncheckedCreateWithoutTenantInput> | UsageRecordCreateWithoutTenantInput[] | UsageRecordUncheckedCreateWithoutTenantInput[]
     connectOrCreate?: UsageRecordCreateOrConnectWithoutTenantInput | UsageRecordCreateOrConnectWithoutTenantInput[]
@@ -19649,10 +21069,46 @@ export namespace Prisma {
     deleteMany?: UsageRecordScalarWhereInput | UsageRecordScalarWhereInput[]
   }
 
-  export type TenantCreateNestedOneWithoutCallSessionsInput = {
-    create?: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
-    connectOrCreate?: TenantCreateOrConnectWithoutCallSessionsInput
+  export type UserUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput> | UserCreateWithoutTenantInput[] | UserUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutTenantInput | UserCreateOrConnectWithoutTenantInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutTenantInput | UserUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: UserCreateManyTenantInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutTenantInput | UserUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutTenantInput | UserUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput = {
+    create?: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput> | WalletTransactionCreateWithoutTenantInput[] | WalletTransactionUncheckedCreateWithoutTenantInput[]
+    connectOrCreate?: WalletTransactionCreateOrConnectWithoutTenantInput | WalletTransactionCreateOrConnectWithoutTenantInput[]
+    upsert?: WalletTransactionUpsertWithWhereUniqueWithoutTenantInput | WalletTransactionUpsertWithWhereUniqueWithoutTenantInput[]
+    createMany?: WalletTransactionCreateManyTenantInputEnvelope
+    set?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    disconnect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    delete?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    connect?: WalletTransactionWhereUniqueInput | WalletTransactionWhereUniqueInput[]
+    update?: WalletTransactionUpdateWithWhereUniqueWithoutTenantInput | WalletTransactionUpdateWithWhereUniqueWithoutTenantInput[]
+    updateMany?: WalletTransactionUpdateManyWithWhereWithoutTenantInput | WalletTransactionUpdateManyWithWhereWithoutTenantInput[]
+    deleteMany?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
+  }
+
+  export type TenantCreateNestedOneWithoutUsersInput = {
+    create?: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutUsersInput
     connect?: TenantWhereUniqueInput
+  }
+
+  export type TenantUpdateOneRequiredWithoutUsersNestedInput = {
+    create?: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutUsersInput
+    upsert?: TenantUpsertWithoutUsersInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutUsersInput, TenantUpdateWithoutUsersInput>, TenantUncheckedUpdateWithoutUsersInput>
   }
 
   export type CallEventCreateNestedManyWithoutCallSessionInput = {
@@ -19662,17 +21118,10 @@ export namespace Prisma {
     connect?: CallEventWhereUniqueInput | CallEventWhereUniqueInput[]
   }
 
-  export type TranscriptSegmentCreateNestedManyWithoutCallSessionInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
-    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-  }
-
-  export type LeadExtractionCreateNestedOneWithoutCallSessionInput = {
-    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
-    connect?: LeadExtractionWhereUniqueInput
+  export type TenantCreateNestedOneWithoutCallSessionsInput = {
+    create?: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutCallSessionsInput
+    connect?: TenantWhereUniqueInput
   }
 
   export type CampaignCallCreateNestedManyWithoutCallInput = {
@@ -19689,11 +21138,24 @@ export namespace Prisma {
     connect?: CampaignContactWhereUniqueInput | CampaignContactWhereUniqueInput[]
   }
 
+  export type LeadExtractionCreateNestedOneWithoutCallSessionInput = {
+    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
+    connect?: LeadExtractionWhereUniqueInput
+  }
+
   export type OutboundCallRequestCreateNestedManyWithoutCallSessionInput = {
     create?: XOR<OutboundCallRequestCreateWithoutCallSessionInput, OutboundCallRequestUncheckedCreateWithoutCallSessionInput> | OutboundCallRequestCreateWithoutCallSessionInput[] | OutboundCallRequestUncheckedCreateWithoutCallSessionInput[]
     connectOrCreate?: OutboundCallRequestCreateOrConnectWithoutCallSessionInput | OutboundCallRequestCreateOrConnectWithoutCallSessionInput[]
     createMany?: OutboundCallRequestCreateManyCallSessionInputEnvelope
     connect?: OutboundCallRequestWhereUniqueInput | OutboundCallRequestWhereUniqueInput[]
+  }
+
+  export type TranscriptSegmentCreateNestedManyWithoutCallSessionInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
+    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
   }
 
   export type UsageRecordCreateNestedManyWithoutCallSessionInput = {
@@ -19710,19 +21172,6 @@ export namespace Prisma {
     connect?: CallEventWhereUniqueInput | CallEventWhereUniqueInput[]
   }
 
-  export type TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
-    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-  }
-
-  export type LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput = {
-    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
-    connect?: LeadExtractionWhereUniqueInput
-  }
-
   export type CampaignCallUncheckedCreateNestedManyWithoutCallInput = {
     create?: XOR<CampaignCallCreateWithoutCallInput, CampaignCallUncheckedCreateWithoutCallInput> | CampaignCallCreateWithoutCallInput[] | CampaignCallUncheckedCreateWithoutCallInput[]
     connectOrCreate?: CampaignCallCreateOrConnectWithoutCallInput | CampaignCallCreateOrConnectWithoutCallInput[]
@@ -19737,11 +21186,24 @@ export namespace Prisma {
     connect?: CampaignContactWhereUniqueInput | CampaignContactWhereUniqueInput[]
   }
 
+  export type LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput = {
+    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
+    connect?: LeadExtractionWhereUniqueInput
+  }
+
   export type OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput = {
     create?: XOR<OutboundCallRequestCreateWithoutCallSessionInput, OutboundCallRequestUncheckedCreateWithoutCallSessionInput> | OutboundCallRequestCreateWithoutCallSessionInput[] | OutboundCallRequestUncheckedCreateWithoutCallSessionInput[]
     connectOrCreate?: OutboundCallRequestCreateOrConnectWithoutCallSessionInput | OutboundCallRequestCreateOrConnectWithoutCallSessionInput[]
     createMany?: OutboundCallRequestCreateManyCallSessionInputEnvelope
     connect?: OutboundCallRequestWhereUniqueInput | OutboundCallRequestWhereUniqueInput[]
+  }
+
+  export type TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
+    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
   }
 
   export type UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput = {
@@ -19775,14 +21237,6 @@ export namespace Prisma {
     divide?: Decimal | DecimalJsLike | number | string
   }
 
-  export type TenantUpdateOneRequiredWithoutCallSessionsNestedInput = {
-    create?: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
-    connectOrCreate?: TenantCreateOrConnectWithoutCallSessionsInput
-    upsert?: TenantUpsertWithoutCallSessionsInput
-    connect?: TenantWhereUniqueInput
-    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutCallSessionsInput, TenantUpdateWithoutCallSessionsInput>, TenantUncheckedUpdateWithoutCallSessionsInput>
-  }
-
   export type CallEventUpdateManyWithoutCallSessionNestedInput = {
     create?: XOR<CallEventCreateWithoutCallSessionInput, CallEventUncheckedCreateWithoutCallSessionInput> | CallEventCreateWithoutCallSessionInput[] | CallEventUncheckedCreateWithoutCallSessionInput[]
     connectOrCreate?: CallEventCreateOrConnectWithoutCallSessionInput | CallEventCreateOrConnectWithoutCallSessionInput[]
@@ -19797,28 +21251,12 @@ export namespace Prisma {
     deleteMany?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
   }
 
-  export type TranscriptSegmentUpdateManyWithoutCallSessionNestedInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
-    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput[]
-    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
-    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput[]
-    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput | TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput[]
-    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
-  }
-
-  export type LeadExtractionUpdateOneWithoutCallSessionNestedInput = {
-    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
-    upsert?: LeadExtractionUpsertWithoutCallSessionInput
-    disconnect?: LeadExtractionWhereInput | boolean
-    delete?: LeadExtractionWhereInput | boolean
-    connect?: LeadExtractionWhereUniqueInput
-    update?: XOR<XOR<LeadExtractionUpdateToOneWithWhereWithoutCallSessionInput, LeadExtractionUpdateWithoutCallSessionInput>, LeadExtractionUncheckedUpdateWithoutCallSessionInput>
+  export type TenantUpdateOneRequiredWithoutCallSessionsNestedInput = {
+    create?: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutCallSessionsInput
+    upsert?: TenantUpsertWithoutCallSessionsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutCallSessionsInput, TenantUpdateWithoutCallSessionsInput>, TenantUncheckedUpdateWithoutCallSessionsInput>
   }
 
   export type CampaignCallUpdateManyWithoutCallNestedInput = {
@@ -19849,6 +21287,16 @@ export namespace Prisma {
     deleteMany?: CampaignContactScalarWhereInput | CampaignContactScalarWhereInput[]
   }
 
+  export type LeadExtractionUpdateOneWithoutCallSessionNestedInput = {
+    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
+    upsert?: LeadExtractionUpsertWithoutCallSessionInput
+    disconnect?: LeadExtractionWhereInput | boolean
+    delete?: LeadExtractionWhereInput | boolean
+    connect?: LeadExtractionWhereUniqueInput
+    update?: XOR<XOR<LeadExtractionUpdateToOneWithWhereWithoutCallSessionInput, LeadExtractionUpdateWithoutCallSessionInput>, LeadExtractionUncheckedUpdateWithoutCallSessionInput>
+  }
+
   export type OutboundCallRequestUpdateManyWithoutCallSessionNestedInput = {
     create?: XOR<OutboundCallRequestCreateWithoutCallSessionInput, OutboundCallRequestUncheckedCreateWithoutCallSessionInput> | OutboundCallRequestCreateWithoutCallSessionInput[] | OutboundCallRequestUncheckedCreateWithoutCallSessionInput[]
     connectOrCreate?: OutboundCallRequestCreateOrConnectWithoutCallSessionInput | OutboundCallRequestCreateOrConnectWithoutCallSessionInput[]
@@ -19861,6 +21309,20 @@ export namespace Prisma {
     update?: OutboundCallRequestUpdateWithWhereUniqueWithoutCallSessionInput | OutboundCallRequestUpdateWithWhereUniqueWithoutCallSessionInput[]
     updateMany?: OutboundCallRequestUpdateManyWithWhereWithoutCallSessionInput | OutboundCallRequestUpdateManyWithWhereWithoutCallSessionInput[]
     deleteMany?: OutboundCallRequestScalarWhereInput | OutboundCallRequestScalarWhereInput[]
+  }
+
+  export type TranscriptSegmentUpdateManyWithoutCallSessionNestedInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
+    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput[]
+    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
+    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput[]
+    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput | TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput[]
+    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
   }
 
   export type UsageRecordUpdateManyWithoutCallSessionNestedInput = {
@@ -19891,30 +21353,6 @@ export namespace Prisma {
     deleteMany?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
   }
 
-  export type TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput = {
-    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
-    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
-    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput[]
-    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
-    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
-    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput[]
-    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput | TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput[]
-    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
-  }
-
-  export type LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput = {
-    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
-    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
-    upsert?: LeadExtractionUpsertWithoutCallSessionInput
-    disconnect?: LeadExtractionWhereInput | boolean
-    delete?: LeadExtractionWhereInput | boolean
-    connect?: LeadExtractionWhereUniqueInput
-    update?: XOR<XOR<LeadExtractionUpdateToOneWithWhereWithoutCallSessionInput, LeadExtractionUpdateWithoutCallSessionInput>, LeadExtractionUncheckedUpdateWithoutCallSessionInput>
-  }
-
   export type CampaignCallUncheckedUpdateManyWithoutCallNestedInput = {
     create?: XOR<CampaignCallCreateWithoutCallInput, CampaignCallUncheckedCreateWithoutCallInput> | CampaignCallCreateWithoutCallInput[] | CampaignCallUncheckedCreateWithoutCallInput[]
     connectOrCreate?: CampaignCallCreateOrConnectWithoutCallInput | CampaignCallCreateOrConnectWithoutCallInput[]
@@ -19943,6 +21381,16 @@ export namespace Prisma {
     deleteMany?: CampaignContactScalarWhereInput | CampaignContactScalarWhereInput[]
   }
 
+  export type LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput = {
+    create?: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
+    connectOrCreate?: LeadExtractionCreateOrConnectWithoutCallSessionInput
+    upsert?: LeadExtractionUpsertWithoutCallSessionInput
+    disconnect?: LeadExtractionWhereInput | boolean
+    delete?: LeadExtractionWhereInput | boolean
+    connect?: LeadExtractionWhereUniqueInput
+    update?: XOR<XOR<LeadExtractionUpdateToOneWithWhereWithoutCallSessionInput, LeadExtractionUpdateWithoutCallSessionInput>, LeadExtractionUncheckedUpdateWithoutCallSessionInput>
+  }
+
   export type OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput = {
     create?: XOR<OutboundCallRequestCreateWithoutCallSessionInput, OutboundCallRequestUncheckedCreateWithoutCallSessionInput> | OutboundCallRequestCreateWithoutCallSessionInput[] | OutboundCallRequestUncheckedCreateWithoutCallSessionInput[]
     connectOrCreate?: OutboundCallRequestCreateOrConnectWithoutCallSessionInput | OutboundCallRequestCreateOrConnectWithoutCallSessionInput[]
@@ -19955,6 +21403,20 @@ export namespace Prisma {
     update?: OutboundCallRequestUpdateWithWhereUniqueWithoutCallSessionInput | OutboundCallRequestUpdateWithWhereUniqueWithoutCallSessionInput[]
     updateMany?: OutboundCallRequestUpdateManyWithWhereWithoutCallSessionInput | OutboundCallRequestUpdateManyWithWhereWithoutCallSessionInput[]
     deleteMany?: OutboundCallRequestScalarWhereInput | OutboundCallRequestScalarWhereInput[]
+  }
+
+  export type TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput = {
+    create?: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput> | TranscriptSegmentCreateWithoutCallSessionInput[] | TranscriptSegmentUncheckedCreateWithoutCallSessionInput[]
+    connectOrCreate?: TranscriptSegmentCreateOrConnectWithoutCallSessionInput | TranscriptSegmentCreateOrConnectWithoutCallSessionInput[]
+    upsert?: TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput[]
+    createMany?: TranscriptSegmentCreateManyCallSessionInputEnvelope
+    set?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    disconnect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    delete?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    connect?: TranscriptSegmentWhereUniqueInput | TranscriptSegmentWhereUniqueInput[]
+    update?: TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput | TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput[]
+    updateMany?: TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput | TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput[]
+    deleteMany?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
   }
 
   export type UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput = {
@@ -20177,16 +21639,16 @@ export namespace Prisma {
     deleteMany?: CampaignContactScalarWhereInput | CampaignContactScalarWhereInput[]
   }
 
-  export type CampaignCreateNestedOneWithoutCallsInput = {
-    create?: XOR<CampaignCreateWithoutCallsInput, CampaignUncheckedCreateWithoutCallsInput>
-    connectOrCreate?: CampaignCreateOrConnectWithoutCallsInput
-    connect?: CampaignWhereUniqueInput
-  }
-
   export type CallSessionCreateNestedOneWithoutCampaignLinksInput = {
     create?: XOR<CallSessionCreateWithoutCampaignLinksInput, CallSessionUncheckedCreateWithoutCampaignLinksInput>
     connectOrCreate?: CallSessionCreateOrConnectWithoutCampaignLinksInput
     connect?: CallSessionWhereUniqueInput
+  }
+
+  export type CampaignCreateNestedOneWithoutCallsInput = {
+    create?: XOR<CampaignCreateWithoutCallsInput, CampaignUncheckedCreateWithoutCallsInput>
+    connectOrCreate?: CampaignCreateOrConnectWithoutCallsInput
+    connect?: CampaignWhereUniqueInput
   }
 
   export type TenantCreateNestedOneWithoutCampaignCallsInput = {
@@ -20195,20 +21657,20 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
-  export type CampaignUpdateOneRequiredWithoutCallsNestedInput = {
-    create?: XOR<CampaignCreateWithoutCallsInput, CampaignUncheckedCreateWithoutCallsInput>
-    connectOrCreate?: CampaignCreateOrConnectWithoutCallsInput
-    upsert?: CampaignUpsertWithoutCallsInput
-    connect?: CampaignWhereUniqueInput
-    update?: XOR<XOR<CampaignUpdateToOneWithWhereWithoutCallsInput, CampaignUpdateWithoutCallsInput>, CampaignUncheckedUpdateWithoutCallsInput>
-  }
-
   export type CallSessionUpdateOneRequiredWithoutCampaignLinksNestedInput = {
     create?: XOR<CallSessionCreateWithoutCampaignLinksInput, CallSessionUncheckedCreateWithoutCampaignLinksInput>
     connectOrCreate?: CallSessionCreateOrConnectWithoutCampaignLinksInput
     upsert?: CallSessionUpsertWithoutCampaignLinksInput
     connect?: CallSessionWhereUniqueInput
     update?: XOR<XOR<CallSessionUpdateToOneWithWhereWithoutCampaignLinksInput, CallSessionUpdateWithoutCampaignLinksInput>, CallSessionUncheckedUpdateWithoutCampaignLinksInput>
+  }
+
+  export type CampaignUpdateOneRequiredWithoutCallsNestedInput = {
+    create?: XOR<CampaignCreateWithoutCallsInput, CampaignUncheckedCreateWithoutCallsInput>
+    connectOrCreate?: CampaignCreateOrConnectWithoutCallsInput
+    upsert?: CampaignUpsertWithoutCallsInput
+    connect?: CampaignWhereUniqueInput
+    update?: XOR<XOR<CampaignUpdateToOneWithWhereWithoutCallsInput, CampaignUpdateWithoutCallsInput>, CampaignUncheckedUpdateWithoutCallsInput>
   }
 
   export type TenantUpdateOneRequiredWithoutCampaignCallsNestedInput = {
@@ -20285,28 +21747,20 @@ export namespace Prisma {
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutWalletTransactionsInput, TenantUpdateWithoutWalletTransactionsInput>, TenantUncheckedUpdateWithoutWalletTransactionsInput>
   }
 
-  export type TenantCreateNestedOneWithoutOutboundCallRequestsInput = {
-    create?: XOR<TenantCreateWithoutOutboundCallRequestsInput, TenantUncheckedCreateWithoutOutboundCallRequestsInput>
-    connectOrCreate?: TenantCreateOrConnectWithoutOutboundCallRequestsInput
-    connect?: TenantWhereUniqueInput
-  }
-
   export type CallSessionCreateNestedOneWithoutOutboundRequestsInput = {
     create?: XOR<CallSessionCreateWithoutOutboundRequestsInput, CallSessionUncheckedCreateWithoutOutboundRequestsInput>
     connectOrCreate?: CallSessionCreateOrConnectWithoutOutboundRequestsInput
     connect?: CallSessionWhereUniqueInput
   }
 
-  export type EnumOutboundRequestStatusFieldUpdateOperationsInput = {
-    set?: $Enums.OutboundRequestStatus
-  }
-
-  export type TenantUpdateOneRequiredWithoutOutboundCallRequestsNestedInput = {
+  export type TenantCreateNestedOneWithoutOutboundCallRequestsInput = {
     create?: XOR<TenantCreateWithoutOutboundCallRequestsInput, TenantUncheckedCreateWithoutOutboundCallRequestsInput>
     connectOrCreate?: TenantCreateOrConnectWithoutOutboundCallRequestsInput
-    upsert?: TenantUpsertWithoutOutboundCallRequestsInput
     connect?: TenantWhereUniqueInput
-    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutOutboundCallRequestsInput, TenantUpdateWithoutOutboundCallRequestsInput>, TenantUncheckedUpdateWithoutOutboundCallRequestsInput>
+  }
+
+  export type EnumOutboundRequestStatusFieldUpdateOperationsInput = {
+    set?: $Enums.OutboundRequestStatus
   }
 
   export type CallSessionUpdateOneWithoutOutboundRequestsNestedInput = {
@@ -20319,16 +21773,24 @@ export namespace Prisma {
     update?: XOR<XOR<CallSessionUpdateToOneWithWhereWithoutOutboundRequestsInput, CallSessionUpdateWithoutOutboundRequestsInput>, CallSessionUncheckedUpdateWithoutOutboundRequestsInput>
   }
 
-  export type TenantCreateNestedOneWithoutUsageRecordsInput = {
-    create?: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
-    connectOrCreate?: TenantCreateOrConnectWithoutUsageRecordsInput
+  export type TenantUpdateOneRequiredWithoutOutboundCallRequestsNestedInput = {
+    create?: XOR<TenantCreateWithoutOutboundCallRequestsInput, TenantUncheckedCreateWithoutOutboundCallRequestsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutOutboundCallRequestsInput
+    upsert?: TenantUpsertWithoutOutboundCallRequestsInput
     connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutOutboundCallRequestsInput, TenantUpdateWithoutOutboundCallRequestsInput>, TenantUncheckedUpdateWithoutOutboundCallRequestsInput>
   }
 
   export type CallSessionCreateNestedOneWithoutUsageRecordsInput = {
     create?: XOR<CallSessionCreateWithoutUsageRecordsInput, CallSessionUncheckedCreateWithoutUsageRecordsInput>
     connectOrCreate?: CallSessionCreateOrConnectWithoutUsageRecordsInput
     connect?: CallSessionWhereUniqueInput
+  }
+
+  export type TenantCreateNestedOneWithoutUsageRecordsInput = {
+    create?: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutUsageRecordsInput
+    connect?: TenantWhereUniqueInput
   }
 
   export type EnumUsageTypeFieldUpdateOperationsInput = {
@@ -20339,20 +21801,20 @@ export namespace Prisma {
     set?: $Enums.UsageRecordStatus
   }
 
-  export type TenantUpdateOneRequiredWithoutUsageRecordsNestedInput = {
-    create?: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
-    connectOrCreate?: TenantCreateOrConnectWithoutUsageRecordsInput
-    upsert?: TenantUpsertWithoutUsageRecordsInput
-    connect?: TenantWhereUniqueInput
-    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutUsageRecordsInput, TenantUpdateWithoutUsageRecordsInput>, TenantUncheckedUpdateWithoutUsageRecordsInput>
-  }
-
   export type CallSessionUpdateOneRequiredWithoutUsageRecordsNestedInput = {
     create?: XOR<CallSessionCreateWithoutUsageRecordsInput, CallSessionUncheckedCreateWithoutUsageRecordsInput>
     connectOrCreate?: CallSessionCreateOrConnectWithoutUsageRecordsInput
     upsert?: CallSessionUpsertWithoutUsageRecordsInput
     connect?: CallSessionWhereUniqueInput
     update?: XOR<XOR<CallSessionUpdateToOneWithWhereWithoutUsageRecordsInput, CallSessionUpdateWithoutUsageRecordsInput>, CallSessionUncheckedUpdateWithoutUsageRecordsInput>
+  }
+
+  export type TenantUpdateOneRequiredWithoutUsageRecordsNestedInput = {
+    create?: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
+    connectOrCreate?: TenantCreateOrConnectWithoutUsageRecordsInput
+    upsert?: TenantUpsertWithoutUsageRecordsInput
+    connect?: TenantWhereUniqueInput
+    update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutUsageRecordsInput, TenantUpdateWithoutUsageRecordsInput>, TenantUncheckedUpdateWithoutUsageRecordsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -20792,72 +22254,6 @@ export namespace Prisma {
     _max?: NestedEnumUsageRecordStatusFilter<$PrismaModel>
   }
 
-  export type CallSessionCreateWithoutTenantInput = {
-    id?: string
-    externalCallId?: string | null
-    roomId: string
-    phoneNumber?: string | null
-    agentName?: string | null
-    direction?: string | null
-    status?: $Enums.CallLifecycleStatus
-    initiatedAt?: Date | string
-    connectedAt?: Date | string | null
-    completedAt?: Date | string | null
-    failedAt?: Date | string | null
-    durationSec?: number | null
-    transcriptTurns?: number | null
-    recordingUrl?: string | null
-    estimatedCost?: Decimal | DecimalJsLike | number | string | null
-    lastError?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
-    campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
-    sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
-    outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
-    usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
-  }
-
-  export type CallSessionUncheckedCreateWithoutTenantInput = {
-    id?: string
-    externalCallId?: string | null
-    roomId: string
-    phoneNumber?: string | null
-    agentName?: string | null
-    direction?: string | null
-    status?: $Enums.CallLifecycleStatus
-    initiatedAt?: Date | string
-    connectedAt?: Date | string | null
-    completedAt?: Date | string | null
-    failedAt?: Date | string | null
-    durationSec?: number | null
-    transcriptTurns?: number | null
-    recordingUrl?: string | null
-    estimatedCost?: Decimal | DecimalJsLike | number | string | null
-    lastError?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
-    campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
-    sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
-    outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
-    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
-  }
-
-  export type CallSessionCreateOrConnectWithoutTenantInput = {
-    where: CallSessionWhereUniqueInput
-    create: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput>
-  }
-
-  export type CallSessionCreateManyTenantInputEnvelope = {
-    data: CallSessionCreateManyTenantInput | CallSessionCreateManyTenantInput[]
-    skipDuplicates?: boolean
-  }
-
   export type CallEventCreateWithoutTenantInput = {
     id?: string
     eventType: $Enums.VoiceEventType
@@ -20894,89 +22290,69 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type TranscriptSegmentCreateWithoutTenantInput = {
+  export type CallSessionCreateWithoutTenantInput = {
     id?: string
-    speaker: $Enums.Speaker
-    text: string
-    isFinal?: boolean
-    sequenceNo: number
-    providerMessageId?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    callSession: CallSessionCreateNestedOneWithoutTranscriptSegmentsInput
-  }
-
-  export type TranscriptSegmentUncheckedCreateWithoutTenantInput = {
-    id?: string
-    callId: string
-    speaker: $Enums.Speaker
-    text: string
-    isFinal?: boolean
-    sequenceNo: number
-    providerMessageId?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TranscriptSegmentCreateOrConnectWithoutTenantInput = {
-    where: TranscriptSegmentWhereUniqueInput
-    create: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput>
-  }
-
-  export type TranscriptSegmentCreateManyTenantInputEnvelope = {
-    data: TranscriptSegmentCreateManyTenantInput | TranscriptSegmentCreateManyTenantInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type LeadExtractionCreateWithoutTenantInput = {
-    id?: string
-    extractedAt: Date | string
-    name?: string | null
-    phone?: string | null
-    summary: string
-    confidence?: number | null
-    intent?: string | null
-    propertyType?: string | null
-    location?: string | null
-    budget?: string | null
-    timeline?: string | null
+    externalCallId?: string | null
+    roomId: string
     phoneNumber?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    agentName?: string | null
+    direction?: string | null
+    status?: $Enums.CallLifecycleStatus
+    initiatedAt?: Date | string
+    connectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    failedAt?: Date | string | null
+    durationSec?: number | null
+    transcriptTurns?: number | null
+    recordingUrl?: string | null
+    estimatedCost?: Decimal | DecimalJsLike | number | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSession: CallSessionCreateNestedOneWithoutLeadExtractionInput
+    events?: CallEventCreateNestedManyWithoutCallSessionInput
+    campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
+    sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
+    usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
 
-  export type LeadExtractionUncheckedCreateWithoutTenantInput = {
+  export type CallSessionUncheckedCreateWithoutTenantInput = {
     id?: string
-    callId: string
-    extractedAt: Date | string
-    name?: string | null
-    phone?: string | null
-    summary: string
-    confidence?: number | null
-    intent?: string | null
-    propertyType?: string | null
-    location?: string | null
-    budget?: string | null
-    timeline?: string | null
+    externalCallId?: string | null
+    roomId: string
     phoneNumber?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    agentName?: string | null
+    direction?: string | null
+    status?: $Enums.CallLifecycleStatus
+    initiatedAt?: Date | string
+    connectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    failedAt?: Date | string | null
+    durationSec?: number | null
+    transcriptTurns?: number | null
+    recordingUrl?: string | null
+    estimatedCost?: Decimal | DecimalJsLike | number | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
+    campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
+    sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
+    outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
+    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
-  export type LeadExtractionCreateOrConnectWithoutTenantInput = {
-    where: LeadExtractionWhereUniqueInput
-    create: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput>
+  export type CallSessionCreateOrConnectWithoutTenantInput = {
+    where: CallSessionWhereUniqueInput
+    create: XOR<CallSessionCreateWithoutTenantInput, CallSessionUncheckedCreateWithoutTenantInput>
   }
 
-  export type LeadExtractionCreateManyTenantInputEnvelope = {
-    data: LeadExtractionCreateManyTenantInput | LeadExtractionCreateManyTenantInput[]
+  export type CallSessionCreateManyTenantInputEnvelope = {
+    data: CallSessionCreateManyTenantInput | CallSessionCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -21015,8 +22391,8 @@ export namespace Prisma {
   export type CampaignCallCreateWithoutTenantInput = {
     id?: string
     createdAt?: Date | string
-    campaign: CampaignCreateNestedOneWithoutCallsInput
     call: CallSessionCreateNestedOneWithoutCampaignLinksInput
+    campaign: CampaignCreateNestedOneWithoutCallsInput
   }
 
   export type CampaignCallUncheckedCreateWithoutTenantInput = {
@@ -21068,41 +22444,51 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type WalletTransactionCreateWithoutTenantInput = {
+  export type LeadExtractionCreateWithoutTenantInput = {
     id?: string
-    type: $Enums.WalletTransactionType
-    amountPaise: number
-    description: string
-    provider?: string | null
-    providerOrderId?: string | null
-    providerPaymentId?: string | null
-    referenceId?: string | null
-    status?: $Enums.WalletTransactionStatus
+    extractedAt: Date | string
+    name?: string | null
+    phone?: string | null
+    summary: string
+    confidence?: number | null
+    intent?: string | null
+    propertyType?: string | null
+    location?: string | null
+    budget?: string | null
+    timeline?: string | null
+    phoneNumber?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callSession: CallSessionCreateNestedOneWithoutLeadExtractionInput
+  }
+
+  export type LeadExtractionUncheckedCreateWithoutTenantInput = {
+    id?: string
+    callId: string
+    extractedAt: Date | string
+    name?: string | null
+    phone?: string | null
+    summary: string
+    confidence?: number | null
+    intent?: string | null
+    propertyType?: string | null
+    location?: string | null
+    budget?: string | null
+    timeline?: string | null
+    phoneNumber?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
-  export type WalletTransactionUncheckedCreateWithoutTenantInput = {
-    id?: string
-    type: $Enums.WalletTransactionType
-    amountPaise: number
-    description: string
-    provider?: string | null
-    providerOrderId?: string | null
-    providerPaymentId?: string | null
-    referenceId?: string | null
-    status?: $Enums.WalletTransactionStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
+  export type LeadExtractionCreateOrConnectWithoutTenantInput = {
+    where: LeadExtractionWhereUniqueInput
+    create: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput>
   }
 
-  export type WalletTransactionCreateOrConnectWithoutTenantInput = {
-    where: WalletTransactionWhereUniqueInput
-    create: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput>
-  }
-
-  export type WalletTransactionCreateManyTenantInputEnvelope = {
-    data: WalletTransactionCreateManyTenantInput | WalletTransactionCreateManyTenantInput[]
+  export type LeadExtractionCreateManyTenantInputEnvelope = {
+    data: LeadExtractionCreateManyTenantInput | LeadExtractionCreateManyTenantInput[]
     skipDuplicates?: boolean
   }
 
@@ -21142,6 +22528,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TranscriptSegmentCreateWithoutTenantInput = {
+    id?: string
+    speaker: $Enums.Speaker
+    text: string
+    isFinal?: boolean
+    sequenceNo: number
+    providerMessageId?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callSession: CallSessionCreateNestedOneWithoutTranscriptSegmentsInput
+  }
+
+  export type TranscriptSegmentUncheckedCreateWithoutTenantInput = {
+    id?: string
+    callId: string
+    speaker: $Enums.Speaker
+    text: string
+    isFinal?: boolean
+    sequenceNo: number
+    providerMessageId?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TranscriptSegmentCreateOrConnectWithoutTenantInput = {
+    where: TranscriptSegmentWhereUniqueInput
+    create: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput>
+  }
+
+  export type TranscriptSegmentCreateManyTenantInputEnvelope = {
+    data: TranscriptSegmentCreateManyTenantInput | TranscriptSegmentCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UsageRecordCreateWithoutTenantInput = {
     id?: string
     usageType: $Enums.UsageType
@@ -21174,6 +22598,105 @@ export namespace Prisma {
   export type UsageRecordCreateManyTenantInputEnvelope = {
     data: UsageRecordCreateManyTenantInput | UsageRecordCreateManyTenantInput[]
     skipDuplicates?: boolean
+  }
+
+  export type UserCreateWithoutTenantInput = {
+    id?: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserUncheckedCreateWithoutTenantInput = {
+    id?: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserCreateOrConnectWithoutTenantInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput>
+  }
+
+  export type UserCreateManyTenantInputEnvelope = {
+    data: UserCreateManyTenantInput | UserCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WalletTransactionCreateWithoutTenantInput = {
+    id?: string
+    type: $Enums.WalletTransactionType
+    amountPaise: number
+    description: string
+    provider?: string | null
+    providerOrderId?: string | null
+    providerPaymentId?: string | null
+    referenceId?: string | null
+    status?: $Enums.WalletTransactionStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WalletTransactionUncheckedCreateWithoutTenantInput = {
+    id?: string
+    type: $Enums.WalletTransactionType
+    amountPaise: number
+    description: string
+    provider?: string | null
+    providerOrderId?: string | null
+    providerPaymentId?: string | null
+    referenceId?: string | null
+    status?: $Enums.WalletTransactionStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WalletTransactionCreateOrConnectWithoutTenantInput = {
+    where: WalletTransactionWhereUniqueInput
+    create: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput>
+  }
+
+  export type WalletTransactionCreateManyTenantInputEnvelope = {
+    data: WalletTransactionCreateManyTenantInput | WalletTransactionCreateManyTenantInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CallEventUpsertWithWhereUniqueWithoutTenantInput = {
+    where: CallEventWhereUniqueInput
+    update: XOR<CallEventUpdateWithoutTenantInput, CallEventUncheckedUpdateWithoutTenantInput>
+    create: XOR<CallEventCreateWithoutTenantInput, CallEventUncheckedCreateWithoutTenantInput>
+  }
+
+  export type CallEventUpdateWithWhereUniqueWithoutTenantInput = {
+    where: CallEventWhereUniqueInput
+    data: XOR<CallEventUpdateWithoutTenantInput, CallEventUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type CallEventUpdateManyWithWhereWithoutTenantInput = {
+    where: CallEventScalarWhereInput
+    data: XOR<CallEventUpdateManyMutationInput, CallEventUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type CallEventScalarWhereInput = {
+    AND?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
+    OR?: CallEventScalarWhereInput[]
+    NOT?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
+    id?: StringFilter<"CallEvent"> | string
+    callId?: StringFilter<"CallEvent"> | string
+    tenantId?: StringFilter<"CallEvent"> | string
+    eventType?: EnumVoiceEventTypeFilter<"CallEvent"> | $Enums.VoiceEventType
+    occurredAt?: DateTimeFilter<"CallEvent"> | Date | string
+    eventId?: StringFilter<"CallEvent"> | string
+    payloadJson?: JsonNullableFilter<"CallEvent">
+    rawEnvelope?: JsonNullableFilter<"CallEvent">
+    rawHeaders?: JsonNullableFilter<"CallEvent">
+    normalizedJson?: JsonNullableFilter<"CallEvent">
+    createdAt?: DateTimeFilter<"CallEvent"> | Date | string
   }
 
   export type CallSessionUpsertWithWhereUniqueWithoutTenantInput = {
@@ -21215,112 +22738,6 @@ export namespace Prisma {
     lastError?: StringNullableFilter<"CallSession"> | string | null
     createdAt?: DateTimeFilter<"CallSession"> | Date | string
     updatedAt?: DateTimeFilter<"CallSession"> | Date | string
-  }
-
-  export type CallEventUpsertWithWhereUniqueWithoutTenantInput = {
-    where: CallEventWhereUniqueInput
-    update: XOR<CallEventUpdateWithoutTenantInput, CallEventUncheckedUpdateWithoutTenantInput>
-    create: XOR<CallEventCreateWithoutTenantInput, CallEventUncheckedCreateWithoutTenantInput>
-  }
-
-  export type CallEventUpdateWithWhereUniqueWithoutTenantInput = {
-    where: CallEventWhereUniqueInput
-    data: XOR<CallEventUpdateWithoutTenantInput, CallEventUncheckedUpdateWithoutTenantInput>
-  }
-
-  export type CallEventUpdateManyWithWhereWithoutTenantInput = {
-    where: CallEventScalarWhereInput
-    data: XOR<CallEventUpdateManyMutationInput, CallEventUncheckedUpdateManyWithoutTenantInput>
-  }
-
-  export type CallEventScalarWhereInput = {
-    AND?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
-    OR?: CallEventScalarWhereInput[]
-    NOT?: CallEventScalarWhereInput | CallEventScalarWhereInput[]
-    id?: StringFilter<"CallEvent"> | string
-    callId?: StringFilter<"CallEvent"> | string
-    tenantId?: StringFilter<"CallEvent"> | string
-    eventType?: EnumVoiceEventTypeFilter<"CallEvent"> | $Enums.VoiceEventType
-    occurredAt?: DateTimeFilter<"CallEvent"> | Date | string
-    eventId?: StringFilter<"CallEvent"> | string
-    payloadJson?: JsonNullableFilter<"CallEvent">
-    rawEnvelope?: JsonNullableFilter<"CallEvent">
-    rawHeaders?: JsonNullableFilter<"CallEvent">
-    normalizedJson?: JsonNullableFilter<"CallEvent">
-    createdAt?: DateTimeFilter<"CallEvent"> | Date | string
-  }
-
-  export type TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput = {
-    where: TranscriptSegmentWhereUniqueInput
-    update: XOR<TranscriptSegmentUpdateWithoutTenantInput, TranscriptSegmentUncheckedUpdateWithoutTenantInput>
-    create: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput>
-  }
-
-  export type TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput = {
-    where: TranscriptSegmentWhereUniqueInput
-    data: XOR<TranscriptSegmentUpdateWithoutTenantInput, TranscriptSegmentUncheckedUpdateWithoutTenantInput>
-  }
-
-  export type TranscriptSegmentUpdateManyWithWhereWithoutTenantInput = {
-    where: TranscriptSegmentScalarWhereInput
-    data: XOR<TranscriptSegmentUpdateManyMutationInput, TranscriptSegmentUncheckedUpdateManyWithoutTenantInput>
-  }
-
-  export type TranscriptSegmentScalarWhereInput = {
-    AND?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
-    OR?: TranscriptSegmentScalarWhereInput[]
-    NOT?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
-    id?: StringFilter<"TranscriptSegment"> | string
-    callId?: StringFilter<"TranscriptSegment"> | string
-    tenantId?: StringFilter<"TranscriptSegment"> | string
-    speaker?: EnumSpeakerFilter<"TranscriptSegment"> | $Enums.Speaker
-    text?: StringFilter<"TranscriptSegment"> | string
-    isFinal?: BoolFilter<"TranscriptSegment"> | boolean
-    sequenceNo?: IntFilter<"TranscriptSegment"> | number
-    providerMessageId?: StringNullableFilter<"TranscriptSegment"> | string | null
-    rawJson?: JsonNullableFilter<"TranscriptSegment">
-    occurredAt?: DateTimeFilter<"TranscriptSegment"> | Date | string
-    createdAt?: DateTimeFilter<"TranscriptSegment"> | Date | string
-    updatedAt?: DateTimeFilter<"TranscriptSegment"> | Date | string
-  }
-
-  export type LeadExtractionUpsertWithWhereUniqueWithoutTenantInput = {
-    where: LeadExtractionWhereUniqueInput
-    update: XOR<LeadExtractionUpdateWithoutTenantInput, LeadExtractionUncheckedUpdateWithoutTenantInput>
-    create: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput>
-  }
-
-  export type LeadExtractionUpdateWithWhereUniqueWithoutTenantInput = {
-    where: LeadExtractionWhereUniqueInput
-    data: XOR<LeadExtractionUpdateWithoutTenantInput, LeadExtractionUncheckedUpdateWithoutTenantInput>
-  }
-
-  export type LeadExtractionUpdateManyWithWhereWithoutTenantInput = {
-    where: LeadExtractionScalarWhereInput
-    data: XOR<LeadExtractionUpdateManyMutationInput, LeadExtractionUncheckedUpdateManyWithoutTenantInput>
-  }
-
-  export type LeadExtractionScalarWhereInput = {
-    AND?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
-    OR?: LeadExtractionScalarWhereInput[]
-    NOT?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
-    id?: StringFilter<"LeadExtraction"> | string
-    callId?: StringFilter<"LeadExtraction"> | string
-    tenantId?: StringFilter<"LeadExtraction"> | string
-    extractedAt?: DateTimeFilter<"LeadExtraction"> | Date | string
-    name?: StringNullableFilter<"LeadExtraction"> | string | null
-    phone?: StringNullableFilter<"LeadExtraction"> | string | null
-    summary?: StringFilter<"LeadExtraction"> | string
-    confidence?: FloatNullableFilter<"LeadExtraction"> | number | null
-    intent?: StringNullableFilter<"LeadExtraction"> | string | null
-    propertyType?: StringNullableFilter<"LeadExtraction"> | string | null
-    location?: StringNullableFilter<"LeadExtraction"> | string | null
-    budget?: StringNullableFilter<"LeadExtraction"> | string | null
-    timeline?: StringNullableFilter<"LeadExtraction"> | string | null
-    phoneNumber?: StringNullableFilter<"LeadExtraction"> | string | null
-    rawJson?: JsonNullableFilter<"LeadExtraction">
-    createdAt?: DateTimeFilter<"LeadExtraction"> | Date | string
-    updatedAt?: DateTimeFilter<"LeadExtraction"> | Date | string
   }
 
   export type CampaignUpsertWithWhereUniqueWithoutTenantInput = {
@@ -21410,38 +22827,43 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"CampaignContact"> | Date | string
   }
 
-  export type WalletTransactionUpsertWithWhereUniqueWithoutTenantInput = {
-    where: WalletTransactionWhereUniqueInput
-    update: XOR<WalletTransactionUpdateWithoutTenantInput, WalletTransactionUncheckedUpdateWithoutTenantInput>
-    create: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput>
+  export type LeadExtractionUpsertWithWhereUniqueWithoutTenantInput = {
+    where: LeadExtractionWhereUniqueInput
+    update: XOR<LeadExtractionUpdateWithoutTenantInput, LeadExtractionUncheckedUpdateWithoutTenantInput>
+    create: XOR<LeadExtractionCreateWithoutTenantInput, LeadExtractionUncheckedCreateWithoutTenantInput>
   }
 
-  export type WalletTransactionUpdateWithWhereUniqueWithoutTenantInput = {
-    where: WalletTransactionWhereUniqueInput
-    data: XOR<WalletTransactionUpdateWithoutTenantInput, WalletTransactionUncheckedUpdateWithoutTenantInput>
+  export type LeadExtractionUpdateWithWhereUniqueWithoutTenantInput = {
+    where: LeadExtractionWhereUniqueInput
+    data: XOR<LeadExtractionUpdateWithoutTenantInput, LeadExtractionUncheckedUpdateWithoutTenantInput>
   }
 
-  export type WalletTransactionUpdateManyWithWhereWithoutTenantInput = {
-    where: WalletTransactionScalarWhereInput
-    data: XOR<WalletTransactionUpdateManyMutationInput, WalletTransactionUncheckedUpdateManyWithoutTenantInput>
+  export type LeadExtractionUpdateManyWithWhereWithoutTenantInput = {
+    where: LeadExtractionScalarWhereInput
+    data: XOR<LeadExtractionUpdateManyMutationInput, LeadExtractionUncheckedUpdateManyWithoutTenantInput>
   }
 
-  export type WalletTransactionScalarWhereInput = {
-    AND?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
-    OR?: WalletTransactionScalarWhereInput[]
-    NOT?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
-    id?: StringFilter<"WalletTransaction"> | string
-    tenantId?: StringFilter<"WalletTransaction"> | string
-    type?: EnumWalletTransactionTypeFilter<"WalletTransaction"> | $Enums.WalletTransactionType
-    amountPaise?: IntFilter<"WalletTransaction"> | number
-    description?: StringFilter<"WalletTransaction"> | string
-    provider?: StringNullableFilter<"WalletTransaction"> | string | null
-    providerOrderId?: StringNullableFilter<"WalletTransaction"> | string | null
-    providerPaymentId?: StringNullableFilter<"WalletTransaction"> | string | null
-    referenceId?: StringNullableFilter<"WalletTransaction"> | string | null
-    status?: EnumWalletTransactionStatusFilter<"WalletTransaction"> | $Enums.WalletTransactionStatus
-    createdAt?: DateTimeFilter<"WalletTransaction"> | Date | string
-    updatedAt?: DateTimeFilter<"WalletTransaction"> | Date | string
+  export type LeadExtractionScalarWhereInput = {
+    AND?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
+    OR?: LeadExtractionScalarWhereInput[]
+    NOT?: LeadExtractionScalarWhereInput | LeadExtractionScalarWhereInput[]
+    id?: StringFilter<"LeadExtraction"> | string
+    callId?: StringFilter<"LeadExtraction"> | string
+    tenantId?: StringFilter<"LeadExtraction"> | string
+    extractedAt?: DateTimeFilter<"LeadExtraction"> | Date | string
+    name?: StringNullableFilter<"LeadExtraction"> | string | null
+    phone?: StringNullableFilter<"LeadExtraction"> | string | null
+    summary?: StringFilter<"LeadExtraction"> | string
+    confidence?: FloatNullableFilter<"LeadExtraction"> | number | null
+    intent?: StringNullableFilter<"LeadExtraction"> | string | null
+    propertyType?: StringNullableFilter<"LeadExtraction"> | string | null
+    location?: StringNullableFilter<"LeadExtraction"> | string | null
+    budget?: StringNullableFilter<"LeadExtraction"> | string | null
+    timeline?: StringNullableFilter<"LeadExtraction"> | string | null
+    phoneNumber?: StringNullableFilter<"LeadExtraction"> | string | null
+    rawJson?: JsonNullableFilter<"LeadExtraction">
+    createdAt?: DateTimeFilter<"LeadExtraction"> | Date | string
+    updatedAt?: DateTimeFilter<"LeadExtraction"> | Date | string
   }
 
   export type OutboundCallRequestUpsertWithWhereUniqueWithoutTenantInput = {
@@ -21477,6 +22899,40 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"OutboundCallRequest"> | Date | string
   }
 
+  export type TranscriptSegmentUpsertWithWhereUniqueWithoutTenantInput = {
+    where: TranscriptSegmentWhereUniqueInput
+    update: XOR<TranscriptSegmentUpdateWithoutTenantInput, TranscriptSegmentUncheckedUpdateWithoutTenantInput>
+    create: XOR<TranscriptSegmentCreateWithoutTenantInput, TranscriptSegmentUncheckedCreateWithoutTenantInput>
+  }
+
+  export type TranscriptSegmentUpdateWithWhereUniqueWithoutTenantInput = {
+    where: TranscriptSegmentWhereUniqueInput
+    data: XOR<TranscriptSegmentUpdateWithoutTenantInput, TranscriptSegmentUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type TranscriptSegmentUpdateManyWithWhereWithoutTenantInput = {
+    where: TranscriptSegmentScalarWhereInput
+    data: XOR<TranscriptSegmentUpdateManyMutationInput, TranscriptSegmentUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type TranscriptSegmentScalarWhereInput = {
+    AND?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
+    OR?: TranscriptSegmentScalarWhereInput[]
+    NOT?: TranscriptSegmentScalarWhereInput | TranscriptSegmentScalarWhereInput[]
+    id?: StringFilter<"TranscriptSegment"> | string
+    callId?: StringFilter<"TranscriptSegment"> | string
+    tenantId?: StringFilter<"TranscriptSegment"> | string
+    speaker?: EnumSpeakerFilter<"TranscriptSegment"> | $Enums.Speaker
+    text?: StringFilter<"TranscriptSegment"> | string
+    isFinal?: BoolFilter<"TranscriptSegment"> | boolean
+    sequenceNo?: IntFilter<"TranscriptSegment"> | number
+    providerMessageId?: StringNullableFilter<"TranscriptSegment"> | string | null
+    rawJson?: JsonNullableFilter<"TranscriptSegment">
+    occurredAt?: DateTimeFilter<"TranscriptSegment"> | Date | string
+    createdAt?: DateTimeFilter<"TranscriptSegment"> | Date | string
+    updatedAt?: DateTimeFilter<"TranscriptSegment"> | Date | string
+  }
+
   export type UsageRecordUpsertWithWhereUniqueWithoutTenantInput = {
     where: UsageRecordWhereUniqueInput
     update: XOR<UsageRecordUpdateWithoutTenantInput, UsageRecordUncheckedUpdateWithoutTenantInput>
@@ -21509,7 +22965,70 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"UsageRecord"> | Date | string
   }
 
-  export type TenantCreateWithoutCallSessionsInput = {
+  export type UserUpsertWithWhereUniqueWithoutTenantInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutTenantInput, UserUncheckedUpdateWithoutTenantInput>
+    create: XOR<UserCreateWithoutTenantInput, UserUncheckedCreateWithoutTenantInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutTenantInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutTenantInput, UserUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutTenantInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type UserScalarWhereInput = {
+    AND?: UserScalarWhereInput | UserScalarWhereInput[]
+    OR?: UserScalarWhereInput[]
+    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
+    id?: StringFilter<"User"> | string
+    tenantId?: StringFilter<"User"> | string
+    email?: StringFilter<"User"> | string
+    fullName?: StringFilter<"User"> | string
+    passwordHash?: StringFilter<"User"> | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeFilter<"User"> | Date | string
+  }
+
+  export type WalletTransactionUpsertWithWhereUniqueWithoutTenantInput = {
+    where: WalletTransactionWhereUniqueInput
+    update: XOR<WalletTransactionUpdateWithoutTenantInput, WalletTransactionUncheckedUpdateWithoutTenantInput>
+    create: XOR<WalletTransactionCreateWithoutTenantInput, WalletTransactionUncheckedCreateWithoutTenantInput>
+  }
+
+  export type WalletTransactionUpdateWithWhereUniqueWithoutTenantInput = {
+    where: WalletTransactionWhereUniqueInput
+    data: XOR<WalletTransactionUpdateWithoutTenantInput, WalletTransactionUncheckedUpdateWithoutTenantInput>
+  }
+
+  export type WalletTransactionUpdateManyWithWhereWithoutTenantInput = {
+    where: WalletTransactionScalarWhereInput
+    data: XOR<WalletTransactionUpdateManyMutationInput, WalletTransactionUncheckedUpdateManyWithoutTenantInput>
+  }
+
+  export type WalletTransactionScalarWhereInput = {
+    AND?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
+    OR?: WalletTransactionScalarWhereInput[]
+    NOT?: WalletTransactionScalarWhereInput | WalletTransactionScalarWhereInput[]
+    id?: StringFilter<"WalletTransaction"> | string
+    tenantId?: StringFilter<"WalletTransaction"> | string
+    type?: EnumWalletTransactionTypeFilter<"WalletTransaction"> | $Enums.WalletTransactionType
+    amountPaise?: IntFilter<"WalletTransaction"> | number
+    description?: StringFilter<"WalletTransaction"> | string
+    provider?: StringNullableFilter<"WalletTransaction"> | string | null
+    providerOrderId?: StringNullableFilter<"WalletTransaction"> | string | null
+    providerPaymentId?: StringNullableFilter<"WalletTransaction"> | string | null
+    referenceId?: StringNullableFilter<"WalletTransaction"> | string | null
+    status?: EnumWalletTransactionStatusFilter<"WalletTransaction"> | $Enums.WalletTransactionStatus
+    createdAt?: DateTimeFilter<"WalletTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"WalletTransaction"> | Date | string
+  }
+
+  export type TenantCreateWithoutUsersInput = {
     id?: string
     name?: string | null
     plan?: $Enums.PlanKey
@@ -21519,17 +23038,18 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
-  export type TenantUncheckedCreateWithoutCallSessionsInput = {
+  export type TenantUncheckedCreateWithoutUsersInput = {
     id?: string
     name?: string | null
     plan?: $Enums.PlanKey
@@ -21539,19 +23059,73 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
-  export type TenantCreateOrConnectWithoutCallSessionsInput = {
+  export type TenantCreateOrConnectWithoutUsersInput = {
     where: TenantWhereUniqueInput
-    create: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
+    create: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
+  }
+
+  export type TenantUpsertWithoutUsersInput = {
+    update: XOR<TenantUpdateWithoutUsersInput, TenantUncheckedUpdateWithoutUsersInput>
+    create: XOR<TenantCreateWithoutUsersInput, TenantUncheckedCreateWithoutUsersInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutUsersInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutUsersInput, TenantUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type TenantUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callEvents?: CallEventUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
+    campaigns?: CampaignUpdateManyWithoutTenantNestedInput
+    campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
+    campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
+    usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
+    campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
+    campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
+    usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallEventCreateWithoutCallSessionInput = {
@@ -21590,85 +23164,51 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type TranscriptSegmentCreateWithoutCallSessionInput = {
+  export type TenantCreateWithoutCallSessionsInput = {
     id?: string
-    speaker: $Enums.Speaker
-    text: string
-    isFinal?: boolean
-    sequenceNo: number
-    providerMessageId?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutTranscriptSegmentsInput
-  }
-
-  export type TranscriptSegmentUncheckedCreateWithoutCallSessionInput = {
-    id?: string
-    tenantId: string
-    speaker: $Enums.Speaker
-    text: string
-    isFinal?: boolean
-    sequenceNo: number
-    providerMessageId?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TranscriptSegmentCreateOrConnectWithoutCallSessionInput = {
-    where: TranscriptSegmentWhereUniqueInput
-    create: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput>
-  }
-
-  export type TranscriptSegmentCreateManyCallSessionInputEnvelope = {
-    data: TranscriptSegmentCreateManyCallSessionInput | TranscriptSegmentCreateManyCallSessionInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type LeadExtractionCreateWithoutCallSessionInput = {
-    id?: string
-    extractedAt: Date | string
     name?: string | null
-    phone?: string | null
-    summary: string
-    confidence?: number | null
-    intent?: string | null
-    propertyType?: string | null
-    location?: string | null
-    budget?: string | null
-    timeline?: string | null
-    phoneNumber?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    plan?: $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutLeadExtractionsInput
+    callEvents?: CallEventCreateNestedManyWithoutTenantInput
+    campaigns?: CampaignCreateNestedManyWithoutTenantInput
+    campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
+    campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
+    usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
-  export type LeadExtractionUncheckedCreateWithoutCallSessionInput = {
+  export type TenantUncheckedCreateWithoutCallSessionsInput = {
     id?: string
-    tenantId: string
-    extractedAt: Date | string
     name?: string | null
-    phone?: string | null
-    summary: string
-    confidence?: number | null
-    intent?: string | null
-    propertyType?: string | null
-    location?: string | null
-    budget?: string | null
-    timeline?: string | null
-    phoneNumber?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    plan?: $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
+    campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
+    campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
+    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
-  export type LeadExtractionCreateOrConnectWithoutCallSessionInput = {
-    where: LeadExtractionWhereUniqueInput
-    create: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
+  export type TenantCreateOrConnectWithoutCallSessionsInput = {
+    where: TenantWhereUniqueInput
+    create: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
   }
 
   export type CampaignCallCreateWithoutCallInput = {
@@ -21727,6 +23267,49 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LeadExtractionCreateWithoutCallSessionInput = {
+    id?: string
+    extractedAt: Date | string
+    name?: string | null
+    phone?: string | null
+    summary: string
+    confidence?: number | null
+    intent?: string | null
+    propertyType?: string | null
+    location?: string | null
+    budget?: string | null
+    timeline?: string | null
+    phoneNumber?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutLeadExtractionsInput
+  }
+
+  export type LeadExtractionUncheckedCreateWithoutCallSessionInput = {
+    id?: string
+    tenantId: string
+    extractedAt: Date | string
+    name?: string | null
+    phone?: string | null
+    summary: string
+    confidence?: number | null
+    intent?: string | null
+    propertyType?: string | null
+    location?: string | null
+    budget?: string | null
+    timeline?: string | null
+    phoneNumber?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LeadExtractionCreateOrConnectWithoutCallSessionInput = {
+    where: LeadExtractionWhereUniqueInput
+    create: XOR<LeadExtractionCreateWithoutCallSessionInput, LeadExtractionUncheckedCreateWithoutCallSessionInput>
+  }
+
   export type OutboundCallRequestCreateWithoutCallSessionInput = {
     id?: string
     phoneNumber: string
@@ -21760,6 +23343,44 @@ export namespace Prisma {
 
   export type OutboundCallRequestCreateManyCallSessionInputEnvelope = {
     data: OutboundCallRequestCreateManyCallSessionInput | OutboundCallRequestCreateManyCallSessionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TranscriptSegmentCreateWithoutCallSessionInput = {
+    id?: string
+    speaker: $Enums.Speaker
+    text: string
+    isFinal?: boolean
+    sequenceNo: number
+    providerMessageId?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant: TenantCreateNestedOneWithoutTranscriptSegmentsInput
+  }
+
+  export type TranscriptSegmentUncheckedCreateWithoutCallSessionInput = {
+    id?: string
+    tenantId: string
+    speaker: $Enums.Speaker
+    text: string
+    isFinal?: boolean
+    sequenceNo: number
+    providerMessageId?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TranscriptSegmentCreateOrConnectWithoutCallSessionInput = {
+    where: TranscriptSegmentWhereUniqueInput
+    create: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type TranscriptSegmentCreateManyCallSessionInputEnvelope = {
+    data: TranscriptSegmentCreateManyCallSessionInput | TranscriptSegmentCreateManyCallSessionInput[]
     skipDuplicates?: boolean
   }
 
@@ -21797,6 +23418,22 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CallEventUpsertWithWhereUniqueWithoutCallSessionInput = {
+    where: CallEventWhereUniqueInput
+    update: XOR<CallEventUpdateWithoutCallSessionInput, CallEventUncheckedUpdateWithoutCallSessionInput>
+    create: XOR<CallEventCreateWithoutCallSessionInput, CallEventUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type CallEventUpdateWithWhereUniqueWithoutCallSessionInput = {
+    where: CallEventWhereUniqueInput
+    data: XOR<CallEventUpdateWithoutCallSessionInput, CallEventUncheckedUpdateWithoutCallSessionInput>
+  }
+
+  export type CallEventUpdateManyWithWhereWithoutCallSessionInput = {
+    where: CallEventScalarWhereInput
+    data: XOR<CallEventUpdateManyMutationInput, CallEventUncheckedUpdateManyWithoutCallSessionInput>
+  }
+
   export type TenantUpsertWithoutCallSessionsInput = {
     update: XOR<TenantUpdateWithoutCallSessionsInput, TenantUncheckedUpdateWithoutCallSessionsInput>
     create: XOR<TenantCreateWithoutCallSessionsInput, TenantUncheckedCreateWithoutCallSessionsInput>
@@ -21818,14 +23455,15 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCallSessionsInput = {
@@ -21838,46 +23476,47 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
-  export type CallEventUpsertWithWhereUniqueWithoutCallSessionInput = {
-    where: CallEventWhereUniqueInput
-    update: XOR<CallEventUpdateWithoutCallSessionInput, CallEventUncheckedUpdateWithoutCallSessionInput>
-    create: XOR<CallEventCreateWithoutCallSessionInput, CallEventUncheckedCreateWithoutCallSessionInput>
+  export type CampaignCallUpsertWithWhereUniqueWithoutCallInput = {
+    where: CampaignCallWhereUniqueInput
+    update: XOR<CampaignCallUpdateWithoutCallInput, CampaignCallUncheckedUpdateWithoutCallInput>
+    create: XOR<CampaignCallCreateWithoutCallInput, CampaignCallUncheckedCreateWithoutCallInput>
   }
 
-  export type CallEventUpdateWithWhereUniqueWithoutCallSessionInput = {
-    where: CallEventWhereUniqueInput
-    data: XOR<CallEventUpdateWithoutCallSessionInput, CallEventUncheckedUpdateWithoutCallSessionInput>
+  export type CampaignCallUpdateWithWhereUniqueWithoutCallInput = {
+    where: CampaignCallWhereUniqueInput
+    data: XOR<CampaignCallUpdateWithoutCallInput, CampaignCallUncheckedUpdateWithoutCallInput>
   }
 
-  export type CallEventUpdateManyWithWhereWithoutCallSessionInput = {
-    where: CallEventScalarWhereInput
-    data: XOR<CallEventUpdateManyMutationInput, CallEventUncheckedUpdateManyWithoutCallSessionInput>
+  export type CampaignCallUpdateManyWithWhereWithoutCallInput = {
+    where: CampaignCallScalarWhereInput
+    data: XOR<CampaignCallUpdateManyMutationInput, CampaignCallUncheckedUpdateManyWithoutCallInput>
   }
 
-  export type TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput = {
-    where: TranscriptSegmentWhereUniqueInput
-    update: XOR<TranscriptSegmentUpdateWithoutCallSessionInput, TranscriptSegmentUncheckedUpdateWithoutCallSessionInput>
-    create: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput>
+  export type CampaignContactUpsertWithWhereUniqueWithoutSourceCallInput = {
+    where: CampaignContactWhereUniqueInput
+    update: XOR<CampaignContactUpdateWithoutSourceCallInput, CampaignContactUncheckedUpdateWithoutSourceCallInput>
+    create: XOR<CampaignContactCreateWithoutSourceCallInput, CampaignContactUncheckedCreateWithoutSourceCallInput>
   }
 
-  export type TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput = {
-    where: TranscriptSegmentWhereUniqueInput
-    data: XOR<TranscriptSegmentUpdateWithoutCallSessionInput, TranscriptSegmentUncheckedUpdateWithoutCallSessionInput>
+  export type CampaignContactUpdateWithWhereUniqueWithoutSourceCallInput = {
+    where: CampaignContactWhereUniqueInput
+    data: XOR<CampaignContactUpdateWithoutSourceCallInput, CampaignContactUncheckedUpdateWithoutSourceCallInput>
   }
 
-  export type TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput = {
-    where: TranscriptSegmentScalarWhereInput
-    data: XOR<TranscriptSegmentUpdateManyMutationInput, TranscriptSegmentUncheckedUpdateManyWithoutCallSessionInput>
+  export type CampaignContactUpdateManyWithWhereWithoutSourceCallInput = {
+    where: CampaignContactScalarWhereInput
+    data: XOR<CampaignContactUpdateManyMutationInput, CampaignContactUncheckedUpdateManyWithoutSourceCallInput>
   }
 
   export type LeadExtractionUpsertWithoutCallSessionInput = {
@@ -21929,38 +23568,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CampaignCallUpsertWithWhereUniqueWithoutCallInput = {
-    where: CampaignCallWhereUniqueInput
-    update: XOR<CampaignCallUpdateWithoutCallInput, CampaignCallUncheckedUpdateWithoutCallInput>
-    create: XOR<CampaignCallCreateWithoutCallInput, CampaignCallUncheckedCreateWithoutCallInput>
-  }
-
-  export type CampaignCallUpdateWithWhereUniqueWithoutCallInput = {
-    where: CampaignCallWhereUniqueInput
-    data: XOR<CampaignCallUpdateWithoutCallInput, CampaignCallUncheckedUpdateWithoutCallInput>
-  }
-
-  export type CampaignCallUpdateManyWithWhereWithoutCallInput = {
-    where: CampaignCallScalarWhereInput
-    data: XOR<CampaignCallUpdateManyMutationInput, CampaignCallUncheckedUpdateManyWithoutCallInput>
-  }
-
-  export type CampaignContactUpsertWithWhereUniqueWithoutSourceCallInput = {
-    where: CampaignContactWhereUniqueInput
-    update: XOR<CampaignContactUpdateWithoutSourceCallInput, CampaignContactUncheckedUpdateWithoutSourceCallInput>
-    create: XOR<CampaignContactCreateWithoutSourceCallInput, CampaignContactUncheckedCreateWithoutSourceCallInput>
-  }
-
-  export type CampaignContactUpdateWithWhereUniqueWithoutSourceCallInput = {
-    where: CampaignContactWhereUniqueInput
-    data: XOR<CampaignContactUpdateWithoutSourceCallInput, CampaignContactUncheckedUpdateWithoutSourceCallInput>
-  }
-
-  export type CampaignContactUpdateManyWithWhereWithoutSourceCallInput = {
-    where: CampaignContactScalarWhereInput
-    data: XOR<CampaignContactUpdateManyMutationInput, CampaignContactUncheckedUpdateManyWithoutSourceCallInput>
-  }
-
   export type OutboundCallRequestUpsertWithWhereUniqueWithoutCallSessionInput = {
     where: OutboundCallRequestWhereUniqueInput
     update: XOR<OutboundCallRequestUpdateWithoutCallSessionInput, OutboundCallRequestUncheckedUpdateWithoutCallSessionInput>
@@ -21975,6 +23582,22 @@ export namespace Prisma {
   export type OutboundCallRequestUpdateManyWithWhereWithoutCallSessionInput = {
     where: OutboundCallRequestScalarWhereInput
     data: XOR<OutboundCallRequestUpdateManyMutationInput, OutboundCallRequestUncheckedUpdateManyWithoutCallSessionInput>
+  }
+
+  export type TranscriptSegmentUpsertWithWhereUniqueWithoutCallSessionInput = {
+    where: TranscriptSegmentWhereUniqueInput
+    update: XOR<TranscriptSegmentUpdateWithoutCallSessionInput, TranscriptSegmentUncheckedUpdateWithoutCallSessionInput>
+    create: XOR<TranscriptSegmentCreateWithoutCallSessionInput, TranscriptSegmentUncheckedCreateWithoutCallSessionInput>
+  }
+
+  export type TranscriptSegmentUpdateWithWhereUniqueWithoutCallSessionInput = {
+    where: TranscriptSegmentWhereUniqueInput
+    data: XOR<TranscriptSegmentUpdateWithoutCallSessionInput, TranscriptSegmentUncheckedUpdateWithoutCallSessionInput>
+  }
+
+  export type TranscriptSegmentUpdateManyWithWhereWithoutCallSessionInput = {
+    where: TranscriptSegmentScalarWhereInput
+    data: XOR<TranscriptSegmentUpdateManyMutationInput, TranscriptSegmentUncheckedUpdateManyWithoutCallSessionInput>
   }
 
   export type UsageRecordUpsertWithWhereUniqueWithoutCallSessionInput = {
@@ -22013,11 +23636,11 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutCallSessionsInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
 
@@ -22041,11 +23664,11 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
@@ -22064,14 +23687,15 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     callSessions?: CallSessionCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCallEventsInput = {
@@ -22084,14 +23708,15 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCallEventsInput = {
@@ -22130,11 +23755,11 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -22158,11 +23783,11 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -22187,14 +23812,15 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCallEventsInput = {
@@ -22207,14 +23833,15 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallSessionCreateWithoutTranscriptSegmentsInput = {
@@ -22236,11 +23863,11 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     events?: CallEventCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
@@ -22266,9 +23893,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
@@ -22287,15 +23914,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutTranscriptSegmentsInput = {
@@ -22307,15 +23935,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutTranscriptSegmentsInput = {
@@ -22353,11 +23982,11 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
@@ -22383,9 +24012,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
@@ -22410,15 +24039,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutTranscriptSegmentsInput = {
@@ -22430,15 +24060,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallSessionCreateWithoutLeadExtractionInput = {
@@ -22460,12 +24091,12 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
     outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
 
@@ -22490,10 +24121,10 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
     outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
@@ -22511,15 +24142,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutLeadExtractionsInput = {
@@ -22531,15 +24163,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutLeadExtractionsInput = {
@@ -22577,12 +24210,12 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
     outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -22607,10 +24240,10 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
     outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -22634,15 +24267,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutLeadExtractionsInput = {
@@ -22654,15 +24288,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutCampaignsInput = {
@@ -22674,15 +24309,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCampaignsInput = {
@@ -22694,15 +24330,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCampaignsInput = {
@@ -22786,15 +24423,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCampaignsInput = {
@@ -22806,15 +24444,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CampaignCallUpsertWithWhereUniqueWithoutCampaignInput = {
@@ -22849,6 +24488,67 @@ export namespace Prisma {
     data: XOR<CampaignContactUpdateManyMutationInput, CampaignContactUncheckedUpdateManyWithoutCampaignInput>
   }
 
+  export type CallSessionCreateWithoutCampaignLinksInput = {
+    id?: string
+    externalCallId?: string | null
+    roomId: string
+    phoneNumber?: string | null
+    agentName?: string | null
+    direction?: string | null
+    status?: $Enums.CallLifecycleStatus
+    initiatedAt?: Date | string
+    connectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    failedAt?: Date | string | null
+    durationSec?: number | null
+    transcriptTurns?: number | null
+    recordingUrl?: string | null
+    estimatedCost?: Decimal | DecimalJsLike | number | string | null
+    lastError?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    events?: CallEventCreateNestedManyWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
+    sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
+    usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionUncheckedCreateWithoutCampaignLinksInput = {
+    id?: string
+    tenantId: string
+    externalCallId?: string | null
+    roomId: string
+    phoneNumber?: string | null
+    agentName?: string | null
+    direction?: string | null
+    status?: $Enums.CallLifecycleStatus
+    initiatedAt?: Date | string
+    connectedAt?: Date | string | null
+    completedAt?: Date | string | null
+    failedAt?: Date | string | null
+    durationSec?: number | null
+    transcriptTurns?: number | null
+    recordingUrl?: string | null
+    estimatedCost?: Decimal | DecimalJsLike | number | string | null
+    lastError?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
+    sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
+    outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
+    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
+  }
+
+  export type CallSessionCreateOrConnectWithoutCampaignLinksInput = {
+    where: CallSessionWhereUniqueInput
+    create: XOR<CallSessionCreateWithoutCampaignLinksInput, CallSessionUncheckedCreateWithoutCampaignLinksInput>
+  }
+
   export type CampaignCreateWithoutCallsInput = {
     id?: string
     name: string
@@ -22876,67 +24576,6 @@ export namespace Prisma {
     create: XOR<CampaignCreateWithoutCallsInput, CampaignUncheckedCreateWithoutCallsInput>
   }
 
-  export type CallSessionCreateWithoutCampaignLinksInput = {
-    id?: string
-    externalCallId?: string | null
-    roomId: string
-    phoneNumber?: string | null
-    agentName?: string | null
-    direction?: string | null
-    status?: $Enums.CallLifecycleStatus
-    initiatedAt?: Date | string
-    connectedAt?: Date | string | null
-    completedAt?: Date | string | null
-    failedAt?: Date | string | null
-    durationSec?: number | null
-    transcriptTurns?: number | null
-    recordingUrl?: string | null
-    estimatedCost?: Decimal | DecimalJsLike | number | string | null
-    lastError?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
-    events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
-    sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
-    outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
-    usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
-  }
-
-  export type CallSessionUncheckedCreateWithoutCampaignLinksInput = {
-    id?: string
-    tenantId: string
-    externalCallId?: string | null
-    roomId: string
-    phoneNumber?: string | null
-    agentName?: string | null
-    direction?: string | null
-    status?: $Enums.CallLifecycleStatus
-    initiatedAt?: Date | string
-    connectedAt?: Date | string | null
-    completedAt?: Date | string | null
-    failedAt?: Date | string | null
-    durationSec?: number | null
-    transcriptTurns?: number | null
-    recordingUrl?: string | null
-    estimatedCost?: Decimal | DecimalJsLike | number | string | null
-    lastError?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
-    sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
-    outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
-    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
-  }
-
-  export type CallSessionCreateOrConnectWithoutCampaignLinksInput = {
-    where: CallSessionWhereUniqueInput
-    create: XOR<CallSessionCreateWithoutCampaignLinksInput, CallSessionUncheckedCreateWithoutCampaignLinksInput>
-  }
-
   export type TenantCreateWithoutCampaignCallsInput = {
     id?: string
     name?: string | null
@@ -22946,15 +24585,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCampaignCallsInput = {
@@ -22966,20 +24606,88 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCampaignCallsInput = {
     where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutCampaignCallsInput, TenantUncheckedCreateWithoutCampaignCallsInput>
+  }
+
+  export type CallSessionUpsertWithoutCampaignLinksInput = {
+    update: XOR<CallSessionUpdateWithoutCampaignLinksInput, CallSessionUncheckedUpdateWithoutCampaignLinksInput>
+    create: XOR<CallSessionCreateWithoutCampaignLinksInput, CallSessionUncheckedCreateWithoutCampaignLinksInput>
+    where?: CallSessionWhereInput
+  }
+
+  export type CallSessionUpdateToOneWithWhereWithoutCampaignLinksInput = {
+    where?: CallSessionWhereInput
+    data: XOR<CallSessionUpdateWithoutCampaignLinksInput, CallSessionUncheckedUpdateWithoutCampaignLinksInput>
+  }
+
+  export type CallSessionUpdateWithoutCampaignLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    direction?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
+    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
+    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
+    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: CallEventUpdateManyWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
+    sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
+    usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateWithoutCampaignLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    direction?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
+    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
+    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
+    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
+    sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
+    outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
+    usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
 
   export type CampaignUpsertWithoutCallsInput = {
@@ -23015,73 +24723,6 @@ export namespace Prisma {
     contacts?: CampaignContactUncheckedUpdateManyWithoutCampaignNestedInput
   }
 
-  export type CallSessionUpsertWithoutCampaignLinksInput = {
-    update: XOR<CallSessionUpdateWithoutCampaignLinksInput, CallSessionUncheckedUpdateWithoutCampaignLinksInput>
-    create: XOR<CallSessionCreateWithoutCampaignLinksInput, CallSessionUncheckedCreateWithoutCampaignLinksInput>
-    where?: CallSessionWhereInput
-  }
-
-  export type CallSessionUpdateToOneWithWhereWithoutCampaignLinksInput = {
-    where?: CallSessionWhereInput
-    data: XOR<CallSessionUpdateWithoutCampaignLinksInput, CallSessionUncheckedUpdateWithoutCampaignLinksInput>
-  }
-
-  export type CallSessionUpdateWithoutCampaignLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    roomId?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    direction?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
-    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
-    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
-    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    lastError?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
-    events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
-    sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
-    outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
-    usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
-  }
-
-  export type CallSessionUncheckedUpdateWithoutCampaignLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tenantId?: StringFieldUpdateOperationsInput | string
-    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    roomId?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    direction?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
-    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
-    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
-    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    lastError?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
-    sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
-    outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
-    usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
-  }
-
   export type TenantUpsertWithoutCampaignCallsInput = {
     update: XOR<TenantUpdateWithoutCampaignCallsInput, TenantUncheckedUpdateWithoutCampaignCallsInput>
     create: XOR<TenantCreateWithoutCampaignCallsInput, TenantUncheckedCreateWithoutCampaignCallsInput>
@@ -23102,15 +24743,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCampaignCallsInput = {
@@ -23122,15 +24764,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CampaignCreateWithoutContactsInput = {
@@ -23179,12 +24822,12 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
 
@@ -23209,10 +24852,10 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
@@ -23230,15 +24873,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutCampaignContactsInput = {
@@ -23250,15 +24894,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutCampaignContactsInput = {
@@ -23329,12 +24974,12 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -23359,10 +25004,10 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -23386,15 +25031,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutCampaignContactsInput = {
@@ -23406,15 +25052,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantCreateWithoutWalletTransactionsInput = {
@@ -23426,15 +25073,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
     campaigns?: CampaignCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
   }
 
   export type TenantUncheckedCreateWithoutWalletTransactionsInput = {
@@ -23446,15 +25094,16 @@ export namespace Prisma {
     walletBalancePaise?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
     campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
     campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
     campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
     outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
   }
 
   export type TenantCreateOrConnectWithoutWalletTransactionsInput = {
@@ -23482,15 +25131,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
   }
 
   export type TenantUncheckedUpdateWithoutWalletTransactionsInput = {
@@ -23502,60 +25152,16 @@ export namespace Prisma {
     walletBalancePaise?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
     campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
     campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
     campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
     outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
-  }
-
-  export type TenantCreateWithoutOutboundCallRequestsInput = {
-    id?: string
-    name?: string | null
-    plan?: $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
-    callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
-    campaigns?: CampaignCreateNestedManyWithoutTenantInput
-    campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
-    campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
-    usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
-  }
-
-  export type TenantUncheckedCreateWithoutOutboundCallRequestsInput = {
-    id?: string
-    name?: string | null
-    plan?: $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
-    callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
-    campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
-    campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
-    campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
-    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
-  }
-
-  export type TenantCreateOrConnectWithoutOutboundCallRequestsInput = {
-    where: TenantWhereUniqueInput
-    create: XOR<TenantCreateWithoutOutboundCallRequestsInput, TenantUncheckedCreateWithoutOutboundCallRequestsInput>
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallSessionCreateWithoutOutboundRequestsInput = {
@@ -23577,12 +25183,12 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordCreateNestedManyWithoutCallSessionInput
   }
 
@@ -23607,10 +25213,10 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
     usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
@@ -23619,55 +25225,51 @@ export namespace Prisma {
     create: XOR<CallSessionCreateWithoutOutboundRequestsInput, CallSessionUncheckedCreateWithoutOutboundRequestsInput>
   }
 
-  export type TenantUpsertWithoutOutboundCallRequestsInput = {
-    update: XOR<TenantUpdateWithoutOutboundCallRequestsInput, TenantUncheckedUpdateWithoutOutboundCallRequestsInput>
+  export type TenantCreateWithoutOutboundCallRequestsInput = {
+    id?: string
+    name?: string | null
+    plan?: $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callEvents?: CallEventCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
+    campaigns?: CampaignCreateNestedManyWithoutTenantInput
+    campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
+    campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
+    usageRecords?: UsageRecordCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutOutboundCallRequestsInput = {
+    id?: string
+    name?: string | null
+    plan?: $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
+    campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
+    campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
+    usageRecords?: UsageRecordUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutOutboundCallRequestsInput = {
+    where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutOutboundCallRequestsInput, TenantUncheckedCreateWithoutOutboundCallRequestsInput>
-    where?: TenantWhereInput
-  }
-
-  export type TenantUpdateToOneWithWhereWithoutOutboundCallRequestsInput = {
-    where?: TenantWhereInput
-    data: XOR<TenantUpdateWithoutOutboundCallRequestsInput, TenantUncheckedUpdateWithoutOutboundCallRequestsInput>
-  }
-
-  export type TenantUpdateWithoutOutboundCallRequestsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
-    callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
-    campaigns?: CampaignUpdateManyWithoutTenantNestedInput
-    campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
-    campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
-    usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
-  }
-
-  export type TenantUncheckedUpdateWithoutOutboundCallRequestsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
-    callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
-    campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
-    campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
-    campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
-    usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallSessionUpsertWithoutOutboundRequestsInput = {
@@ -23700,12 +25302,12 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
 
@@ -23730,56 +25332,64 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
     usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
   }
 
-  export type TenantCreateWithoutUsageRecordsInput = {
-    id?: string
-    name?: string | null
-    plan?: $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
-    callEvents?: CallEventCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
-    campaigns?: CampaignCreateNestedManyWithoutTenantInput
-    campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
-    campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
-    outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+  export type TenantUpsertWithoutOutboundCallRequestsInput = {
+    update: XOR<TenantUpdateWithoutOutboundCallRequestsInput, TenantUncheckedUpdateWithoutOutboundCallRequestsInput>
+    create: XOR<TenantCreateWithoutOutboundCallRequestsInput, TenantUncheckedCreateWithoutOutboundCallRequestsInput>
+    where?: TenantWhereInput
   }
 
-  export type TenantUncheckedCreateWithoutUsageRecordsInput = {
-    id?: string
-    name?: string | null
-    plan?: $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
-    callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
-    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
-    campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
-    campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
-    campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
-    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
-    outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+  export type TenantUpdateToOneWithWhereWithoutOutboundCallRequestsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutOutboundCallRequestsInput, TenantUncheckedUpdateWithoutOutboundCallRequestsInput>
   }
 
-  export type TenantCreateOrConnectWithoutUsageRecordsInput = {
-    where: TenantWhereUniqueInput
-    create: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
+  export type TenantUpdateWithoutOutboundCallRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callEvents?: CallEventUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
+    campaigns?: CampaignUpdateManyWithoutTenantNestedInput
+    campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
+    campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
+    usageRecords?: UsageRecordUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutOutboundCallRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
+    campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
+    campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
+    usageRecords?: UsageRecordUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallSessionCreateWithoutUsageRecordsInput = {
@@ -23801,13 +25411,13 @@ export namespace Prisma {
     lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     events?: CallEventCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
+    tenant: TenantCreateNestedOneWithoutCallSessionsInput
     campaignLinks?: CampaignCallCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutCallSessionInput
   }
 
   export type CallSessionUncheckedCreateWithoutUsageRecordsInput = {
@@ -23831,11 +25441,11 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: CallEventUncheckedCreateNestedManyWithoutCallSessionInput
-    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
-    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     campaignLinks?: CampaignCallUncheckedCreateNestedManyWithoutCallInput
     sourceContacts?: CampaignContactUncheckedCreateNestedManyWithoutSourceCallInput
+    leadExtraction?: LeadExtractionUncheckedCreateNestedOneWithoutCallSessionInput
     outboundRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutCallSessionInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutCallSessionInput
   }
 
   export type CallSessionCreateOrConnectWithoutUsageRecordsInput = {
@@ -23843,55 +25453,51 @@ export namespace Prisma {
     create: XOR<CallSessionCreateWithoutUsageRecordsInput, CallSessionUncheckedCreateWithoutUsageRecordsInput>
   }
 
-  export type TenantUpsertWithoutUsageRecordsInput = {
-    update: XOR<TenantUpdateWithoutUsageRecordsInput, TenantUncheckedUpdateWithoutUsageRecordsInput>
+  export type TenantCreateWithoutUsageRecordsInput = {
+    id?: string
+    name?: string | null
+    plan?: $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callEvents?: CallEventCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionCreateNestedManyWithoutTenantInput
+    campaigns?: CampaignCreateNestedManyWithoutTenantInput
+    campaignCalls?: CampaignCallCreateNestedManyWithoutTenantInput
+    campaignContacts?: CampaignContactCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionCreateNestedManyWithoutTenantInput
+    outboundCallRequests?: OutboundCallRequestCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentCreateNestedManyWithoutTenantInput
+    users?: UserCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantUncheckedCreateWithoutUsageRecordsInput = {
+    id?: string
+    name?: string | null
+    plan?: $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callEvents?: CallEventUncheckedCreateNestedManyWithoutTenantInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTenantInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutTenantInput
+    campaignCalls?: CampaignCallUncheckedCreateNestedManyWithoutTenantInput
+    campaignContacts?: CampaignContactUncheckedCreateNestedManyWithoutTenantInput
+    leadExtractions?: LeadExtractionUncheckedCreateNestedManyWithoutTenantInput
+    outboundCallRequests?: OutboundCallRequestUncheckedCreateNestedManyWithoutTenantInput
+    transcriptSegments?: TranscriptSegmentUncheckedCreateNestedManyWithoutTenantInput
+    users?: UserUncheckedCreateNestedManyWithoutTenantInput
+    walletTransactions?: WalletTransactionUncheckedCreateNestedManyWithoutTenantInput
+  }
+
+  export type TenantCreateOrConnectWithoutUsageRecordsInput = {
+    where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
-    where?: TenantWhereInput
-  }
-
-  export type TenantUpdateToOneWithWhereWithoutUsageRecordsInput = {
-    where?: TenantWhereInput
-    data: XOR<TenantUpdateWithoutUsageRecordsInput, TenantUncheckedUpdateWithoutUsageRecordsInput>
-  }
-
-  export type TenantUpdateWithoutUsageRecordsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
-    callEvents?: CallEventUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
-    campaigns?: CampaignUpdateManyWithoutTenantNestedInput
-    campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
-    campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
-    outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
-  }
-
-  export type TenantUncheckedUpdateWithoutUsageRecordsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
-    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
-    featuresJson?: NullableJsonNullValueInput | InputJsonValue
-    walletBalancePaise?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
-    callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
-    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
-    campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
-    campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
-    campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
-    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
-    outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
   }
 
   export type CallSessionUpsertWithoutUsageRecordsInput = {
@@ -23924,13 +25530,13 @@ export namespace Prisma {
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    tenant?: TenantUpdateOneRequiredWithoutCallSessionsNestedInput
     campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
   }
 
   export type CallSessionUncheckedUpdateWithoutUsageRecordsInput = {
@@ -23954,11 +25560,77 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
     sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
     outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type TenantUpsertWithoutUsageRecordsInput = {
+    update: XOR<TenantUpdateWithoutUsageRecordsInput, TenantUncheckedUpdateWithoutUsageRecordsInput>
+    create: XOR<TenantCreateWithoutUsageRecordsInput, TenantUncheckedCreateWithoutUsageRecordsInput>
+    where?: TenantWhereInput
+  }
+
+  export type TenantUpdateToOneWithWhereWithoutUsageRecordsInput = {
+    where?: TenantWhereInput
+    data: XOR<TenantUpdateWithoutUsageRecordsInput, TenantUncheckedUpdateWithoutUsageRecordsInput>
+  }
+
+  export type TenantUpdateWithoutUsageRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callEvents?: CallEventUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTenantNestedInput
+    campaigns?: CampaignUpdateManyWithoutTenantNestedInput
+    campaignCalls?: CampaignCallUpdateManyWithoutTenantNestedInput
+    campaignContacts?: CampaignContactUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUpdateManyWithoutTenantNestedInput
+    outboundCallRequests?: OutboundCallRequestUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutTenantNestedInput
+    users?: UserUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUpdateManyWithoutTenantNestedInput
+  }
+
+  export type TenantUncheckedUpdateWithoutUsageRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumPlanKeyFieldUpdateOperationsInput | $Enums.PlanKey
+    workspaceConfigJson?: NullableJsonNullValueInput | InputJsonValue
+    featuresJson?: NullableJsonNullValueInput | InputJsonValue
+    walletBalancePaise?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callEvents?: CallEventUncheckedUpdateManyWithoutTenantNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTenantNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutTenantNestedInput
+    campaignCalls?: CampaignCallUncheckedUpdateManyWithoutTenantNestedInput
+    campaignContacts?: CampaignContactUncheckedUpdateManyWithoutTenantNestedInput
+    leadExtractions?: LeadExtractionUncheckedUpdateManyWithoutTenantNestedInput
+    outboundCallRequests?: OutboundCallRequestUncheckedUpdateManyWithoutTenantNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutTenantNestedInput
+    users?: UserUncheckedUpdateManyWithoutTenantNestedInput
+    walletTransactions?: WalletTransactionUncheckedUpdateManyWithoutTenantNestedInput
+  }
+
+  export type CallEventCreateManyTenantInput = {
+    id?: string
+    callId: string
+    eventType: $Enums.VoiceEventType
+    occurredAt: Date | string
+    eventId: string
+    payloadJson?: NullableJsonNullValueInput | InputJsonValue
+    rawEnvelope?: NullableJsonNullValueInput | InputJsonValue
+    rawHeaders?: NullableJsonNullValueInput | InputJsonValue
+    normalizedJson?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
   }
 
   export type CallSessionCreateManyTenantInput = {
@@ -23978,52 +25650,6 @@ export namespace Prisma {
     recordingUrl?: string | null
     estimatedCost?: Decimal | DecimalJsLike | number | string | null
     lastError?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type CallEventCreateManyTenantInput = {
-    id?: string
-    callId: string
-    eventType: $Enums.VoiceEventType
-    occurredAt: Date | string
-    eventId: string
-    payloadJson?: NullableJsonNullValueInput | InputJsonValue
-    rawEnvelope?: NullableJsonNullValueInput | InputJsonValue
-    rawHeaders?: NullableJsonNullValueInput | InputJsonValue
-    normalizedJson?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-  }
-
-  export type TranscriptSegmentCreateManyTenantInput = {
-    id?: string
-    callId: string
-    speaker: $Enums.Speaker
-    text: string
-    isFinal?: boolean
-    sequenceNo: number
-    providerMessageId?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type LeadExtractionCreateManyTenantInput = {
-    id?: string
-    callId: string
-    extractedAt: Date | string
-    name?: string | null
-    phone?: string | null
-    summary: string
-    confidence?: number | null
-    intent?: string | null
-    propertyType?: string | null
-    location?: string | null
-    budget?: string | null
-    timeline?: string | null
-    phoneNumber?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24055,16 +25681,21 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type WalletTransactionCreateManyTenantInput = {
+  export type LeadExtractionCreateManyTenantInput = {
     id?: string
-    type: $Enums.WalletTransactionType
-    amountPaise: number
-    description: string
-    provider?: string | null
-    providerOrderId?: string | null
-    providerPaymentId?: string | null
-    referenceId?: string | null
-    status?: $Enums.WalletTransactionStatus
+    callId: string
+    extractedAt: Date | string
+    name?: string | null
+    phone?: string | null
+    summary: string
+    confidence?: number | null
+    intent?: string | null
+    propertyType?: string | null
+    location?: string | null
+    budget?: string | null
+    timeline?: string | null
+    phoneNumber?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24082,6 +25713,20 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type TranscriptSegmentCreateManyTenantInput = {
+    id?: string
+    callId: string
+    speaker: $Enums.Speaker
+    text: string
+    isFinal?: boolean
+    sequenceNo: number
+    providerMessageId?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UsageRecordCreateManyTenantInput = {
     id?: string
     callId: string
@@ -24094,81 +25739,27 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type CallSessionUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    roomId?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    direction?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
-    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
-    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
-    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    lastError?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    events?: CallEventUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
-    campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
-    sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
-    outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
-    usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
+  export type UserCreateManyTenantInput = {
+    id?: string
+    email: string
+    fullName: string
+    passwordHash: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type CallSessionUncheckedUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    roomId?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    direction?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
-    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
-    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
-    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    lastError?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
-    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
-    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
-    campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
-    sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
-    outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
-    usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
-  }
-
-  export type CallSessionUncheckedUpdateManyWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    roomId?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    direction?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
-    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
-    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
-    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    lastError?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type WalletTransactionCreateManyTenantInput = {
+    id?: string
+    type: $Enums.WalletTransactionType
+    amountPaise: number
+    description: string
+    provider?: string | null
+    providerOrderId?: string | null
+    providerPaymentId?: string | null
+    referenceId?: string | null
+    status?: $Enums.WalletTransactionStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CallEventUpdateWithoutTenantInput = {
@@ -24210,44 +25801,164 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TranscriptSegmentUpdateWithoutTenantInput = {
+  export type CallSessionUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
-    text?: StringFieldUpdateOperationsInput | string
-    isFinal?: BoolFieldUpdateOperationsInput | boolean
-    sequenceNo?: IntFieldUpdateOperationsInput | number
-    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    direction?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
+    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
+    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
+    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSession?: CallSessionUpdateOneRequiredWithoutTranscriptSegmentsNestedInput
+    events?: CallEventUpdateManyWithoutCallSessionNestedInput
+    campaignLinks?: CampaignCallUpdateManyWithoutCallNestedInput
+    sourceContacts?: CampaignContactUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUpdateOneWithoutCallSessionNestedInput
+    outboundRequests?: OutboundCallRequestUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUpdateManyWithoutCallSessionNestedInput
+    usageRecords?: UsageRecordUpdateManyWithoutCallSessionNestedInput
   }
 
-  export type TranscriptSegmentUncheckedUpdateWithoutTenantInput = {
+  export type CallSessionUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    callId?: StringFieldUpdateOperationsInput | string
-    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
-    text?: StringFieldUpdateOperationsInput | string
-    isFinal?: BoolFieldUpdateOperationsInput | boolean
-    sequenceNo?: IntFieldUpdateOperationsInput | number
-    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    direction?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
+    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
+    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
+    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: CallEventUncheckedUpdateManyWithoutCallSessionNestedInput
+    campaignLinks?: CampaignCallUncheckedUpdateManyWithoutCallNestedInput
+    sourceContacts?: CampaignContactUncheckedUpdateManyWithoutSourceCallNestedInput
+    leadExtraction?: LeadExtractionUncheckedUpdateOneWithoutCallSessionNestedInput
+    outboundRequests?: OutboundCallRequestUncheckedUpdateManyWithoutCallSessionNestedInput
+    transcriptSegments?: TranscriptSegmentUncheckedUpdateManyWithoutCallSessionNestedInput
+    usageRecords?: UsageRecordUncheckedUpdateManyWithoutCallSessionNestedInput
+  }
+
+  export type CallSessionUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    externalCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    direction?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCallLifecycleStatusFieldUpdateOperationsInput | $Enums.CallLifecycleStatus
+    initiatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    connectedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
+    transcriptTurns?: NullableIntFieldUpdateOperationsInput | number | null
+    recordingUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    estimatedCost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TranscriptSegmentUncheckedUpdateManyWithoutTenantInput = {
+  export type CampaignUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    calls?: CampaignCallUpdateManyWithoutCampaignNestedInput
+    contacts?: CampaignContactUpdateManyWithoutCampaignNestedInput
+  }
+
+  export type CampaignUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    calls?: CampaignCallUncheckedUpdateManyWithoutCampaignNestedInput
+    contacts?: CampaignContactUncheckedUpdateManyWithoutCampaignNestedInput
+  }
+
+  export type CampaignUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignCallUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    call?: CallSessionUpdateOneRequiredWithoutCampaignLinksNestedInput
+    campaign?: CampaignUpdateOneRequiredWithoutCallsNestedInput
+  }
+
+  export type CampaignCallUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    campaignId?: StringFieldUpdateOperationsInput | string
     callId?: StringFieldUpdateOperationsInput | string
-    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
-    text?: StringFieldUpdateOperationsInput | string
-    isFinal?: BoolFieldUpdateOperationsInput | boolean
-    sequenceNo?: IntFieldUpdateOperationsInput | number
-    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignCallUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    campaignId?: StringFieldUpdateOperationsInput | string
+    callId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignContactUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    campaign?: CampaignUpdateOneRequiredWithoutContactsNestedInput
+    sourceCall?: CallSessionUpdateOneWithoutSourceContactsNestedInput
+  }
+
+  export type CampaignContactUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    campaignId?: StringFieldUpdateOperationsInput | string
+    sourceCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CampaignContactUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    campaignId?: StringFieldUpdateOperationsInput | string
+    sourceCallId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24309,87 +26020,146 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CampaignUpdateWithoutTenantInput = {
+  export type OutboundCallRequestUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    phoneNumber?: StringFieldUpdateOperationsInput | string
+    roomId?: StringFieldUpdateOperationsInput | string
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
+    payloadJson?: NullableJsonNullValueInput | InputJsonValue
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    calls?: CampaignCallUpdateManyWithoutCampaignNestedInput
-    contacts?: CampaignContactUpdateManyWithoutCampaignNestedInput
+    callSession?: CallSessionUpdateOneWithoutOutboundRequestsNestedInput
   }
 
-  export type CampaignUncheckedUpdateWithoutTenantInput = {
+  export type OutboundCallRequestUncheckedUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    calls?: CampaignCallUncheckedUpdateManyWithoutCampaignNestedInput
-    contacts?: CampaignContactUncheckedUpdateManyWithoutCampaignNestedInput
-  }
-
-  export type CampaignUncheckedUpdateManyWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumCampaignStatusFieldUpdateOperationsInput | $Enums.CampaignStatus
+    phoneNumber?: StringFieldUpdateOperationsInput | string
+    roomId?: StringFieldUpdateOperationsInput | string
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
+    payloadJson?: NullableJsonNullValueInput | InputJsonValue
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CampaignCallUpdateWithoutTenantInput = {
+  export type OutboundCallRequestUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: StringFieldUpdateOperationsInput | string
+    roomId?: StringFieldUpdateOperationsInput | string
+    agentName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
+    payloadJson?: NullableJsonNullValueInput | InputJsonValue
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    campaign?: CampaignUpdateOneRequiredWithoutCallsNestedInput
-    call?: CallSessionUpdateOneRequiredWithoutCampaignLinksNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CampaignCallUncheckedUpdateWithoutTenantInput = {
+  export type TranscriptSegmentUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    campaignId?: StringFieldUpdateOperationsInput | string
+    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
+    text?: StringFieldUpdateOperationsInput | string
+    isFinal?: BoolFieldUpdateOperationsInput | boolean
+    sequenceNo?: IntFieldUpdateOperationsInput | number
+    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callSession?: CallSessionUpdateOneRequiredWithoutTranscriptSegmentsNestedInput
+  }
+
+  export type TranscriptSegmentUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
     callId?: StringFieldUpdateOperationsInput | string
+    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
+    text?: StringFieldUpdateOperationsInput | string
+    isFinal?: BoolFieldUpdateOperationsInput | boolean
+    sequenceNo?: IntFieldUpdateOperationsInput | number
+    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CampaignCallUncheckedUpdateManyWithoutTenantInput = {
+  export type TranscriptSegmentUncheckedUpdateManyWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    campaignId?: StringFieldUpdateOperationsInput | string
     callId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CampaignContactUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    campaign?: CampaignUpdateOneRequiredWithoutContactsNestedInput
-    sourceCall?: CallSessionUpdateOneWithoutSourceContactsNestedInput
-  }
-
-  export type CampaignContactUncheckedUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    campaignId?: StringFieldUpdateOperationsInput | string
-    sourceCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
+    text?: StringFieldUpdateOperationsInput | string
+    isFinal?: BoolFieldUpdateOperationsInput | boolean
+    sequenceNo?: IntFieldUpdateOperationsInput | number
+    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CampaignContactUncheckedUpdateManyWithoutTenantInput = {
+  export type UsageRecordUpdateWithoutTenantInput = {
     id?: StringFieldUpdateOperationsInput | string
-    campaignId?: StringFieldUpdateOperationsInput | string
-    sourceCallId?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    usageType?: EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+    amountPaise?: IntFieldUpdateOperationsInput | number
+    status?: EnumUsageRecordStatusFieldUpdateOperationsInput | $Enums.UsageRecordStatus
+    sourceEventId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callSession?: CallSessionUpdateOneRequiredWithoutUsageRecordsNestedInput
+  }
+
+  export type UsageRecordUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    callId?: StringFieldUpdateOperationsInput | string
+    usageType?: EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+    amountPaise?: IntFieldUpdateOperationsInput | number
+    status?: EnumUsageRecordStatusFieldUpdateOperationsInput | $Enums.UsageRecordStatus
+    sourceEventId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UsageRecordUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    callId?: StringFieldUpdateOperationsInput | string
+    usageType?: EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+    amountPaise?: IntFieldUpdateOperationsInput | number
+    status?: EnumUsageRecordStatusFieldUpdateOperationsInput | $Enums.UsageRecordStatus
+    sourceEventId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateManyWithoutTenantInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24436,81 +26206,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type OutboundCallRequestUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: StringFieldUpdateOperationsInput | string
-    roomId?: StringFieldUpdateOperationsInput | string
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
-    payloadJson?: NullableJsonNullValueInput | InputJsonValue
-    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSession?: CallSessionUpdateOneWithoutOutboundRequestsNestedInput
-  }
-
-  export type OutboundCallRequestUncheckedUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: StringFieldUpdateOperationsInput | string
-    roomId?: StringFieldUpdateOperationsInput | string
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
-    payloadJson?: NullableJsonNullValueInput | InputJsonValue
-    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type OutboundCallRequestUncheckedUpdateManyWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: StringFieldUpdateOperationsInput | string
-    roomId?: StringFieldUpdateOperationsInput | string
-    agentName?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
-    payloadJson?: NullableJsonNullValueInput | InputJsonValue
-    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    callSessionId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type UsageRecordUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    usageType?: EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
-    amountPaise?: IntFieldUpdateOperationsInput | number
-    status?: EnumUsageRecordStatusFieldUpdateOperationsInput | $Enums.UsageRecordStatus
-    sourceEventId?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    callSession?: CallSessionUpdateOneRequiredWithoutUsageRecordsNestedInput
-  }
-
-  export type UsageRecordUncheckedUpdateWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    callId?: StringFieldUpdateOperationsInput | string
-    usageType?: EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
-    amountPaise?: IntFieldUpdateOperationsInput | number
-    status?: EnumUsageRecordStatusFieldUpdateOperationsInput | $Enums.UsageRecordStatus
-    sourceEventId?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type UsageRecordUncheckedUpdateManyWithoutTenantInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    callId?: StringFieldUpdateOperationsInput | string
-    usageType?: EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
-    amountPaise?: IntFieldUpdateOperationsInput | number
-    status?: EnumUsageRecordStatusFieldUpdateOperationsInput | $Enums.UsageRecordStatus
-    sourceEventId?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type CallEventCreateManyCallSessionInput = {
     id?: string
     tenantId: string
@@ -24522,20 +26217,6 @@ export namespace Prisma {
     rawHeaders?: NullableJsonNullValueInput | InputJsonValue
     normalizedJson?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-  }
-
-  export type TranscriptSegmentCreateManyCallSessionInput = {
-    id?: string
-    tenantId: string
-    speaker: $Enums.Speaker
-    text: string
-    isFinal?: boolean
-    sequenceNo: number
-    providerMessageId?: string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type CampaignCallCreateManyCallInput = {
@@ -24565,6 +26246,20 @@ export namespace Prisma {
     status?: $Enums.OutboundRequestStatus
     payloadJson?: NullableJsonNullValueInput | InputJsonValue
     errorMessage?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TranscriptSegmentCreateManyCallSessionInput = {
+    id?: string
+    tenantId: string
+    speaker: $Enums.Speaker
+    text: string
+    isFinal?: boolean
+    sequenceNo: number
+    providerMessageId?: string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24618,48 +26313,6 @@ export namespace Prisma {
     rawHeaders?: NullableJsonNullValueInput | InputJsonValue
     normalizedJson?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TranscriptSegmentUpdateWithoutCallSessionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
-    text?: StringFieldUpdateOperationsInput | string
-    isFinal?: BoolFieldUpdateOperationsInput | boolean
-    sequenceNo?: IntFieldUpdateOperationsInput | number
-    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tenant?: TenantUpdateOneRequiredWithoutTranscriptSegmentsNestedInput
-  }
-
-  export type TranscriptSegmentUncheckedUpdateWithoutCallSessionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tenantId?: StringFieldUpdateOperationsInput | string
-    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
-    text?: StringFieldUpdateOperationsInput | string
-    isFinal?: BoolFieldUpdateOperationsInput | boolean
-    sequenceNo?: IntFieldUpdateOperationsInput | number
-    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TranscriptSegmentUncheckedUpdateManyWithoutCallSessionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tenantId?: StringFieldUpdateOperationsInput | string
-    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
-    text?: StringFieldUpdateOperationsInput | string
-    isFinal?: BoolFieldUpdateOperationsInput | boolean
-    sequenceNo?: IntFieldUpdateOperationsInput | number
-    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
-    rawJson?: NullableJsonNullValueInput | InputJsonValue
-    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CampaignCallUpdateWithoutCallInput = {
@@ -24751,6 +26404,48 @@ export namespace Prisma {
     status?: EnumOutboundRequestStatusFieldUpdateOperationsInput | $Enums.OutboundRequestStatus
     payloadJson?: NullableJsonNullValueInput | InputJsonValue
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TranscriptSegmentUpdateWithoutCallSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
+    text?: StringFieldUpdateOperationsInput | string
+    isFinal?: BoolFieldUpdateOperationsInput | boolean
+    sequenceNo?: IntFieldUpdateOperationsInput | number
+    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneRequiredWithoutTranscriptSegmentsNestedInput
+  }
+
+  export type TranscriptSegmentUncheckedUpdateWithoutCallSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
+    text?: StringFieldUpdateOperationsInput | string
+    isFinal?: BoolFieldUpdateOperationsInput | boolean
+    sequenceNo?: IntFieldUpdateOperationsInput | number
+    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TranscriptSegmentUncheckedUpdateManyWithoutCallSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: StringFieldUpdateOperationsInput | string
+    speaker?: EnumSpeakerFieldUpdateOperationsInput | $Enums.Speaker
+    text?: StringFieldUpdateOperationsInput | string
+    isFinal?: BoolFieldUpdateOperationsInput | boolean
+    sequenceNo?: IntFieldUpdateOperationsInput | number
+    providerMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    rawJson?: NullableJsonNullValueInput | InputJsonValue
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

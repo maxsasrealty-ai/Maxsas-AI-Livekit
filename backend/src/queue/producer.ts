@@ -65,21 +65,18 @@ export async function enqueueOutboundCallRequestJob(args: {
   }
 
   try {
-    return await outboundCallQueue.add(
-      "process-outbound-call",
-      {
+      await outboundCallQueue.add("process-outbound-call", {
         requestId: args.requestId,
         tenantId: args.tenantId,
-      },
-      {
+      }, {
         jobId: `outbound-call:${args.requestId}`,
         attempts: 3,
         backoff: {
           type: "exponential",
           delay: 1000,
         },
-      }
-    );
+      });
+      console.log("[CALLS] Enqueued outbound call request", { requestId: args.requestId, tenantId: args.tenantId });
   } catch (error) {
     logger.warn("Queue unavailable, falling back to direct outbound processing", {
       requestId: args.requestId,

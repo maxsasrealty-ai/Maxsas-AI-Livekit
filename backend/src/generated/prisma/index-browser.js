@@ -132,6 +132,16 @@ exports.Prisma.TenantScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  email: 'email',
+  fullName: 'fullName',
+  passwordHash: 'passwordHash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.CallSessionScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -373,6 +383,7 @@ exports.UsageRecordStatus = exports.$Enums.UsageRecordStatus = {
 
 exports.Prisma.ModelName = {
   Tenant: 'Tenant',
+  User: 'User',
   CallSession: 'CallSession',
   CallEvent: 'CallEvent',
   TranscriptSegment: 'TranscriptSegment',

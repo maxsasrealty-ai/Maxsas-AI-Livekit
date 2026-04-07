@@ -1,18 +1,18 @@
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Linking,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Linking,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
-import { createAdminTenant, fetchAdminTenants } from "../../../lib/api/admin";
-import { PlanName, TenantAdminRecord } from "../../../shared/contracts";
+import { createAdminTenant, fetchAdminTenants, fetchAdminUsers } from "../../../lib/api/admin";
+import { AdminUserRecord, PlanName, TenantAdminRecord } from "../../../shared/contracts";
 
 const PLAN_OPTIONS: PlanName[] = ["Lexus", "Prestige", "Enterprise"];
 
@@ -36,6 +36,7 @@ function getAdminConsoleUrl(): string {
 
 export default function AdminTenantsScreen() {
   const [tenants, setTenants] = useState<TenantAdminRecord[]>([]);
+  const [recentUsers, setRecentUsers] = useState<AdminUserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +60,19 @@ export default function AdminTenantsScreen() {
     setLoading(false);
   }, []);
 
+  const loadRecentUsers = useCallback(async () => {
+    const response = await fetchAdminUsers(8);
+    if (!response.success) {
+      return;
+    }
+
+    setRecentUsers(response.data);
+  }, []);
+
   useEffect(() => {
     void loadTenants();
-  }, [loadTenants]);
+    void loadRecentUsers();
+  }, [loadRecentUsers, loadTenants]);
 
   const canCreate = useMemo(() => newTenantId.trim().length > 0, [newTenantId]);
   const adminConsoleUrl = useMemo(() => getAdminConsoleUrl(), []);
@@ -150,6 +161,29 @@ export default function AdminTenantsScreen() {
               <Text style={s.quickButtonText}>DB Events</Text>
             </Pressable>
           </View>
+        </View>
+
+        <View style={s.card}>
+          <View style={s.sectionHeaderRow}>
+            <Text style={s.cardTitle}>Recent Signups</Text>
+            <Pressable onPress={() => void loadRecentUsers()}>
+              <Text style={s.refreshText}>Refresh</Text>
+            </Pressable>
+          </View>
+
+          {recentUsers.length === 0 ? (
+            <Text style={s.empty}>No signup users found yet.</Text>
+          ) : (
+            recentUsers.map((user) => (
+              <View key={user.id} style={s.userRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.userName}>{user.fullName}</Text>
+                  <Text style={s.userMeta}>{user.email}</Text>
+                  <Text style={s.userMeta}>Tenant: {user.tenantName || user.tenantId}</Text>
+                </View>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Create Tenant */}
@@ -267,6 +301,26 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(79,140,255,0.08)",
   },
   quickButtonText: { color: "#D4E2FF", fontWeight: "700", fontSize: 12 },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  refreshText: {
+    color: "#AFC8FF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  userRow: {
+    borderWidth: 1,
+    borderColor: "rgba(79,140,255,0.2)",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: "rgba(79,140,255,0.05)",
+  },
+  userName: { color: "#E8EDF5", fontSize: 13, fontWeight: "700" },
+  userMeta: { color: "rgba(232,237,245,0.68)", fontSize: 12, marginTop: 2 },
 
   // Form
   input: {

@@ -1,10 +1,11 @@
 import {
-  ApiEnvelope,
-  CreateTenantAdminInput,
-  TenantAdminRecord,
-  TenantUsageSummary,
-  TenantWalletSummary,
-  UpdateTenantAdminInput,
+    AdminUserRecord,
+    ApiEnvelope,
+    CreateTenantAdminInput,
+    TenantAdminRecord,
+    TenantUsageSummary,
+    TenantWalletSummary,
+    UpdateTenantAdminInput,
 } from "../../shared/contracts";
 
 import { apiClient } from "./client";
@@ -125,6 +126,19 @@ export async function fetchAdminLiveRecentEvents(
 ): Promise<ApiEnvelope<AdminRecentDbEventItem[]>> {
   return apiClient.get<AdminRecentDbEventItem[]>(
     `/admin/live-events/recent?limit=${Math.max(1, Math.min(limit, 200))}`,
+    adminHeaders()
+  );
+}
+
+export async function fetchAdminUsers(
+  limit = 20,
+  query?: string
+): Promise<ApiEnvelope<AdminUserRecord[]>> {
+  const normalizedLimit = Math.max(1, Math.min(limit, 200));
+  const queryPart = query?.trim() ? `&query=${encodeURIComponent(query.trim())}` : "";
+
+  return apiClient.get<AdminUserRecord[]>(
+    `/admin/users?limit=${normalizedLimit}${queryPart}`,
     adminHeaders()
   );
 }

@@ -1,11 +1,10 @@
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
     SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from "react-native";
 
@@ -16,15 +15,12 @@ import StatusPill from "../../../../components/lexus/StatusPill";
 import { C } from "../../../../components/lexus/theme";
 import { useCalls } from "../../../../hooks/useCalls";
 import { useCapabilities } from "../../../../hooks/useCapabilities";
-import { formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
-
-const FILTERS = ["All", "Recent", "High Conversion", "Needs Follow-up"];
+import { formatBatchName, formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
 
 // ── SCREEN COMPONENT ──────────────────────────────────────────────────────
 export default function LexusCompletedBatches() {
   const { calls, isLoading, isBootstrapping, refreshCalls, error } = useCalls();
   const { can, vocabulary } = useCapabilities();
-  const [activeFilter, setActiveFilter] = useState("All");
 
   const completedCalls = calls.filter((item) => item.state === "completed");
   const grouped = groupCallsByRoom(completedCalls);
@@ -39,7 +35,7 @@ export default function LexusCompletedBatches() {
 
     return {
       id: group.roomId,
-      label: `Room ${group.roomId}`,
+      label: formatBatchName(group.roomId),
       completedAt: formatTime(group.latestAt),
       totalLeads: total,
       hot,
@@ -51,21 +47,8 @@ export default function LexusCompletedBatches() {
   });
 
   const filteredBatches = useMemo(() => {
-    let result = [...completedBatches];
-    if (activeFilter === "All") return result;
-
-    if (activeFilter === "Recent") {
-      // Just taking the first 2 as 'Recent' for mock purposes
-      return result.slice(0, 2);
-    }
-    if (activeFilter === "High Conversion") {
-      return result.filter((b) => b.conversionRate >= 20);
-    }
-    if (activeFilter === "Needs Follow-up") {
-      return result.filter((b) => b.conversionRate < 10 || b.hot < 5);
-    }
-    return result;
-  }, [activeFilter, completedBatches]);
+    return completedBatches;
+  }, [completedBatches]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -108,41 +91,6 @@ export default function LexusCompletedBatches() {
           </View>
         )}
 
-        {/* ── FILTERS ── */}
-        {can("calls.history") && !isLoading && !isBootstrapping && !error && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterScroll}
-          style={{ paddingVertical: 10, marginBottom: 8 }}
-        >
-          {FILTERS.map((f) => {
-            const isActive = activeFilter === f;
-            return (
-              <TouchableOpacity
-                key={f}
-                style={[
-                  styles.filterPill,
-                  isActive ? styles.filterPillActive : styles.filterPillInactive,
-                ]}
-                onPress={() => setActiveFilter(f)}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={
-                    isActive
-                      ? styles.filterPillTextActive
-                      : styles.filterPillTextInactive
-                  }
-                >
-                  {f}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-        )}
-
         {/* ── BATCH LIST ── */}
         {can("calls.history") && !isLoading && !isBootstrapping && !error && (
         <View style={styles.listWrap}>
@@ -151,7 +99,7 @@ export default function LexusCompletedBatches() {
               <Text style={styles.emptyIcon}>📭</Text>
               <Text style={styles.emptyTitle}>{`No completed ${vocabulary.callsLabel.toLowerCase()} found.`}</Text>
               <Text style={styles.emptySubtitle}>
-                Try selecting a different filter above.
+                New completed batches will appear here automatically.
               </Text>
             </GlassCard>
           ) : (
@@ -231,37 +179,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: 32,
-  },
-  filterScroll: {
-    paddingHorizontal: 16,
-    paddingRight: 32,
-    gap: 10,
-  },
-  filterPill: {
-    height: 38,
-    paddingHorizontal: 18,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  filterPillActive: {
-    backgroundColor: C.blue,
-    borderColor: C.blue,
-  },
-  filterPillInactive: {
-    backgroundColor: "rgba(13,31,56,0.92)",
-    borderColor: C.border,
-  },
-  filterPillTextActive: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  filterPillTextInactive: {
-    color: C.textMuted,
-    fontSize: 14,
-    fontWeight: "600",
   },
   listWrap: {
     paddingHorizontal: 16,
