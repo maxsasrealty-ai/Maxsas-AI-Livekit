@@ -2,6 +2,7 @@ import { VoiceEventType } from "../../../../shared/contracts";
 import { CallLifecycleStatus } from "../../generated/prisma";
 
 const transitionMap: Record<CallLifecycleStatus, CallLifecycleStatus[]> = {
+  queued: ["initiated", "dispatching"],
   initiated: ["dispatching"],
   dispatching: ["ringing", "connected", "failed"],
   ringing: ["connected", "failed"],

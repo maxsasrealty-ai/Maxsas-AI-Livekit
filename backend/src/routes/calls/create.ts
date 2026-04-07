@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 
 import { InitiateCallRequest } from "../../../../shared/contracts";
+import { normalizePhoneNumber } from "../../lib/config";
 import { requireCapability } from "../../middleware/requireCapability";
 import { requireTenant } from "../../middleware/requireTenant";
 import { initiateCallSession } from "../../services/callService";
@@ -15,21 +16,23 @@ createCallRouter.post(
     const tenantId = req.requestContext?.tenantId as string;
     const body = req.body as Partial<InitiateCallRequest>;
 
-    if (!body.roomId || !body.agentName || !body.direction) {
+    if (!body.roomId || !body.agentName || !body.direction || !body.phoneNumber) {
       res.status(400).json({
         success: false,
         error: {
           code: "INVALID_REQUEST",
-          message: "roomId, agentName and direction are required",
+          message: "roomId, phoneNumber, agentName and direction are required",
         },
       });
       return;
     }
 
+    const normalizedPhoneNumber = normalizePhoneNumber(body.phoneNumber);
+
     const created = await initiateCallSession({
       tenantId,
       roomId: body.roomId,
-      phoneNumber: body.phoneNumber ?? null,
+      phoneNumber: normalizedPhoneNumber,
       agentName: body.agentName,
       direction: body.direction,
     });

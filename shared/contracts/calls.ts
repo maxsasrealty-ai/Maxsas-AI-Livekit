@@ -2,6 +2,7 @@ import { PlanCapabilities } from "./plans";
 import { WorkspaceTenantConfig } from "./workspace";
 
 export type CallState =
+  | "queued"
   | "initiated"
   | "dispatching"
   | "ringing"
@@ -106,4 +107,31 @@ export interface CapabilitiesResponse {
   tenantId: string;
   capabilities: PlanCapabilities;
   workspaceConfig: WorkspaceTenantConfig;
+}
+
+export interface VoiceCall {
+  call_id: string;
+  status: string;
+  transcript_turns?: number | null;
+  received_at?: string | null;
+  [key: string]: unknown;
+}
+
+export interface VoiceCallsPayload {
+  ok: boolean;
+  count: number;
+  calls: VoiceCall[];
+}
+
+export interface VoiceCallEvent {
+  event_type?: string;
+  occurred_at?: string;
+  [key: string]: unknown;
+}
+
+export interface VoiceCallDetailPayload {
+  ok: boolean;
+  call_id: string;
+  events: VoiceCallEvent[];
+  count: number;
 }

@@ -1,22 +1,32 @@
 import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
-import { createCall, fetchCalls, fetchCapabilities } from "../lib/api/calls";
+import {
+  createCall,
+  fetchCalls,
+  fetchCapabilities,
+  fetchVoiceCallDetail,
+  fetchVoiceCalls,
+  isVoiceApiConfigured,
+} from "../lib/api/calls";
 import { RealtimeConnectionState, realtimeClient } from "../lib/realtime/client";
 import {
-    CallState,
-    CallSummary,
-    LiveCallStage,
-    PlanCapabilities,
-    RealtimeCallEvent,
-    WorkspaceTenantConfig,
+  ApiEnvelope,
+  CallState,
+  CallSummary,
+  LiveCallStage,
+  PlanCapabilities,
+  RealtimeCallEvent,
+  VoiceCallDetailPayload,
+  VoiceCallsPayload,
+  WorkspaceTenantConfig,
 } from "../shared/contracts";
 
 export interface LiveCallSnapshot {
@@ -37,6 +47,8 @@ export interface LiveCallSnapshot {
 
 interface CallsContextValue {
   calls: CallSummary[];
+  voiceCallsResult: ApiEnvelope<VoiceCallsPayload> | null;
+  voiceCallDetailById: Record<string, ApiEnvelope<VoiceCallDetailPayload>>;
   capabilities: PlanCapabilities | null;
   workspaceConfig: WorkspaceTenantConfig | null;
   error: string | null;
@@ -44,8 +56,11 @@ interface CallsContextValue {
   liveVersionByCallId: Record<string, number>;
   liveConnectionState: RealtimeConnectionState;
   isLoading: boolean;
+  isVoiceLoading: boolean;
   isBootstrapping: boolean;
   refreshCalls: () => Promise<void>;
+  refreshVoiceCalls: () => Promise<void>;
+  loadVoiceCallDetail: (callId: string) => Promise<ApiEnvelope<VoiceCallDetailPayload>>;
   bootstrapCalls: () => Promise<void>;
   initiateCall: (input: {
     roomId: string;
@@ -61,6 +76,7 @@ const DEFAULT_TENANT_ID = process.env.EXPO_PUBLIC_TENANT_ID || "lexus-demo";
 const MAX_DEDUPED_EVENT_IDS = 500;
 
 const CALL_STATE_RANK: Record<CallState, number> = {
+  queued: 1,
   initiated: 1,
   dispatching: 2,
   ringing: 3,
@@ -207,6 +223,8 @@ function applyLiveEvent(
 
 export function CallsProvider({ children }: { children: React.ReactNode }) {
   const [calls, setCalls] = useState<CallSummary[]>([]);
+  const [voiceCallsResult, setVoiceCallsResult] = useState<ApiEnvelope<VoiceCallsPayload> | null>(null);
+  const [voiceCallDetailById, setVoiceCallDetailById] = useState<Record<string, ApiEnvelope<VoiceCallDetailPayload>>>({});
   const [capabilities, setCapabilities] = useState<PlanCapabilities | null>(null);
   const [workspaceConfig, setWorkspaceConfig] = useState<WorkspaceTenantConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -214,6 +232,7 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   const [liveVersionByCallId, setLiveVersionByCallId] = useState<Record<string, number>>({});
   const [liveConnectionState, setLiveConnectionState] = useState<RealtimeConnectionState>("idle");
   const [isLoading, setIsLoading] = useState(false);
+  const [isVoiceLoading, setIsVoiceLoading] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
   const seenEventIdsRef = useRef<Set<string>>(new Set());
   const seenEventQueueRef = useRef<string[]>([]);
@@ -262,13 +281,71 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [capabilities]);
 
+  const refreshVoiceCalls = useCallback(async () => {
+    setIsVoiceLoading(true);
+    try {
+      if (!isVoiceApiConfigured()) {
+        setVoiceCallsResult({
+          success: true,
+          data: {
+            ok: true,
+            count: 0,
+            calls: [],
+          },
+        });
+        return;
+      }
+
+      const response = await fetchVoiceCalls(DEFAULT_TENANT_ID);
+      setVoiceCallsResult(response);
+    } finally {
+      setIsVoiceLoading(false);
+    }
+  }, []);
+
+  const loadVoiceCallDetail = useCallback(async (callId: string): Promise<ApiEnvelope<VoiceCallDetailPayload>> => {
+    if (!isVoiceApiConfigured()) {
+      const response: ApiEnvelope<VoiceCallDetailPayload> = {
+        success: false,
+        error: {
+          code: "VOICE_API_NOT_CONFIGURED",
+          message: "Voice API is not configured",
+        },
+      };
+
+      setVoiceCallDetailById((current) => ({
+        ...current,
+        [callId]: response,
+      }));
+
+      return response;
+    }
+
+    const response = await fetchVoiceCallDetail(callId);
+    setVoiceCallDetailById((current) => ({
+      ...current,
+      [callId]: response,
+    }));
+    return response;
+  }, []);
+
   const bootstrapCalls = useCallback(async () => {
     setIsBootstrapping(true);
     setError(null);
     try {
-      const [callsResult, capabilitiesResult] = await Promise.all([
+      const [callsResult, capabilitiesResult, voiceCallsResult] = await Promise.all([
         fetchCalls(),
         fetchCapabilities(),
+        isVoiceApiConfigured()
+          ? fetchVoiceCalls(DEFAULT_TENANT_ID)
+          : Promise.resolve({
+              success: true as const,
+              data: {
+                ok: true,
+                count: 0,
+                calls: [],
+              },
+            }),
       ]);
 
       if (callsResult.success) {
@@ -291,6 +368,8 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
       } else {
         setError(capabilitiesResult.error?.message || "Failed to load capabilities");
       }
+
+      setVoiceCallsResult(voiceCallsResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while bootstrapping calls");
     } finally {
@@ -315,7 +394,18 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
 
       setCalls((current) => [optimistic, ...current]);
 
-      const response = await createCall(input);
+      let response;
+      try {
+        response = await createCall(input);
+      } catch (err) {
+        setCalls((current) => current.filter((item) => item.callId !== optimistic.callId));
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to initiate call. Please verify API base URL and backend availability."
+        );
+        return null;
+      }
 
       if (!response.success) {
         setCalls((current) => current.filter((item) => item.callId !== optimistic.callId));
@@ -395,6 +485,8 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       calls,
+      voiceCallsResult,
+      voiceCallDetailById,
       capabilities,
       workspaceConfig,
       error,
@@ -402,13 +494,18 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
       liveVersionByCallId,
       liveConnectionState,
       isLoading,
+      isVoiceLoading,
       isBootstrapping,
       refreshCalls,
+      refreshVoiceCalls,
+      loadVoiceCallDetail,
       bootstrapCalls,
       initiateCall,
     }),
     [
       calls,
+      voiceCallsResult,
+      voiceCallDetailById,
       capabilities,
       workspaceConfig,
       error,
@@ -416,8 +513,11 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
       liveVersionByCallId,
       liveConnectionState,
       isLoading,
+      isVoiceLoading,
       isBootstrapping,
       refreshCalls,
+      refreshVoiceCalls,
+      loadVoiceCallDetail,
       bootstrapCalls,
       initiateCall,
     ]

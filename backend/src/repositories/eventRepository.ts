@@ -1,15 +1,21 @@
+import { Prisma, VoiceEventType } from "../generated/prisma";
 import { prisma } from "../lib/prisma";
+import { assertUuid } from "../lib/uuid";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
 
 export async function findEventByDedupKey(args: {
-  callId: string;
-  eventType: string;
-  occurredAt: Date;
+  tenantId: string;
+  eventId: string;
+  db?: DbClient;
 }) {
-  return prisma.callEvent.findFirst({
+  assertUuid(args.tenantId, "tenantId");
+  const db = args.db ?? prisma;
+
+  return db.callEvent.findFirst({
     where: {
-      callId: args.callId,
-      eventType: args.eventType,
-      occurredAt: args.occurredAt,
+      tenantId: args.tenantId,
+      eventId: args.eventId,
     },
   });
 }
@@ -17,14 +23,19 @@ export async function findEventByDedupKey(args: {
 export async function createCallEvent(args: {
   callId: string;
   tenantId: string;
-  eventType: string;
+  eventType: VoiceEventType;
   occurredAt: Date;
   eventId: string;
-  payloadJson: string;
-  rawEnvelope: string;
-  rawHeaders: string;
+  payloadJson: Prisma.InputJsonValue;
+  rawEnvelope: Prisma.InputJsonValue;
+  rawHeaders: Prisma.InputJsonValue;
+  db?: DbClient;
 }) {
-  return prisma.callEvent.create({
+  assertUuid(args.callId, "callId");
+  assertUuid(args.tenantId, "tenantId");
+  const db = args.db ?? prisma;
+
+  return db.callEvent.create({
     data: {
       callId: args.callId,
       tenantId: args.tenantId,

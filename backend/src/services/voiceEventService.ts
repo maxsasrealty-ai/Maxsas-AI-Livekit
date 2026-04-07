@@ -10,8 +10,14 @@ import {
     VoiceEventPayload,
     VoiceEventType,
 } from "../../../shared/contracts/voice-events";
+import { Prisma } from "../generated/prisma";
+import { logger } from "../lib/logger";
+import { prisma } from "../lib/prisma";
+import { assertUuid, isUuid } from "../lib/uuid";
 import {
+    bindExternalCallId,
     createCallSession,
+    getCallSessionByExternalId,
     getCallSessionById,
     updateCallSessionState,
 } from "../repositories/callRepository";
@@ -19,7 +25,9 @@ import { createCallEvent, findEventByDedupKey } from "../repositories/eventRepos
 import { upsertLeadExtraction } from "../repositories/leadRepository";
 import { upsertTenant } from "../repositories/tenantRepository";
 import { upsertTranscriptSegment } from "../repositories/transcriptRepository";
+import { processIdempotentDebit } from "../repositories/walletRepository";
 import { deriveStateFromEvent, transitionOrStay } from "./calls/callStateMachine";
+import { DEFAULT_CALL_DEBIT_PAISE } from "./paymentService";
 import { publishRealtimeVoiceEvent } from "./realtimeService";
 
 const SUPPORTED_EVENT_TYPES: Set<VoiceEventType> = new Set([
@@ -99,12 +107,14 @@ export function normalizeVoiceEvent(args: {
 }
 
 export async function markEventAsProcessing(args: {
+  tenantId: string;
   eventId: string;
   callId: string;
   eventType: VoiceEventType;
   occurredAt: string;
 }): Promise<{ accepted: boolean; reason?: string }> {
-  const { eventId, callId, eventType, occurredAt } = args;
+  const { eventId, tenantId } = args;
+  assertUuid(tenantId, "tenantId");
 
   if (processedEventIds.has(eventId)) {
     return {
@@ -114,9 +124,8 @@ export async function markEventAsProcessing(args: {
   }
 
   const existing = await findEventByDedupKey({
-    callId,
-    eventType,
-    occurredAt: new Date(occurredAt),
+    tenantId,
+    eventId,
   });
 
   if (existing) {
@@ -130,37 +139,76 @@ export async function markEventAsProcessing(args: {
   return { accepted: true };
 }
 
-function serializeUnknown(input: unknown): string {
-  return JSON.stringify(input ?? null);
+function toJsonValue(input: unknown): Prisma.InputJsonValue {
+  return (input ?? Prisma.JsonNull) as Prisma.InputJsonValue;
 }
 
-async function ensureCallSessionExists(event: NormalizedVoiceEvent): Promise<void> {
-  const existingCall = await getCallSessionById(event.callId, event.tenantId);
-  if (existingCall) {
-    return;
+async function ensureCallSessionExists(
+  event: NormalizedVoiceEvent,
+  db: Prisma.TransactionClient
+) {
+  assertUuid(event.tenantId, "tenantId");
+
+  const existingByExternal = await getCallSessionByExternalId(event.callId, event.tenantId, db);
+  if (existingByExternal) {
+    return existingByExternal;
   }
 
-  await createCallSession({
-    callId: event.callId,
+  if (isUuid(event.callId)) {
+    const existingByInternal = await getCallSessionById(event.callId, event.tenantId, db);
+    if (existingByInternal) {
+      if (!existingByInternal.externalCallId) {
+        const rebound = await bindExternalCallId({
+          callId: existingByInternal.id,
+          tenantId: event.tenantId,
+          externalCallId: event.callId,
+          db,
+        });
+        if (rebound) {
+          return rebound;
+        }
+      }
+      return existingByInternal;
+    }
+  }
+
+  return createCallSession({
     tenantId: event.tenantId,
+    externalCallId: event.callId,
     roomId: event.roomId,
     state: "dispatching",
+    db,
   });
 }
 
-async function applyEventPayloadEffects(event: NormalizedVoiceEvent): Promise<void> {
+async function applyEventPayloadEffects(args: {
+  event: NormalizedVoiceEvent;
+  callSessionId: string;
+  db: Prisma.TransactionClient;
+}): Promise<void> {
+  const { event, callSessionId, db } = args;
   if (event.eventType === "transcript_partial" || event.eventType === "transcript_final") {
     const payload = event.payload as TranscriptEventPayload;
     await upsertTranscriptSegment({
-      callId: event.callId,
+      callId: callSessionId,
       tenantId: event.tenantId,
       speaker: payload.speaker,
       text: payload.text,
       isFinal: payload.final,
       sequenceNo: payload.sequence_no,
       providerMessageId: payload.provider_message_id,
-      rawJson: serializeUnknown(payload.raw),
+      rawJson: toJsonValue(payload.raw),
       occurredAt: new Date(event.occurredAt),
+      db,
+    });
+
+    logger.info("Transcript segment saved", {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      callId: event.callId,
+      tenantId: event.tenantId,
+      sequenceNo: payload.sequence_no,
+      isFinal: payload.final,
     });
     return;
   }
@@ -168,23 +216,34 @@ async function applyEventPayloadEffects(event: NormalizedVoiceEvent): Promise<vo
   if (event.eventType === "lead_extracted") {
     const payload = event.payload as LeadExtractedPayload;
     await upsertLeadExtraction({
-      callId: event.callId,
+      callId: callSessionId,
       tenantId: event.tenantId,
       extractedAt: new Date(payload.extracted_at),
       name: payload.fields.name,
       phone: payload.fields.phone,
       summary: payload.fields.summary,
       confidence: payload.confidence,
-      rawJson: serializeUnknown(payload.raw),
+      rawJson: toJsonValue(payload.raw),
+      db,
+    });
+
+    logger.info("Lead saved", {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      callId: event.callId,
+      tenantId: event.tenantId,
     });
   }
 }
 
-async function applyStateTransition(event: NormalizedVoiceEvent): Promise<void> {
-  const call = await getCallSessionById(event.callId, event.tenantId);
-  if (!call) {
-    return;
-  }
+async function applyStateTransition(args: {
+  event: NormalizedVoiceEvent;
+  callId: string;
+  db: Prisma.TransactionClient;
+}): Promise<void> {
+  const { event, callId, db } = args;
+  const call = await getCallSessionById(callId, event.tenantId, db);
+  if (!call) return;
 
   const target = deriveStateFromEvent(event.eventType);
   if (!target) {
@@ -216,6 +275,14 @@ async function applyStateTransition(event: NormalizedVoiceEvent): Promise<void> 
     transitionPayload.durationSec = payload.duration_sec;
     transitionPayload.transcriptTurns = payload.transcript_turns;
     transitionPayload.recordingUrl = payload.recording_url;
+
+    await processIdempotentDebit({
+      tenantId: event.tenantId,
+      amountPaise: DEFAULT_CALL_DEBIT_PAISE,
+      description: `AI call usage — ${call.id}`,
+      referenceId: `call_debit_${call.id}`,
+      db,
+    });
   }
 
   if (event.eventType === "call_failed") {
@@ -225,29 +292,77 @@ async function applyStateTransition(event: NormalizedVoiceEvent): Promise<void> 
   }
 
   await updateCallSessionState({
-    callId: event.callId,
+    callId,
     tenantId: event.tenantId,
     state: nextState,
     ...transitionPayload,
+    db,
   });
 }
 
 export async function processNormalizedVoiceEvent(event: NormalizedVoiceEvent): Promise<void> {
+  assertUuid(event.tenantId, "tenantId");
   await upsertTenant({ tenantId: event.tenantId });
-  await ensureCallSessionExists(event);
 
-  await createCallEvent({
+  logger.info("Voice webhook processing event", {
+    eventId: event.eventId,
+    eventType: event.eventType,
     callId: event.callId,
     tenantId: event.tenantId,
-    eventType: event.eventType,
-    occurredAt: new Date(event.occurredAt),
-    eventId: event.eventId,
-    payloadJson: serializeUnknown(event.payload as VoiceEventPayload),
-    rawEnvelope: serializeUnknown(event.rawEnvelope),
-    rawHeaders: serializeUnknown(event.rawHeaders),
   });
 
-  await applyEventPayloadEffects(event);
-  await applyStateTransition(event);
+  try {
+    await prisma.$transaction(async (tx) => {
+      const callSession = await ensureCallSessionExists(event, tx);
+
+      await createCallEvent({
+        callId: callSession.id,
+        tenantId: event.tenantId,
+        eventType: event.eventType,
+        occurredAt: new Date(event.occurredAt),
+        eventId: event.eventId,
+        payloadJson: toJsonValue(event.payload as VoiceEventPayload),
+        rawEnvelope: toJsonValue(event.rawEnvelope),
+        rawHeaders: toJsonValue(event.rawHeaders),
+        db: tx,
+      });
+
+      await applyEventPayloadEffects({
+        event,
+        callSessionId: callSession.id,
+        db: tx,
+      });
+
+      await applyStateTransition({
+        event,
+        callId: callSession.id,
+        db: tx,
+      });
+    });
+  } catch (error) {
+    logger.error("Voice webhook DB transaction failed", {
+      eventId: event.eventId,
+      eventType: event.eventType,
+      callId: event.callId,
+      tenantId: event.tenantId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+
+  logger.info("Voice event persisted", {
+    eventId: event.eventId,
+    eventType: event.eventType,
+    callId: event.callId,
+    tenantId: event.tenantId,
+  });
+
   publishRealtimeVoiceEvent(event);
+
+  logger.info("Voice SSE event published", {
+    eventId: event.eventId,
+    eventType: event.eventType,
+    callId: event.callId,
+    tenantId: event.tenantId,
+  });
 }

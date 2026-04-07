@@ -1,13 +1,16 @@
-import { PlanKey, Tenant } from "../generated/prisma";
+import { PlanKey, Prisma, Tenant } from "../generated/prisma";
 import { prisma } from "../lib/prisma";
+import { assertUuid } from "../lib/uuid";
 
 export async function upsertTenant(args: {
   tenantId: string;
   name?: string;
   plan?: PlanKey;
-  workspaceConfigJson?: string | null;
+  workspaceConfigJson?: Prisma.InputJsonValue;
+  featuresJson?: Prisma.InputJsonValue;
 }): Promise<Tenant> {
-  const { tenantId, name, plan, workspaceConfigJson } = args;
+  const { tenantId, name, plan, workspaceConfigJson, featuresJson } = args;
+  assertUuid(tenantId, "tenantId");
 
   return prisma.tenant.upsert({
     where: { id: tenantId },
@@ -15,17 +18,59 @@ export async function upsertTenant(args: {
       id: tenantId,
       name,
       plan: plan || "basic",
-      workspaceConfigJson: workspaceConfigJson || null,
+      workspaceConfigJson:
+        typeof workspaceConfigJson !== "undefined" ? workspaceConfigJson : Prisma.JsonNull,
+      ...(typeof featuresJson !== "undefined" ? { featuresJson } : {}),
     },
     update: {
       ...(name ? { name } : {}),
       ...(plan ? { plan } : {}),
       ...(typeof workspaceConfigJson !== "undefined" ? { workspaceConfigJson } : {}),
+      ...(typeof featuresJson !== "undefined" ? { featuresJson } : {}),
+    },
+  });
+}
+
+export async function setTenantFeature(args: {
+  tenantId: string;
+  feature: "campaign_calls" | "analytics";
+  value: boolean | "limited" | "full";
+}): Promise<Tenant> {
+  assertUuid(args.tenantId, "tenantId");
+
+  const existing = await prisma.tenant.findUnique({
+    where: { id: args.tenantId },
+    select: {
+      id: true,
+      featuresJson: true,
+    },
+  });
+
+  const base =
+    existing?.featuresJson && typeof existing.featuresJson === "object" && !Array.isArray(existing.featuresJson)
+      ? (existing.featuresJson as Record<string, unknown>)
+      : {};
+
+  const next = {
+    ...base,
+    [args.feature]: args.value,
+  } as Prisma.InputJsonValue;
+
+  return prisma.tenant.upsert({
+    where: { id: args.tenantId },
+    create: {
+      id: args.tenantId,
+      plan: "basic",
+      featuresJson: next,
+    },
+    update: {
+      featuresJson: next,
     },
   });
 }
 
 export async function getTenantById(tenantId: string): Promise<Tenant | null> {
+  assertUuid(tenantId, "tenantId");
   return prisma.tenant.findUnique({ where: { id: tenantId } });
 }
 
@@ -38,6 +83,7 @@ export async function listTenants(): Promise<Tenant[]> {
 }
 
 export async function getTenantUsageSummary(tenantId: string) {
+  assertUuid(tenantId, "tenantId");
   const [
     totalCalls,
     activeCalls,

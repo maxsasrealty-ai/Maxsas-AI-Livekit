@@ -78,7 +78,7 @@ In settings, configure:
 
 **Step 6 — Dispatch the Agent (From a new terminal window)**
 ```bash
-lk dispatch create --api-key devkey --api-secret devsecret --url ws://157.245.108.130:7880 --agent-name my-agent --room test-room
+ lk dispatch create --api-key devkey --api-secret devsecret --url ws://157.245.108.130:7880 --agent-name maxsas-voice-agent-prod --room test-room
 ```
 
 ## 6. How to Update the Agent
@@ -136,10 +136,11 @@ VAD = silero.VAD.load()                          # Voice activity detection
 - STT (Sarvam Hindi) + LLM (Groq) + TTS (Cartesia).
 - Lead qualification flow & Playground testing.
 
-**Phase 2 (Next)**
-- FastAPI backend integration with auto-dispatch (eliminating manual dispatch commands).
-- Save dynamic lead data natively to Postgres database.
-- Establish persistent conversation history.
+**Phase 2 (DONE ✓)**
+- Express backend auto-dispatch via `telephonyService.ts` (LiveKit SDK: Room + AgentDispatch + SIP).
+- Outbound SIP call triggered from `POST /api/calls`.
+- `call_completed` → wallet debit pipeline operational.
+- SSE-based real-time status push to frontend.
 
 **Phase 3**
 - React frontend interface (Customer-facing portal).
@@ -150,8 +151,8 @@ VAD = silero.VAD.load()                          # Voice activity detection
 - Real-time agent listing suggestions.
 
 **Phase 5**
-- Telephony bridge (Twilio/SIP).
-- Allow customers to call securely from standard telephone lines.
+- Telephony bridge (Twilio/SIP) — **SIP trunk partially active via LiveKit SIP**.
+- Allow customers to call from standard telephone lines.
 
 ## 11. Troubleshooting Guide
 
@@ -172,7 +173,7 @@ cd /root/ai-voice-system/agent && uv run python agent.py dev
 
 # Manual Agent Dispatch
 lk dispatch create --api-key devkey --api-secret devsecret \
-  --url ws://157.245.108.130:7880 --agent-name my-agent --room test-room
+    --url ws://157.245.108.130:7880 --agent-name maxsas-voice-agent-prod --room test-room
 
 # LiveKit Status
 docker ps
@@ -240,7 +241,7 @@ After getting all info say: "Bilkul... main abhi hamari team ko bata deti hoon. 
 
 server = AgentServer()
 
-@server.rtc_session(agent_name="my-agent")
+@server.rtc_session(agent_name="maxsas-voice-agent-prod")
 async def my_agent(ctx: agents.JobContext):
     session = AgentSession(
         stt=sarvam.STT(language="hi-IN"),

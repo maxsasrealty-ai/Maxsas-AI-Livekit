@@ -19,8 +19,9 @@ import {
     listCampaigns,
     updateCampaign,
 } from "../repositories/campaignRepository";
-import { upsertTenant } from "../repositories/tenantRepository";
+import { getTenantById, upsertTenant } from "../repositories/tenantRepository";
 import { getCachedTenantCapabilities } from "./accessService";
+import { enforceFeature, getTenantFeatures } from "./planFeatureService";
 import { publishCampaignRealtimeEvent } from "./realtimeService";
 
 function toCampaignStatus(status?: CampaignStatus): PrismaCampaignStatus | undefined {
@@ -99,6 +100,8 @@ async function ensureCampaignForTenant(campaignId: string, tenantId: string) {
 
 export async function createTenantCampaign(tenantId: string, input: CreateCampaignInput) {
   await upsertTenant({ tenantId });
+  const tenant = await getTenantById(tenantId);
+  const features = getTenantFeatures(tenant);
 
   const created = await createCampaign({
     tenantId,
@@ -109,6 +112,7 @@ export async function createTenantCampaign(tenantId: string, input: CreateCampai
 
   let attachedCallIds: string[] = [];
   if (input.callIds && input.callIds.length > 0) {
+    enforceFeature("campaign_calls", features);
     const linked = await attachCallsToCampaign({
       campaignId: created.id,
       tenantId,
@@ -174,6 +178,8 @@ export async function updateTenantCampaign(campaignId: string, tenantId: string,
   if (!existing) {
     return null;
   }
+  const tenant = await getTenantById(tenantId);
+  const features = getTenantFeatures(tenant);
 
   const updated = await updateCampaign({
     campaignId,
@@ -184,6 +190,7 @@ export async function updateTenantCampaign(campaignId: string, tenantId: string,
 
   let addedCount = 0;
   if (input.addCallIds && input.addCallIds.length > 0) {
+    enforceFeature("campaign_calls", features);
     const attached = await attachCallsToCampaign({
       campaignId,
       tenantId,

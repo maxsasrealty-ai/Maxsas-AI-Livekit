@@ -1,5 +1,8 @@
-import { Speaker } from "../generated/prisma";
+import { Prisma, Speaker } from "../generated/prisma";
 import { prisma } from "../lib/prisma";
+import { assertUuid } from "../lib/uuid";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
 
 export async function upsertTranscriptSegment(args: {
   callId: string;
@@ -9,30 +12,56 @@ export async function upsertTranscriptSegment(args: {
   isFinal: boolean;
   sequenceNo: number;
   providerMessageId?: string | null;
-  rawJson?: string | null;
+  rawJson?: Prisma.InputJsonValue;
   occurredAt: Date;
+  db?: DbClient;
 }) {
-  return prisma.transcriptSegment.upsert({
+  assertUuid(args.callId, "callId");
+  assertUuid(args.tenantId, "tenantId");
+  const db = args.db ?? prisma;
+
+  const existing = await db.transcriptSegment.findFirst({
     where: {
-      callId_sequenceNo: {
-        callId: args.callId,
-        sequenceNo: args.sequenceNo,
-      },
+      callId: args.callId,
+      tenantId: args.tenantId,
+      sequenceNo: args.sequenceNo,
     },
-    create: {
+    select: {
+      id: true,
+    },
+  });
+
+  if (existing) {
+    await db.transcriptSegment.updateMany({
+      where: {
+        id: existing.id,
+        tenantId: args.tenantId,
+      },
+      data: {
+        text: args.text,
+        isFinal: args.isFinal,
+        providerMessageId: args.providerMessageId,
+        rawJson: args.rawJson,
+        occurredAt: args.occurredAt,
+      },
+    });
+
+    return db.transcriptSegment.findFirst({
+      where: {
+        id: existing.id,
+        tenantId: args.tenantId,
+      },
+    });
+  }
+
+  return db.transcriptSegment.create({
+    data: {
       callId: args.callId,
       tenantId: args.tenantId,
       speaker: args.speaker,
       text: args.text,
       isFinal: args.isFinal,
       sequenceNo: args.sequenceNo,
-      providerMessageId: args.providerMessageId,
-      rawJson: args.rawJson,
-      occurredAt: args.occurredAt,
-    },
-    update: {
-      text: args.text,
-      isFinal: args.isFinal,
       providerMessageId: args.providerMessageId,
       rawJson: args.rawJson,
       occurredAt: args.occurredAt,
@@ -46,6 +75,8 @@ export async function listTranscriptSegments(args: {
   page: number;
   pageSize: number;
 }) {
+  assertUuid(args.callId, "callId");
+  assertUuid(args.tenantId, "tenantId");
   const where = {
     callId: args.callId,
     tenantId: args.tenantId,

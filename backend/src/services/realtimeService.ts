@@ -1,6 +1,7 @@
 import { CallState, LiveCallStage, RealtimeCallEvent } from "../../../shared/contracts";
 import { CampaignRealtimeEvent } from "../../../shared/contracts/campaigns";
 import { NormalizedVoiceEvent } from "../../../shared/contracts/voice-events";
+import { publishAdminLiveEvent } from "./adminLiveEventsService";
 
 const listenersByTenant = new Map<string, Set<(event: RealtimeCallEvent) => void>>();
 const campaignListenersByTenant = new Map<string, Set<(event: CampaignRealtimeEvent) => void>>();
@@ -64,9 +65,6 @@ export function subscribeRealtimeEvents(
 
 export function publishRealtimeVoiceEvent(event: NormalizedVoiceEvent): void {
   const listeners = listenersByTenant.get(event.tenantId);
-  if (!listeners || listeners.size === 0) {
-    return;
-  }
 
   const mapped: RealtimeCallEvent = {
     streamEventId: event.eventId,
@@ -79,6 +77,21 @@ export function publishRealtimeVoiceEvent(event: NormalizedVoiceEvent): void {
     stage: stageFromVoiceEvent(event),
     payload: event.payload,
   };
+
+  publishAdminLiveEvent({
+    stage: "persisted",
+    dbUpdated: true,
+    eventId: mapped.streamEventId,
+    tenantId: mapped.tenantId,
+    callId: mapped.callId,
+    roomId: mapped.roomId,
+    eventType: mapped.eventType,
+    normalizedBody: mapped.payload,
+  });
+
+  if (!listeners || listeners.size === 0) {
+    return;
+  }
 
   listeners.forEach((listener) => {
     listener(mapped);

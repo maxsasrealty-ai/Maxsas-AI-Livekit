@@ -4,8 +4,234 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                   String                @id @default(uuid())
+  name                 String?
+  plan                 PlanKey               @default(basic)
+  workspaceConfigJson  Json?
+  featuresJson         Json?
+  walletBalancePaise   Int                   @default(0)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  callEvents           CallEvent[]
+  callSessions         CallSession[]
+  campaigns            Campaign[]
+  campaignCalls        CampaignCall[]
+  campaignContacts     CampaignContact[]
+  leadExtractions      LeadExtraction[]
+  outboundCallRequests OutboundCallRequest[]
+  transcriptSegments   TranscriptSegment[]
+  usageRecords         UsageRecord[]
+  walletTransactions   WalletTransaction[]
+
+  @@index([createdAt])
+}
+
+model CallSession {
+  id                 String                @id @default(uuid())
+  tenantId           String
+  externalCallId     String?
+  roomId             String
+  phoneNumber        String?
+  agentName          String?
+  direction          String?
+  status             CallLifecycleStatus   @default(initiated)
+  initiatedAt        DateTime              @default(now())
+  connectedAt        DateTime?
+  completedAt        DateTime?
+  failedAt           DateTime?
+  durationSec        Int?
+  transcriptTurns    Int?
+  recordingUrl       String?
+  estimatedCost      Decimal?              @db.Decimal(10, 2)
+  lastError          String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  events             CallEvent[]
+  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campaignLinks      CampaignCall[]
+  sourceContacts     CampaignContact[]     @relation("CampaignContactSourceCall")
+  leadExtraction     LeadExtraction?
+  outboundRequests   OutboundCallRequest[]
+  transcriptSegments TranscriptSegment[]
+  usageRecords       UsageRecord[]
+
+  @@unique([tenantId, externalCallId])
+  @@index([tenantId, status])
+  @@index([tenantId, initiatedAt])
+  @@index([tenantId, createdAt])
+}
+
+model CallEvent {
+  id             String         @id @default(uuid())
+  callId         String
+  tenantId       String
+  eventType      VoiceEventType
+  occurredAt     DateTime
+  eventId        String         @unique
+  payloadJson    Json?
+  rawEnvelope    Json?
+  rawHeaders     Json?
+  normalizedJson Json?
+  createdAt      DateTime       @default(now())
+  callSession    CallSession    @relation(fields: [callId], references: [id], onDelete: Cascade)
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, callId, eventType, occurredAt])
+  @@index([tenantId, createdAt])
+}
+
+model TranscriptSegment {
+  id                String      @id @default(uuid())
+  callId            String
+  tenantId          String
+  speaker           Speaker
+  text              String
+  isFinal           Boolean     @default(false)
+  sequenceNo        Int
+  providerMessageId String?
+  rawJson           Json?
+  occurredAt        DateTime
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  callSession       CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+  tenant            Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, sequenceNo])
+  @@index([tenantId, callId, sequenceNo])
+  @@index([tenantId, createdAt])
+}
+
+model LeadExtraction {
+  id           String      @id @default(uuid())
+  callId       String      @unique
+  tenantId     String
+  extractedAt  DateTime
+  name         String?
+  phone        String?
+  summary      String
+  confidence   Float?
+  intent       String?
+  propertyType String?
+  location     String?
+  budget       String?
+  timeline     String?
+  phoneNumber  String?
+  rawJson      Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  callSession  CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+}
+
+model Campaign {
+  id          String            @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  status      CampaignStatus    @default(draft)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  tenant      Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  calls       CampaignCall[]
+  contacts    CampaignContact[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
+
+model CampaignCall {
+  id         String      @id @default(uuid())
+  campaignId String
+  callId     String
+  tenantId   String
+  createdAt  DateTime    @default(now())
+  call       CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+  campaign   Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, callId])
+  @@index([tenantId, createdAt])
+}
+
+model CampaignContact {
+  id           String       @id @default(uuid())
+  campaignId   String
+  tenantId     String
+  sourceCallId String?
+  name         String?
+  phone        String?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  sourceCall   CallSession? @relation("CampaignContactSourceCall", fields: [sourceCallId], references: [id])
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+}
+
+model WalletTransaction {
+  id                String                  @id @default(uuid())
+  tenantId          String
+  type              WalletTransactionType
+  amountPaise       Int
+  description       String
+  provider          String?
+  providerOrderId   String?
+  providerPaymentId String?
+  referenceId       String?
+  status            WalletTransactionStatus @default(pending)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  tenant            Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, providerOrderId])
+  @@unique([tenantId, referenceId])
+  @@index([tenantId, createdAt])
+}
+
+model OutboundCallRequest {
+  id            String                @id @default(uuid())
+  tenantId      String
+  phoneNumber   String
+  roomId        String
+  agentName     String?
+  status        OutboundRequestStatus @default(queued)
+  payloadJson   Json?
+  errorMessage  String?
+  callSessionId String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  callSession   CallSession?          @relation(fields: [callSessionId], references: [id])
+  tenant        Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
+
+model UsageRecord {
+  id            String            @id @default(uuid())
+  tenantId      String
+  callId        String
+  usageType     UsageType
+  amountPaise   Int
+  status        UsageRecordStatus
+  sourceEventId String?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  callSession   CallSession       @relation(fields: [callId], references: [id], onDelete: Cascade)
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, callId, usageType, sourceEventId])
+  @@index([tenantId, createdAt])
 }
 
 enum PlanKey {
@@ -15,6 +241,7 @@ enum PlanKey {
 }
 
 enum CallLifecycleStatus {
+  queued
   initiated
   dispatching
   ringing
@@ -22,6 +249,19 @@ enum CallLifecycleStatus {
   active
   completed
   failed
+}
+
+enum VoiceEventType {
+  transcript_partial
+  transcript_final
+  call_ringing
+  call_connected
+  call_started
+  lead_extracted
+  call_completed
+  call_failed
+  publisher_test
+  agent_log
 }
 
 enum Speaker {
@@ -37,147 +277,30 @@ enum CampaignStatus {
   archived
 }
 
-model Tenant {
-  id          String        @id
-  name        String?
-  plan        PlanKey       @default(basic)
-  workspaceConfigJson String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  callSessions CallSession[]
-  campaigns   Campaign[]
+enum WalletTransactionType {
+  credit
+  debit
 }
 
-model CallSession {
-  id              String              @id
-  tenantId        String
-  roomId          String
-  phoneNumber     String?
-  agentName       String?
-  direction       String?
-  status          CallLifecycleStatus @default(initiated)
-  initiatedAt     DateTime            @default(now())
-  connectedAt     DateTime?
-  completedAt     DateTime?
-  failedAt        DateTime?
-  durationSec     Float?
-  transcriptTurns Int?
-  recordingUrl    String?
-  lastError       String?
-  estimatedCost   Float?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-
-  tenant             Tenant              @relation(fields: [tenantId], references: [id])
-  events             CallEvent[]
-  transcriptSegments TranscriptSegment[]
-  leadExtraction     LeadExtraction?
-  campaignLinks      CampaignCall[]
-  sourceContacts     CampaignContact[]
-
-  @@index([tenantId, status])
-  @@index([tenantId, initiatedAt])
+enum WalletTransactionStatus {
+  pending
+  completed
+  failed
 }
 
-model CallEvent {
-  id            String   @id @default(cuid())
-  callId        String
-  tenantId      String
-  eventType     String
-  occurredAt    DateTime
-  eventId       String
-  payloadJson   String
-  rawEnvelope   String
-  rawHeaders    String
-  createdAt     DateTime @default(now())
-
-  callSession CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
-
-  @@unique([callId, eventType, occurredAt])
-  @@index([tenantId, callId, eventType])
+enum OutboundRequestStatus {
+  queued
+  dispatching
+  dispatched
+  failed
 }
 
-model TranscriptSegment {
-  id                String   @id @default(cuid())
-  callId            String
-  tenantId          String
-  speaker           Speaker
-  text              String
-  isFinal           Boolean  @default(false)
-  sequenceNo        Int
-  providerMessageId String?
-  rawJson           String?
-  occurredAt        DateTime
-  createdAt         DateTime @default(now())
-
-  callSession CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
-
-  @@unique([callId, sequenceNo])
-  @@index([tenantId, callId, createdAt])
+enum UsageType {
+  call_charge
 }
 
-model LeadExtraction {
-  id          String   @id @default(cuid())
-  callId       String   @unique
-  tenantId     String
-  extractedAt  DateTime
-  name         String?
-  phone        String?
-  summary      String
-  confidence   Float?
-  rawJson      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  callSession CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId, extractedAt])
-}
-
-model Campaign {
-  id          String         @id @default(cuid())
-  tenantId    String
-  name        String
-  description String?
-  status      CampaignStatus @default(draft)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  tenant   Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  calls    CampaignCall[]
-  contacts CampaignContact[]
-
-  @@index([tenantId, status, createdAt])
-}
-
-model CampaignCall {
-  campaignId String
-  callId     String
-  tenantId   String
-  createdAt  DateTime @default(now())
-
-  campaign Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  call     CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
-
-  @@id([campaignId, callId])
-  @@index([tenantId, campaignId])
-  @@index([tenantId, callId])
-}
-
-model CampaignContact {
-  id           String   @id @default(cuid())
-  campaignId   String
-  tenantId     String
-  sourceCallId String?
-  name         String?
-  phone        String?
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  campaign Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  sourceCall CallSession? @relation(fields: [sourceCallId], references: [id], onDelete: SetNull)
-
-  @@index([tenantId, campaignId, createdAt])
-  @@unique([campaignId, sourceCallId])
+enum UsageRecordStatus {
+  bypassed
+  rejected
+  charged
 }

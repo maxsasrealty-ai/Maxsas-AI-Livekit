@@ -12,27 +12,57 @@ import {
 
 const voiceWebhookRouter = Router();
 
+function parseWebhookBody(body: unknown): unknown {
+  if (!Buffer.isBuffer(body)) {
+    return body;
+  }
+
+  const rawBody = body.toString("utf-8");
+  try {
+    return JSON.parse(rawBody || "{}");
+  } catch {
+    return "invalid_json";
+  }
+}
+
 voiceWebhookRouter.post(
   "/events",
   verifyWebhookAuth,
   attachRequestContext("webhook"),
   async (req: Request, res: Response) => {
-    const eventId = String(req.headers["x-event-id"] || "");
-    const callIdFromHeader = String(req.headers["x-call-id"] || "");
-    const occurredAtHeader = String(req.headers["x-occurred-at"] || "");
+    const parsedBody = parseWebhookBody(req.body);
 
-    if (!eventId || !callIdFromHeader || !occurredAtHeader) {
+    if (parsedBody === "invalid_json") {
       res.status(400).json({
         success: false,
         error: {
-          code: "MISSING_REQUIRED_HEADERS",
-          message: "x-event-id, x-call-id, and x-occurred-at headers are required",
+          code: "INVALID_JSON_BODY",
+          message: "Webhook body is not valid JSON",
         },
       });
       return;
     }
 
-    const validation = validateVoiceEventEnvelope(req.body);
+    const body = parsedBody as Record<string, unknown>;
+    const bodyCallId = String(body.call_id || body.callId || "");
+    const bodyOccurredAt = String(body.occurred_at || body.occurredAt || new Date().toISOString());
+    
+    const eventId = String(req.headers["x-event-id"] || body.event_id || body.eventId || `evt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
+    const callIdFromHeader = String(req.headers["x-call-id"] || bodyCallId);
+    const occurredAtHeader = String(req.headers["x-occurred-at"] || bodyOccurredAt);
+
+    if (!callIdFromHeader) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: "MISSING_CALL_IDENTITY",
+          message: "x-call-id header or payload call_id is required",
+        },
+      });
+      return;
+    }
+
+    const validation = validateVoiceEventEnvelope(body);
 
     if (!validation.isValid) {
       res.status(400).json({
@@ -46,9 +76,17 @@ voiceWebhookRouter.post(
       return;
     }
 
-    const envelope = req.body as VoiceEventEnvelope;
+    const envelope = body as unknown as VoiceEventEnvelope;
+
+    console.info("[WEBHOOK] voice event accepted", {
+      eventId,
+      eventType: envelope.event_type,
+      callId: envelope.call_id,
+      tenantId: envelope.tenant_id,
+    });
 
     const idempotency = await markEventAsProcessing({
+      tenantId: envelope.tenant_id,
       eventId,
       callId: envelope.call_id,
       eventType: envelope.event_type,
@@ -74,6 +112,13 @@ voiceWebhookRouter.post(
       },
       rawEnvelope: req.body,
       rawHeaders: req.headers,
+    });
+
+    console.info("[WEBHOOK] voice event normalized", {
+      eventId: normalized.eventId,
+      eventType: normalized.eventType,
+      callId: normalized.callId,
+      tenantId: normalized.tenantId,
     });
 
     await processNormalizedVoiceEvent(normalized);

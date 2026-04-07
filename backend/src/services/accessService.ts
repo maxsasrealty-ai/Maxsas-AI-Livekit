@@ -5,6 +5,7 @@ import {
     PlanKey,
 } from "../../../shared/contracts/plans";
 import { PlanName, WorkspaceTenantConfig } from "../../../shared/contracts/workspace";
+import { normalizeTenantId } from "../lib/tenant-id";
 import { getTenantById, upsertTenant } from "../repositories/tenantRepository";
 
 const PLAN_CAPABILITIES: Record<PlanKey, PlanCapabilities> = {
@@ -147,8 +148,16 @@ export function getWorkspaceConfigForPlan(
   };
 }
 
-function parseWorkspaceConfigOverrides(raw?: string | null): WorkspaceConfigOverrides | undefined {
+function parseWorkspaceConfigOverrides(raw?: unknown): WorkspaceConfigOverrides | undefined {
   if (!raw) {
+    return undefined;
+  }
+
+  if (typeof raw === "object" && !Array.isArray(raw)) {
+    return raw as WorkspaceConfigOverrides;
+  }
+
+  if (typeof raw !== "string") {
     return undefined;
   }
 
@@ -164,9 +173,10 @@ export function getPlanCapabilities(plan: PlanKey): PlanCapabilities {
 }
 
 export async function getTenantCapabilities(tenantId: string): Promise<PlanCapabilities> {
-  const tenant = await getTenantById(tenantId);
+  const normalizedTenantId = normalizeTenantId(tenantId);
+  const tenant = await getTenantById(normalizedTenantId);
   if (!tenant) {
-    const created = await upsertTenant({ tenantId, plan: "basic" });
+    const created = await upsertTenant({ tenantId: normalizedTenantId, plan: "basic" });
     return getPlanCapabilities(created.plan as PlanKey);
   }
 
@@ -179,22 +189,23 @@ export async function getCachedTenantCapabilities(tenantId: string): Promise<{
   workspaceConfig: WorkspaceTenantConfig;
   cacheHit: boolean;
 }> {
+  const normalizedTenantId = normalizeTenantId(tenantId);
   const now = Date.now();
-  const cached = capabilityCache.get(tenantId);
+  const cached = capabilityCache.get(normalizedTenantId);
 
   if (cached && cached.expiresAt > now) {
     return {
-      tenantId,
+      tenantId: normalizedTenantId,
       capabilities: cached.capabilities,
       workspaceConfig: cached.workspaceConfig,
       cacheHit: true,
     };
   }
 
-  const tenant = await getTenantById(tenantId);
+  const tenant = await getTenantById(normalizedTenantId);
   const resolvedPlan = (tenant?.plan as PlanKey | undefined) || "basic";
   if (!tenant) {
-    await upsertTenant({ tenantId, plan: "basic" });
+    await upsertTenant({ tenantId: normalizedTenantId, plan: "basic" });
   }
 
   const capabilities = getPlanCapabilities(resolvedPlan);
@@ -203,14 +214,14 @@ export async function getCachedTenantCapabilities(tenantId: string): Promise<{
     overrides: parseWorkspaceConfigOverrides(tenant?.workspaceConfigJson),
   });
 
-  capabilityCache.set(tenantId, {
+  capabilityCache.set(normalizedTenantId, {
     capabilities,
     workspaceConfig,
     expiresAt: now + CAPABILITY_CACHE_TTL_MS,
   });
 
   return {
-    tenantId,
+    tenantId: normalizedTenantId,
     capabilities,
     workspaceConfig,
     cacheHit: false,

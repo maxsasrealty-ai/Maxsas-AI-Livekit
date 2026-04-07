@@ -1,6 +1,13 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { View, Platform } from 'react-native';
+import { View, Platform, LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'useNativeDriver',
+  'box-shadow',
+  'shadow*',
+  'Warning: Invalid DOM property',
+]);
 
 // ── Pseudo Auth Hook (Replace with real Zustand/Context provider later) ──
 const useAuth = () => ({ isAuthenticated: false, isReady: true });
@@ -35,10 +42,7 @@ export default function RootLayout() {
       {Platform.OS === 'web' && (
         <style dangerouslySetInnerHTML={{ __html: 'body { background-color: #02060d; overflow-x: hidden; }' }} />
       )}
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#02060d' } }}>
-        <Stack.Screen name="(public)" options={{ animation: 'fade' }} />
-        <Stack.Screen name="(protected)" options={{ animation: 'fade' }} />
-      </Stack>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#02060d' }, animation: 'fade' }} />
     </>
   );
 }

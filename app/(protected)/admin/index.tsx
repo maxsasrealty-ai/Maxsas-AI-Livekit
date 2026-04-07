@@ -1,20 +1,38 @@
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Linking,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 import { createAdminTenant, fetchAdminTenants } from "../../../lib/api/admin";
 import { PlanName, TenantAdminRecord } from "../../../shared/contracts";
 
 const PLAN_OPTIONS: PlanName[] = ["Lexus", "Prestige", "Enterprise"];
+
+// ─── Plan badge colors ────────────────────────────────────────────────────
+
+const PLAN_COLOR: Record<PlanName, string> = {
+  Lexus: "#4F8CFF",
+  Prestige: "#A78BFA",
+  Enterprise: "#00D084",
+};
+
+function getAdminConsoleUrl(): string {
+  const configured = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+  const backendBase = configured.replace(/\/api\/?$/, "");
+  return `${backendBase}/admin`;
+}
+
+// TenantList moved to app/(protected)/admin/tenants/index.tsx
+
+// ─── Main Screen ───────────────────────────────────────────────────────────
 
 export default function AdminTenantsScreen() {
   const [tenants, setTenants] = useState<TenantAdminRecord[]>([]);
@@ -46,6 +64,7 @@ export default function AdminTenantsScreen() {
   }, [loadTenants]);
 
   const canCreate = useMemo(() => newTenantId.trim().length > 0, [newTenantId]);
+  const adminConsoleUrl = useMemo(() => getAdminConsoleUrl(), []);
 
   const onCreateTenant = useCallback(async () => {
     if (!canCreate || submitting) {
@@ -73,20 +92,75 @@ export default function AdminTenantsScreen() {
     setSubmitting(false);
   }, [canCreate, loadTenants, newTenantId, newTenantName, newTenantPlan, submitting]);
 
+  const onOpenAdminConsole = useCallback(async () => {
+    const supported = await Linking.canOpenURL(adminConsoleUrl);
+    if (supported) {
+      await Linking.openURL(adminConsoleUrl);
+      return;
+    }
+    setError(`Unable to open admin console: ${adminConsoleUrl}`);
+  }, [adminConsoleUrl]);
+
+  // Derived stats
+  const lexusCount = tenants.filter((t) => t.workspaceConfig.workspaceType === "lexus").length;
+  const enterpriseCount = tenants.filter((t) => t.workspaceConfig.workspaceType === "enterprise").length;
+  const lowBalanceCount = tenants.filter((t) => t.walletBalancePaise < 5_000).length;
+
   return (
     <SafeAreaView style={s.safe}>
       <ScrollView contentContainerStyle={s.content}>
-        <Text style={s.title}>Admin Provisioning</Text>
-        <Text style={s.subtitle}>Create and manage tenant workspaces</Text>
+        <Text style={s.title}>Dashboard</Text>
+        <Text style={s.subtitle}>System status and workspace provisioning</Text>
 
+        {/* System at-a-glance */}
+        {!loading && tenants.length > 0 && (
+          <View style={s.statsRow}>
+            <View style={s.statBox}>
+              <Text style={s.statValue}>{tenants.length}</Text>
+              <Text style={s.statLabel}>Tenants</Text>
+            </View>
+            <View style={s.statBox}>
+              <Text style={[s.statValue, { color: "#4F8CFF" }]}>{lexusCount}</Text>
+              <Text style={s.statLabel}>Lexus</Text>
+            </View>
+            <View style={s.statBox}>
+              <Text style={[s.statValue, { color: "#00D084" }]}>{enterpriseCount}</Text>
+              <Text style={s.statLabel}>Enterprise</Text>
+            </View>
+            <View style={s.statBox}>
+              <Text style={[s.statValue, { color: lowBalanceCount > 0 ? "#FF8B8B" : "#E8EDF5" }]}>
+                {lowBalanceCount}
+              </Text>
+              <Text style={s.statLabel}>Low Wallet</Text>
+            </View>
+          </View>
+        )}
+
+        <View style={s.consoleCard}>
+          <Text style={s.cardTitle}>Admin Console</Text>
+          <Text style={s.consoleHint}>Trigger calls, monitor lifecycle, and inspect transcript data.</Text>
+          <Pressable style={s.consoleButton} onPress={onOpenAdminConsole}>
+            <Text style={s.consoleButtonText}>Open Admin Console</Text>
+          </Pressable>
+          <View style={s.quickRow}>
+            <Pressable style={s.quickButton} onPress={() => router.push("/(protected)/admin/live-events" as never)}> 
+              <Text style={s.quickButtonText}>Live Feed</Text>
+            </Pressable>
+            <Pressable style={s.quickButton} onPress={() => router.push("/(protected)/admin/live-events/recent" as never)}> 
+              <Text style={s.quickButtonText}>DB Events</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Create Tenant */}
         <View style={s.card}>
-          <Text style={s.cardTitle}>Create Tenant</Text>
+          <Text style={s.cardTitle}>Provision Tenant</Text>
 
           <TextInput
             style={s.input}
             value={newTenantId}
             onChangeText={setNewTenantId}
-            placeholder="Tenant ID (example: acme-enterprise)"
+            placeholder="Tenant ID (e.g. acme-corp)"
             placeholderTextColor="rgba(232,237,245,0.4)"
             autoCapitalize="none"
           />
@@ -94,7 +168,7 @@ export default function AdminTenantsScreen() {
             style={s.input}
             value={newTenantName}
             onChangeText={setNewTenantName}
-            placeholder="Tenant name"
+            placeholder="Display name (optional)"
             placeholderTextColor="rgba(232,237,245,0.4)"
           />
 
@@ -102,10 +176,20 @@ export default function AdminTenantsScreen() {
             {PLAN_OPTIONS.map((plan) => (
               <Pressable
                 key={plan}
-                style={[s.planChip, newTenantPlan === plan && s.planChipActive]}
+                style={[
+                  s.planChip,
+                  newTenantPlan === plan && { backgroundColor: `${PLAN_COLOR[plan]}28`, borderColor: PLAN_COLOR[plan] },
+                ]}
                 onPress={() => setNewTenantPlan(plan)}
               >
-                <Text style={[s.planChipText, newTenantPlan === plan && s.planChipTextActive]}>{plan}</Text>
+                <Text
+                  style={[
+                    s.planChipText,
+                    newTenantPlan === plan && { color: PLAN_COLOR[plan] },
+                  ]}
+                >
+                  {plan}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -115,38 +199,13 @@ export default function AdminTenantsScreen() {
             onPress={onCreateTenant}
             disabled={!canCreate || submitting}
           >
-            <Text style={s.buttonText}>{submitting ? "Creating..." : "Create Tenant"}</Text>
+            <Text style={s.buttonText}>{submitting ? "Creating..." : "Create Workspace"}</Text>
           </Pressable>
         </View>
 
-        <View style={s.card}>
-          <View style={s.listHeader}>
-            <Text style={s.cardTitle}>Tenant List</Text>
-            <Pressable style={s.refreshButton} onPress={loadTenants}>
-              <Text style={s.refreshText}>Refresh</Text>
-            </Pressable>
-          </View>
-
-          {loading ? (
-            <ActivityIndicator color="#4F8CFF" />
-          ) : tenants.length === 0 ? (
-            <Text style={s.empty}>No tenants yet.</Text>
-          ) : (
-            tenants.map((tenant) => (
-              <Pressable
-                key={tenant.id}
-                style={s.row}
-                onPress={() => router.push(`/(protected)/admin/${tenant.id}` as never)}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={s.rowTitle}>{tenant.name || tenant.id}</Text>
-                  <Text style={s.rowMeta}>{tenant.id}</Text>
-                </View>
-                <Text style={s.rowPlan}>{tenant.planName}</Text>
-              </Pressable>
-            ))
-          )}
-        </View>
+        <Pressable style={s.viewAllButton} onPress={() => router.replace('/(protected)/admin/tenants')}>
+          <Text style={s.viewAllText}>View All Tenants →</Text>
+        </Pressable>
 
         {error ? <Text style={s.error}>{error}</Text> : null}
       </ScrollView>
@@ -158,8 +217,27 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#050d1a" },
   content: { padding: 16, paddingBottom: 40, gap: 12 },
   title: { color: "#E8EDF5", fontSize: 26, fontWeight: "800" },
-  subtitle: { color: "rgba(232,237,245,0.7)", fontSize: 13, marginBottom: 8 },
+  subtitle: { color: "rgba(232,237,245,0.7)", fontSize: 13, marginBottom: 4 },
+
+  // Stats
+  statsRow: { flexDirection: "row", gap: 8, marginBottom: 4 },
+  statBox: {
+    flex: 1, backgroundColor: "rgba(11,24,42,0.96)",
+    borderWidth: 1, borderColor: "rgba(79,140,255,0.2)",
+    borderRadius: 12, padding: 10, alignItems: "center",
+  },
+  statValue: { color: "#E8EDF5", fontSize: 20, fontWeight: "800" },
+  statLabel: { color: "rgba(232,237,245,0.55)", fontSize: 11, marginTop: 2 },
+
+  // Card
   card: {
+    backgroundColor: "rgba(11,24,42,0.96)",
+    borderWidth: 1, borderColor: "rgba(79,140,255,0.2)",
+    borderRadius: 14, padding: 14, gap: 10,
+  },
+  cardTitle: { color: "#E8EDF5", fontSize: 16, fontWeight: "700" },
+
+  consoleCard: {
     backgroundColor: "rgba(11,24,42,0.96)",
     borderWidth: 1,
     borderColor: "rgba(79,140,255,0.2)",
@@ -167,71 +245,57 @@ const s = StyleSheet.create({
     padding: 14,
     gap: 10,
   },
-  cardTitle: { color: "#E8EDF5", fontSize: 16, fontWeight: "700" },
-  input: {
-    backgroundColor: "rgba(79,140,255,0.08)",
-    borderColor: "rgba(79,140,255,0.28)",
+  consoleHint: { color: "rgba(232,237,245,0.7)", fontSize: 12 },
+  consoleButton: {
+    marginTop: 2,
+    backgroundColor: "rgba(79,140,255,0.16)",
     borderWidth: 1,
+    borderColor: "rgba(79,140,255,0.5)",
     borderRadius: 10,
-    color: "#E8EDF5",
-    paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    alignItems: "center",
+  },
+  consoleButtonText: { color: "#AFC8FF", fontWeight: "700", fontSize: 13 },
+  quickRow: { flexDirection: "row", gap: 8 },
+  quickButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "rgba(79,140,255,0.32)",
+    borderRadius: 9,
+    paddingVertical: 9,
+    alignItems: "center",
+    backgroundColor: "rgba(79,140,255,0.08)",
+  },
+  quickButtonText: { color: "#D4E2FF", fontWeight: "700", fontSize: 12 },
+
+  // Form
+  input: {
+    backgroundColor: "rgba(79,140,255,0.08)", borderColor: "rgba(79,140,255,0.28)",
+    borderWidth: 1, borderRadius: 10, color: "#E8EDF5",
+    paddingHorizontal: 12, paddingVertical: 10, fontSize: 14,
   },
   planRow: { flexDirection: "row", gap: 8 },
   planChip: {
-    borderWidth: 1,
-    borderColor: "rgba(79,140,255,0.22)",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderWidth: 1, borderColor: "rgba(79,140,255,0.22)",
+    borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8,
     backgroundColor: "rgba(79,140,255,0.08)",
   },
-  planChipActive: {
-    backgroundColor: "rgba(79,140,255,0.25)",
-    borderColor: "rgba(79,140,255,0.5)",
-  },
-  planChipText: { color: "rgba(232,237,245,0.75)", fontSize: 12, fontWeight: "600" },
-  planChipTextActive: { color: "#E8EDF5" },
+  planChipText: { color: "rgba(232,237,245,0.75)", fontSize: 12, fontWeight: "700" },
   button: {
-    marginTop: 4,
-    backgroundColor: "#4F8CFF",
-    borderRadius: 10,
-    paddingVertical: 11,
-    alignItems: "center",
+    marginTop: 4, backgroundColor: "#4F8CFF",
+    borderRadius: 10, paddingVertical: 11, alignItems: "center",
   },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { color: "#fff", fontWeight: "700" },
-  listHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  refreshButton: {
-    borderWidth: 1,
-    borderColor: "rgba(79,140,255,0.3)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+
+  viewAllButton: {
+    backgroundColor: "rgba(79,140,255,0.1)",
+    borderWidth: 1, borderColor: "rgba(79,140,255,0.4)",
+    borderRadius: 10, paddingVertical: 14, alignItems: "center",
+    marginTop: 8
   },
-  refreshText: { color: "#AFC8FF", fontSize: 12, fontWeight: "600" },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(79,140,255,0.16)",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 12,
-  },
-  rowTitle: { color: "#E8EDF5", fontSize: 14, fontWeight: "600" },
-  rowMeta: { color: "rgba(232,237,245,0.55)", fontSize: 12 },
-  rowPlan: {
-    color: "#9CC0FF",
-    fontSize: 12,
-    fontWeight: "700",
-    backgroundColor: "rgba(79,140,255,0.12)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
+  viewAllText: { color: "#4F8CFF", fontWeight: "700", fontSize: 15 },
+
   empty: { color: "rgba(232,237,245,0.55)", fontSize: 13 },
   error: { color: "#FF8B8B", fontSize: 13 },
 });

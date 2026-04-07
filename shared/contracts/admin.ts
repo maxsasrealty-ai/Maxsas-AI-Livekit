@@ -1,3 +1,4 @@
+import { WalletTransactionItem } from "./payment";
 import { PlanName, WorkspaceTenantConfig } from "./workspace";
 
 export interface TenantAdminRecord {
@@ -5,8 +6,21 @@ export interface TenantAdminRecord {
   name?: string | null;
   planName: PlanName;
   workspaceConfig: WorkspaceTenantConfig;
+  walletBalancePaise: number;
+  walletBalanceFormatted: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TenantWalletSummary {
+  tenantId: string;
+  balancePaise: number;
+  balanceFormatted: string;
+  recentTransactionCount: number;
+  totalCreditPaise: number;
+  totalDebitPaise: number;
+  lastProvider?: string | null;
+  recentTransactions: WalletTransactionItem[];
 }
 
 export interface CreateTenantAdminInput {

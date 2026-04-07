@@ -1,23 +1,72 @@
 import {
-    ApiEnvelope,
-    CreateTenantAdminInput,
-    TenantAdminRecord,
-    TenantUsageSummary,
-    UpdateTenantAdminInput,
+  ApiEnvelope,
+  CreateTenantAdminInput,
+  TenantAdminRecord,
+  TenantUsageSummary,
+  TenantWalletSummary,
+  UpdateTenantAdminInput,
 } from "../../shared/contracts";
 
 import { apiClient } from "./client";
 
-const ADMIN_KEY = process.env.EXPO_PUBLIC_ADMIN_API_KEY || "dev-admin-key";
+
+// Always use dev-admin-key for local/dev; update for prod as needed
+const ADMIN_KEY = "dev-admin-key";
 
 function adminHeaders(): HeadersInit {
   return {
-    "x-admin-key": ADMIN_KEY,
+    Authorization: `Bearer ${ADMIN_KEY}`,
   };
+}
+
+export interface AdminLiveEventItem {
+  streamEventId: string;
+  occurredAt: string;
+  stage: "received" | "invalid_json" | "validation_failed" | "persisted" | "duplicate" | "error";
+  dbUpdated: boolean;
+  eventId?: string;
+  tenantId?: string;
+  callId?: string;
+  roomId?: string;
+  eventType?: string;
+  message?: string;
+  rawBody?: unknown;
+  normalizedBody?: unknown;
+}
+
+export interface AdminRecentDbEventItem {
+  eventId: string;
+  tenantId: string;
+  callId: string;
+  eventType: string;
+  occurredAt: string;
+  createdAt: string;
+  dbUpdated: true;
+  payload: unknown;
+  rawEnvelope: unknown;
+}
+
+function resolveAdminApiBaseUrl(): string {
+  const configured = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+  return configured.replace(/\/$/, "");
+}
+
+export function buildAdminLiveEventsStreamUrl(): string {
+  const base = resolveAdminApiBaseUrl();
+  return `${base}/admin/live-events/stream?adminKey=${encodeURIComponent(ADMIN_KEY)}`;
 }
 
 export async function fetchAdminTenants(): Promise<ApiEnvelope<TenantAdminRecord[]>> {
   return apiClient.get<TenantAdminRecord[]>("/admin/tenants", adminHeaders());
+}
+
+export async function fetchAdminTenant(
+  tenantId: string
+): Promise<ApiEnvelope<TenantAdminRecord>> {
+  return apiClient.get<TenantAdminRecord>(
+    `/admin/tenants/${encodeURIComponent(tenantId)}`,
+    adminHeaders()
+  );
 }
 
 export async function createAdminTenant(
@@ -46,6 +95,36 @@ export async function fetchAdminTenantUsage(
 ): Promise<ApiEnvelope<TenantUsageSummary>> {
   return apiClient.get<TenantUsageSummary>(
     `/admin/tenants/${encodeURIComponent(tenantId)}/usage`,
+    adminHeaders()
+  );
+}
+
+export async function fetchAdminTenantWallet(
+  tenantId: string
+): Promise<ApiEnvelope<TenantWalletSummary>> {
+  return apiClient.get<TenantWalletSummary>(
+    `/admin/tenants/${encodeURIComponent(tenantId)}/wallet`,
+    adminHeaders()
+  );
+}
+
+export async function fetchAdminTenantCampaigns(
+  tenantId: string,
+  page = 1,
+  pageSize = 10
+): Promise<ApiEnvelope<any[]>> {
+  // We specify any for now or use the appropriate Campaign item type if available
+  return apiClient.get<any[]>(
+    `/admin/tenants/${encodeURIComponent(tenantId)}/campaigns?page=${page}&pageSize=${pageSize}`,
+    adminHeaders()
+  );
+}
+
+export async function fetchAdminLiveRecentEvents(
+  limit = 60
+): Promise<ApiEnvelope<AdminRecentDbEventItem[]>> {
+  return apiClient.get<AdminRecentDbEventItem[]>(
+    `/admin/live-events/recent?limit=${Math.max(1, Math.min(limit, 200))}`,
     adminHeaders()
   );
 }

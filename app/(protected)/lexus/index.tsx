@@ -13,7 +13,8 @@ import { formatTime, getQuickStats } from '../../../lib/adapters/calls';
 import { connectionLabel } from '../../../lib/adapters/liveEvents';
 
 export default function LexusHome() {
-  const { calls, isLoading, isBootstrapping, error, liveByCallId, liveConnectionState } = useCalls();
+  const { calls: rawCalls, isLoading, isBootstrapping, error, liveByCallId, liveConnectionState } = useCalls();
+  const calls = Array.isArray(rawCalls) ? rawCalls : [];
   const { can, planLabel, vocabulary } = useCapabilities();
   const stats = getQuickStats(calls);
   const activeCalls = calls.filter((call) => ["initiated", "dispatching", "ringing", "connected", "active"].includes(call.state));

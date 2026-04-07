@@ -86,7 +86,9 @@ export class ApiClient {
 }
 
 const defaultApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
-const defaultTenantId = process.env.EXPO_PUBLIC_TENANT_ID || "lexus-demo";
+const defaultTenantId =
+  process.env.EXPO_PUBLIC_TENANT_ID ||
+  "lexus-demo";
 
 export const apiClient = new ApiClient({
   baseUrl: defaultApiBaseUrl,

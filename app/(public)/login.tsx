@@ -459,15 +459,31 @@ export default function PremiumLoginScreen() {
               </Text>
 
               {/* Dev Shortcut - De-emphasized slightly */}
-              <TouchableOpacity 
-                onPress={() => router.replace('/(protected)/lexus')}
-                style={{ 
-                  backgroundColor: 'rgba(124,58,237,0.05)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.2)', 
-                  height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center' 
-                }}
-              >
-                <Text style={{ color: C.purple, fontSize: 13, fontWeight: '700' }}>🚀 DEV LOGIN (Bypass)</Text>
-              </TouchableOpacity>
+              {__DEV__ && (
+                <View style={{ gap: 8, marginTop: 4 }}>
+                  <Text style={{ color: C.textFaint, fontSize: 11, fontWeight: '700', textAlign: 'center', letterSpacing: 1, marginBottom: 4 }}>DEV QUICK ACCESS</Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity 
+                      onPress={() => router.replace('/(protected)/admin')}
+                      style={{ flex: 1, backgroundColor: 'rgba(255,107,107,0.05)', borderWidth: 1, borderColor: 'rgba(255,107,107,0.2)', height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      <Text style={{ color: C.errorRed, fontSize: 12, fontWeight: '700' }}>Admin</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => router.replace('/(protected)/enterprise')}
+                      style={{ flex: 1, backgroundColor: 'rgba(0,208,132,0.05)', borderWidth: 1, borderColor: 'rgba(0,208,132,0.2)', height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      <Text style={{ color: C.green, fontSize: 12, fontWeight: '700' }}>Enterprise</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => router.replace('/(protected)/lexus')}
+                      style={{ flex: 1, backgroundColor: 'rgba(124,58,237,0.05)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.2)', height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      <Text style={{ color: C.purple, fontSize: 12, fontWeight: '700' }}>Workspace</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
 
               {/* Divider */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 24 }}>

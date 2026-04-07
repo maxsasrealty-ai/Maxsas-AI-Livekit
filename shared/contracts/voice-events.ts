@@ -1,10 +1,13 @@
 export type VoiceEventType =
   | "transcript_partial"
   | "transcript_final"
+  | "call_ringing"
+  | "call_connected"
   | "call_started"
   | "lead_extracted"
   | "call_completed"
-  | "call_failed";
+  | "call_failed"
+  | "publisher_test";
 
 export type Speaker = "user" | "agent";
 
@@ -24,15 +27,35 @@ export interface CallStartedPayload {
   status: "started";
 }
 
+export interface CallRingingPayload {
+  status: "ringing";
+}
+
+export interface CallConnectedPayload {
+  status: "connected";
+  connected_at?: string;
+}
+
 export interface LeadExtractedPayload {
   extracted_at: string;
   fields: {
     name: string | null;
     phone: string | null;
     summary: string;
+    intent?: string | null;
+    property_type?: string | null;
+    location?: string | null;
+    budget?: string | null;
+    timeline?: string | null;
+    phone_number?: string | null;
   };
   confidence: number | null;
   raw: unknown | null;
+}
+
+export interface PublisherTestPayload {
+  message?: string;
+  meta?: Record<string, unknown>;
 }
 
 export interface CallCompletedPayload {
@@ -53,10 +76,13 @@ export interface CallFailedPayload {
 export type VoiceEventPayloadByType = {
   transcript_partial: TranscriptEventPayload;
   transcript_final: TranscriptEventPayload;
+  call_ringing: CallRingingPayload;
+  call_connected: CallConnectedPayload;
   call_started: CallStartedPayload;
   lead_extracted: LeadExtractedPayload;
   call_completed: CallCompletedPayload;
   call_failed: CallFailedPayload;
+  publisher_test: PublisherTestPayload;
 };
 
 export type VoiceEventPayload = VoiceEventPayloadByType[VoiceEventType];
