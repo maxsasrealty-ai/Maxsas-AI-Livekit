@@ -1,6 +1,6 @@
 import React from "react";
-import { View, StyleSheet, ViewStyle, StyleProp, Platform } from "react-native";
-import { C } from "./theme";
+import { Platform, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { useLexusTheme } from "../../context/LexusThemeContext";
 
 export interface GlassCardProps {
   children: React.ReactNode;
@@ -15,10 +15,19 @@ export default function GlassCard({
   padded = true,
   radius = 18,
 }: GlassCardProps) {
+  const { colors, isDark, plan } = useLexusTheme();
+  const isPrestige = plan === "prestige";
+
   return (
     <View
       style={[
         styles.card,
+        {
+          backgroundColor: colors.cardSurface,
+          borderColor: isPrestige && isDark ? "rgba(216, 180, 254, 0.2)" : colors.border,
+          shadowColor: isPrestige ? colors.purple : colors.shadow,
+          shadowOpacity: isPrestige ? (isDark ? 0.2 : 0.12) : (isDark ? 0.1 : 0.08),
+        },
         { borderRadius: radius },
         padded && styles.padded,
         style,
@@ -31,21 +40,17 @@ export default function GlassCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "rgba(13,31,56,0.96)",
     borderWidth: 1,
-    borderColor: C.border,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.10,
-        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+        shadowRadius: 14,
       },
       android: {
         elevation: 4,
       },
       web: {
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+        boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
       },
     }),
   },

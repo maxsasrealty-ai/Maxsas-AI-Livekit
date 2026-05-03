@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import EnterpriseSurface from "../../../../components/enterprise/EnterpriseSurface";
 import LockedModuleCard from "../../../../components/lexus/locks/LockedModuleCard";
@@ -47,6 +47,45 @@ export default function EnterpriseContactDetail() {
               <View style={styles.rowBetween}>
                 <Text style={styles.primary}>{lead?.fields.name || `Contact ${detail.callId.slice(0, 6)}`}</Text>
                 <StatusPill label={detail.state} tone={detail.state === "failed" ? "danger" : detail.state === "completed" ? "success" : "info"} />
+              </View>
+              {/* Lead bucket prominently displayed */}
+              <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center", gap: 8 }}>
+                {detail.lead_bucket ? (
+                  <StatusPill
+                    label={detail.lead_bucket}
+                    tone={
+                      detail.lead_bucket === "Qualified"
+                        ? "success"
+                        : detail.lead_bucket === "Retry"
+                        ? "warning"
+                        : detail.lead_bucket === "Failed"
+                        ? "danger"
+                        : "neutral"
+                    }
+                  />
+                ) : (
+                  <StatusPill label="—" tone="neutral" />
+                )}
+                {detail.raw_call_outcome ? (
+                  <StatusPill
+                    label={detail.raw_call_outcome.length > 12 ? detail.raw_call_outcome.slice(0, 12) + "…" : detail.raw_call_outcome}
+                    tone="neutral"
+                    style={{ paddingHorizontal: 10 }}
+                  />
+                ) : null}
+                {detail.raw_call_outcome && (
+                  <Text
+                    style={styles.meta}
+                    onPress={() =>
+                      Alert.alert(
+                        "Raw Call Outcome",
+                        `${detail.raw_call_outcome}${detail.raw_call_outcome_confidence ? `\nConfidence: ${detail.raw_call_outcome_confidence}` : ""}`
+                      )
+                    }
+                  >
+                    View raw outcome
+                  </Text>
+                )}
               </View>
               <Text style={styles.meta}>{`Phone: ${lead?.fields.phone || "-"}`}</Text>
               <Text style={styles.meta}>{`Campaign: ${detail.roomId}`}</Text>

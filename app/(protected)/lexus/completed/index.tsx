@@ -12,26 +12,35 @@ import GlassCard from "../../../../components/lexus/GlassCard";
 import PillButton from "../../../../components/lexus/PillButton";
 import SectionHeader from "../../../../components/lexus/SectionHeader";
 import StatusPill from "../../../../components/lexus/StatusPill";
-import { C } from "../../../../components/lexus/theme";
+import { LexusThemeColors } from "../../../../components/lexus/theme";
+import { useLexusTheme } from "../../../../context/LexusThemeContext";
 import { useCalls } from "../../../../hooks/useCalls";
 import { useCapabilities } from "../../../../hooks/useCapabilities";
+import { useResponsive } from "../../../../hooks/useResponsive";
 import { formatBatchName, formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
 
 // ── SCREEN COMPONENT ──────────────────────────────────────────────────────
 export default function LexusCompletedBatches() {
+  const { colors, isDark } = useLexusTheme();
+  const { isDesktop } = useResponsive();
+  const styles = useMemo(() => createStyles(colors, isDark, isDesktop), [colors, isDark, isDesktop]);
+  const bottomSpacer = isDesktop ? 112 : 72;
+
   const { calls, isLoading, isBootstrapping, refreshCalls, error } = useCalls();
   const { can, vocabulary } = useCapabilities();
 
-  const completedCalls = calls.filter((item) => item.state === "completed");
-  const grouped = groupCallsByRoom(completedCalls);
+  // show all batches (running and completed) so active runs can be opened in Live Monitor
+  const grouped = groupCallsByRoom(calls);
 
-  const completedBatches = grouped.map((group) => {
+  const batches = grouped.map((group) => {
     const total = group.total;
     const qualified = group.completed;
     const hot = Math.min(qualified, Math.max(1, Math.floor(qualified * 0.5)));
     const warm = Math.max(0, qualified - hot);
     const cold = Math.max(0, total - qualified);
     const conversionRate = total ? (qualified / total) * 100 : 0;
+
+    const status = group.inProgress > 0 ? "running" : group.completed > 0 && group.failed === 0 ? "completed" : group.total === 0 ? "draft" : "awaiting";
 
     return {
       id: group.roomId,
@@ -43,12 +52,11 @@ export default function LexusCompletedBatches() {
       cold,
       qualified,
       conversionRate,
+      status,
     };
   });
 
-  const filteredBatches = useMemo(() => {
-    return completedBatches;
-  }, [completedBatches]);
+  const filteredBatches = useMemo(() => batches, [batches]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -111,7 +119,7 @@ export default function LexusCompletedBatches() {
                     <Text style={styles.batchLabel}>{batch.label}</Text>
                     <Text style={styles.batchId}>ID: {batch.id}</Text>
                   </View>
-                  <StatusPill label="COMPLETED" tone="success" style={{ marginLeft: 8 }} />
+                    <StatusPill label={batch.status.toUpperCase()} tone={batch.status === "completed" ? "success" : batch.status === "running" ? "info" : "warning"} style={{ marginLeft: 8 }} />
                 </View>
 
                 {/* Date */}
@@ -125,17 +133,17 @@ export default function LexusCompletedBatches() {
                   </View>
                   <View style={styles.kpiDivider} />
                   <View style={styles.kpiCol}>
-                    <Text style={[styles.kpiVal, { color: C.green }]}>{batch.hot}</Text>
+                    <Text style={[styles.kpiVal, { color: colors.green }]}>{batch.hot}</Text>
                     <Text style={styles.kpiLab}>Hot</Text>
                   </View>
                   <View style={styles.kpiDivider} />
                   <View style={styles.kpiCol}>
-                    <Text style={[styles.kpiVal, { color: C.amber }]}>{batch.warm}</Text>
+                    <Text style={[styles.kpiVal, { color: colors.amber }]}>{batch.warm}</Text>
                     <Text style={styles.kpiLab}>Warm</Text>
                   </View>
                   <View style={styles.kpiDivider} />
                   <View style={styles.kpiCol}>
-                    <Text style={[styles.kpiVal, { color: C.textFaint }]}>{batch.cold}</Text>
+                    <Text style={[styles.kpiVal, { color: colors.textFaint }]}>{batch.cold}</Text>
                     <Text style={styles.kpiLab}>Cold</Text>
                   </View>
                 </View>
@@ -144,127 +152,139 @@ export default function LexusCompletedBatches() {
                 <View style={styles.summaryBar}>
                   <Text style={styles.summaryText}>
                     Qualified {batch.qualified} / {batch.totalLeads} •{" "}
-                    <Text style={{ color: C.blue, fontWeight: "700" }}>
+                    <Text style={{ color: colors.blue, fontWeight: "700" }}>
                       {batch.conversionRate.toFixed(1)}% conversion
                     </Text>
                   </Text>
                 </View>
 
                 {/* Primary Action */}
-                <PillButton
-                  title="View Results"
-                  variant="primary"
-                  style={{ marginTop: 16 }}
-                  onPress={() =>
-                      router.push(`/(protected)/lexus/completed/${encodeURIComponent(batch.id)}` as any)
-                  }
-                />
+                {batch.status === "running" ? (
+                  <PillButton
+                    title="View Live Monitor"
+                    variant="secondary"
+                    style={{ marginTop: 16 }}
+                    onPress={() => router.push(`/(protected)/lexus/batches/${encodeURIComponent(batch.id)}` as any)}
+                  />
+                ) : (
+                  <PillButton
+                    title="View Results"
+                    variant="primary"
+                    style={{ marginTop: 16 }}
+                    onPress={() => router.push(`/(protected)/lexus/completed/${encodeURIComponent(batch.id)}` as any)}
+                  />
+                )}
               </GlassCard>
             ))
           )}
         </View>
         )}
 
-        <View style={{ height: 60 }} />
+        <View style={{ height: bottomSpacer }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 // ── STYLES ─────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: C.bg,
-  },
-  scroll: {
-    paddingBottom: 32,
-  },
-  listWrap: {
-    paddingHorizontal: 16,
-  },
-  emptyCard: {
-    alignItems: "center",
-    paddingVertical: 50,
-  },
-  emptyIcon: {
-    fontSize: 36,
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    color: C.text,
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 6,
-  },
-  emptySubtitle: {
-    color: C.textMuted,
-    fontSize: 14,
-    textAlign: "center",
-  },
-  card: {
-    marginBottom: 16,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  batchLabel: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: C.text,
-    marginBottom: 2,
-  },
-  batchId: {
-    fontSize: 12,
-    color: C.textMuted,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  dateText: {
-    fontSize: 13,
-    color: C.textFaint,
-    marginBottom: 16,
-  },
-  kpiRow: {
-    flexDirection: "row",
-    backgroundColor: "rgba(0,0,0,0.15)",
-    borderRadius: 8,
-    paddingVertical: 14,
-    marginBottom: 14,
-  },
-  kpiCol: {
-    flex: 1,
-    alignItems: "center",
-  },
-  kpiDivider: {
-    width: 1,
-    backgroundColor: "rgba(255,255,255,0.06)",
-  },
-  kpiVal: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: C.text,
-    marginBottom: 2,
-  },
-  kpiLab: {
-    fontSize: 11,
-    color: C.textMuted,
-    textTransform: "uppercase",
-  },
-  summaryBar: {
-    backgroundColor: "rgba(79,140,255,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(79,140,255,0.15)",
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    alignItems: "center",
-  },
-  summaryText: {
-    fontSize: 13,
-    color: C.text,
-  },
-});
+function createStyles(colors: LexusThemeColors, isDark: boolean, isDesktop: boolean) {
+  const scale = isDesktop ? 0.82 : 1;
+  const px = (value: number) => Math.round(value * scale);
+
+  return StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    scroll: {
+      paddingBottom: px(32),
+    },
+    listWrap: {
+      paddingHorizontal: px(16),
+    },
+    emptyCard: {
+      alignItems: "center",
+      paddingVertical: px(50),
+    },
+    emptyIcon: {
+      fontSize: px(36),
+      marginBottom: px(12),
+    },
+    emptyTitle: {
+      color: colors.text,
+      fontSize: px(16),
+      fontWeight: "700",
+      marginBottom: px(6),
+    },
+    emptySubtitle: {
+      color: colors.textMuted,
+      fontSize: px(14),
+      textAlign: "center",
+    },
+    card: {
+      marginBottom: px(16),
+    },
+    cardHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: px(8),
+    },
+    batchLabel: {
+      fontSize: px(18),
+      fontWeight: "700",
+      color: colors.text,
+      marginBottom: px(2),
+    },
+    batchId: {
+      fontSize: px(12),
+      color: colors.textMuted,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    dateText: {
+      fontSize: px(13),
+      color: colors.textFaint,
+      marginBottom: px(16),
+    },
+    kpiRow: {
+      flexDirection: "row",
+      backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(16,33,61,0.08)",
+      borderRadius: px(8),
+      paddingVertical: px(14),
+      marginBottom: px(14),
+    },
+    kpiCol: {
+      flex: 1,
+      alignItems: "center",
+    },
+    kpiDivider: {
+      width: 1,
+      backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(16,33,61,0.1)",
+    },
+    kpiVal: {
+      fontSize: px(18),
+      fontWeight: "800",
+      color: colors.text,
+      marginBottom: px(2),
+    },
+    kpiLab: {
+      fontSize: px(11),
+      color: colors.textMuted,
+      textTransform: "uppercase",
+    },
+    summaryBar: {
+      backgroundColor: isDark ? "rgba(79,140,255,0.1)" : "rgba(79,140,255,0.08)",
+      borderWidth: 1,
+      borderColor: isDark ? "rgba(79,140,255,0.24)" : "rgba(79,140,255,0.18)",
+      borderRadius: px(8),
+      paddingVertical: px(10),
+      paddingHorizontal: px(12),
+      alignItems: "center",
+    },
+    summaryText: {
+      fontSize: px(13),
+      color: colors.text,
+    },
+  });
+}

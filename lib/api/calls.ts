@@ -110,7 +110,7 @@ export async function fetchCalls(query?: CallsQuery): Promise<ApiEnvelope<CallSu
 }
 
 export async function fetchCallDetail(callId: string): Promise<ApiEnvelope<CallDetail>> {
-  return apiClient.get<CallDetail>(`/calls/${encodeURIComponent(callId)}`);
+  return apiClient.get<CallDetail>(`/calls/${encodeURIComponent(callId)}?_t=${Date.now()}`);
 }
 
 export async function fetchCallTranscript(
@@ -120,6 +120,7 @@ export async function fetchCallTranscript(
   const path = `/calls/${encodeURIComponent(callId)}/transcript${toQueryString({
     page: query?.page,
     pageSize: query?.pageSize,
+    _t: Date.now(),
   })}`;
 
   return apiClient.get<TranscriptSegmentItem[]>(path);
@@ -130,11 +131,11 @@ export async function fetchCallRecording(callId: string): Promise<ApiEnvelope<Re
 }
 
 export async function fetchCallLead(callId: string): Promise<ApiEnvelope<LeadResponse>> {
-  return apiClient.get<LeadResponse>(`/calls/${encodeURIComponent(callId)}/lead`);
+  return apiClient.get<LeadResponse>(`/calls/${encodeURIComponent(callId)}/lead?_t=${Date.now()}`);
 }
 
 export async function fetchCapabilities(): Promise<ApiEnvelope<CapabilitiesResponse>> {
-  return apiClient.get<CapabilitiesResponse>("/capabilities");
+  return apiClient.get<CapabilitiesResponse>(`/capabilities?_t=${Date.now()}`);
 }
 
 export async function fetchCampaigns(query?: { page?: number; pageSize?: number; status?: string }): Promise<ApiEnvelope<CampaignRecord[]>> {

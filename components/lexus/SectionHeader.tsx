@@ -1,6 +1,6 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from "react-native";
-import { C } from "./theme";
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import { useLexusTheme } from "../../context/LexusThemeContext";
 
 export interface SectionHeaderProps {
   title: string;
@@ -19,18 +19,20 @@ export default function SectionHeader({
   icon,
   style,
 }: SectionHeaderProps) {
+  const { colors } = useLexusTheme();
+
   return (
     <View style={[styles.container, style]}>
       <View style={styles.titleContainer}>
         {icon && <Text style={styles.icon}>{icon}</Text>}
         <View style={styles.textStack}>
-          <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+          {subtitle && <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitle}</Text>}
         </View>
       </View>
       {actionLabel && (
         <TouchableOpacity onPress={onAction} style={styles.actionButton} activeOpacity={0.7}>
-          <Text style={styles.actionText}>{actionLabel}</Text>
+          <Text style={[styles.actionText, { color: colors.blue }]}>{actionLabel}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -58,13 +60,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: C.text,
     fontWeight: "700",
     fontSize: 17,
     letterSpacing: 0.5,
   },
   subtitle: {
-    color: C.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
@@ -73,7 +73,6 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
   },
   actionText: {
-    color: C.blue,
     fontWeight: "600",
     fontSize: 14,
   },

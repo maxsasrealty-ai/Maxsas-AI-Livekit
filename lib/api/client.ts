@@ -1,4 +1,6 @@
 import { ApiEnvelope } from "../../shared/contracts";
+import { getCurrentTenantId } from "../auth/session";
+import { resolveApiBaseUrl } from "./base-url";
 
 export interface ApiClientConfig {
   baseUrl: string;
@@ -54,6 +56,7 @@ export class ApiClient {
 
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...init,
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -85,12 +88,15 @@ export class ApiClient {
   }
 }
 
-const defaultApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
-const defaultTenantId =
-  process.env.EXPO_PUBLIC_TENANT_ID ||
-  "lexus-demo";
+const defaultApiBaseUrl = resolveApiBaseUrl();
+const defaultTenantId = process.env.EXPO_PUBLIC_TENANT_ID || null;
+const defaultAuthToken = process.env.EXPO_PUBLIC_AUTH_BEARER_TOKEN || "dev_token";
 
 export const apiClient = new ApiClient({
   baseUrl: defaultApiBaseUrl,
-  getTenantId: () => defaultTenantId,
+  getTenantId: async () => {
+    const tenantId = await getCurrentTenantId();
+    return tenantId || defaultTenantId;
+  },
+  getAuthToken: () => defaultAuthToken,
 });

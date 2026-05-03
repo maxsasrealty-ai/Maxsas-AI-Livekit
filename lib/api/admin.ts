@@ -1,13 +1,14 @@
 import {
-    AdminUserRecord,
-    ApiEnvelope,
-    CreateTenantAdminInput,
-    TenantAdminRecord,
-    TenantUsageSummary,
-    TenantWalletSummary,
-    UpdateTenantAdminInput,
+  AdminUserRecord,
+  ApiEnvelope,
+  CreateTenantAdminInput,
+  TenantAdminRecord,
+  TenantUsageSummary,
+  TenantWalletSummary,
+  UpdateTenantAdminInput,
 } from "../../shared/contracts";
 
+import { resolveApiBaseUrl } from "./base-url";
 import { apiClient } from "./client";
 
 
@@ -48,8 +49,7 @@ export interface AdminRecentDbEventItem {
 }
 
 function resolveAdminApiBaseUrl(): string {
-  const configured = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
-  return configured.replace(/\/$/, "");
+  return resolveApiBaseUrl();
 }
 
 export function buildAdminLiveEventsStreamUrl(): string {

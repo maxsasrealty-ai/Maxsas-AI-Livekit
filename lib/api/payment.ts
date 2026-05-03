@@ -1,13 +1,53 @@
 import {
-  ApiEnvelope,
-  CreateOrderRequest,
-  CreateOrderResponse,
-  VerifyPaymentRequest,
-  VerifyPaymentResponse,
-  WalletBalanceResponse,
-  WalletTransactionsResponse,
+    ApiEnvelope,
+    CreateOrderRequest,
+    CreateOrderResponse,
+    VerifyPaymentRequest,
+    VerifyPaymentResponse,
+    WalletBalanceResponse,
+    WalletTransactionsResponse,
 } from "../../shared/contracts";
 import { apiClient } from "./client";
+
+export interface PayUInitiateRequest {
+  amount: number;
+  description: string;
+  email: string;
+  phoneNumber: string;
+  userId: string;
+  successUrl: string;
+  failureUrl: string;
+}
+
+export interface PayUInitiateResponse {
+  paymentOrderId: string;
+  merchantTransactionId: string;
+  payuKey: string;
+  hash: string;
+  amount: number;
+  email: string;
+  phoneNumber: string;
+  description: string;
+  payuMode: string;
+  payuUrl: string;
+  successUrl: string;
+  failureUrl: string;
+}
+
+export interface DevMockTopUpRequest {
+  amount: number;
+  userId?: string;
+}
+
+export interface DevMockTopUpResponse {
+  tenantId: string;
+  walletAccountId: string;
+  amountPaise: number;
+  amountFormatted: string;
+  newBalancePaise: number;
+  newBalanceFormatted: string;
+  ledgerEntryId: string;
+}
 
 export async function createOrder(
   amountPaise: number
@@ -33,7 +73,7 @@ export async function verifyPayment(
 }
 
 export async function fetchWalletBalance(): Promise<ApiEnvelope<WalletBalanceResponse>> {
-  return apiClient.get<WalletBalanceResponse>("/wallet/balance");
+  return apiClient.get<WalletBalanceResponse>("/payment/balance");
 }
 
 export async function fetchWalletTransactions(
@@ -41,6 +81,24 @@ export async function fetchWalletTransactions(
   pageSize = 20
 ): Promise<ApiEnvelope<WalletTransactionsResponse>> {
   return apiClient.get<WalletTransactionsResponse>(
-    `/wallet/transactions?page=${page}&pageSize=${pageSize}`
+    `/payment/transactions?page=${page}&pageSize=${pageSize}`
+  );
+}
+
+export async function initiatePayUCheckout(
+  payload: PayUInitiateRequest
+): Promise<ApiEnvelope<PayUInitiateResponse>> {
+  return apiClient.post<PayUInitiateRequest, PayUInitiateResponse>(
+    "/payments/payu/initiate",
+    payload
+  );
+}
+
+export async function simulatePayUSuccessTopUp(
+  payload: DevMockTopUpRequest
+): Promise<ApiEnvelope<DevMockTopUpResponse>> {
+  return apiClient.post<DevMockTopUpRequest, DevMockTopUpResponse>(
+    "/payments/payu/mock-success",
+    payload
   );
 }

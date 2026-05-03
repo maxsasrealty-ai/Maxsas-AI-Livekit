@@ -1,240 +1,29 @@
-import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useMemo, useState } from "react";
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+
 import GlassCard from "../../../components/lexus/GlassCard";
 import PillButton from "../../../components/lexus/PillButton";
 import SectionHeader from "../../../components/lexus/SectionHeader";
 import StatusPill from "../../../components/lexus/StatusPill";
-import { C } from "../../../components/lexus/theme";
+import { LexusThemeColors } from "../../../components/lexus/theme";
+import { useLexusTheme } from "../../../context/LexusThemeContext";
 import { useCapabilities } from "../../../hooks/useCapabilities";
+import { useResponsive } from "../../../hooks/useResponsive";
 import { useWallet } from "../../../hooks/useWallet";
 
-// ─── Constants ────────────────────────────────────────────────────────────
+const FILTERS = ["all", "credit", "debit"] as const;
+const QUICK_TOPUPS = [30000, 50000, 100000] as const;
+const MIN_TOPUP_RUPEES = 300;
 
-const PRESETS = [
-  { label: "₹500", paise: 50_000 },
-  { label: "₹1,000", paise: 1_00_000 },
-  { label: "₹2,000", paise: 2_00_000 },
-];
-
-const FILTERS = [
-  { key: "all", label: "All" },
-  { key: "credit", label: "Credits" },
-  { key: "debit", label: "Debits" },
-] as const;
-
-type FilterKey = "all" | "credit" | "debit";
-
-// ─── Balance Warning ──────────────────────────────────────────────────────
-
-function BalanceWarning({ balancePaise }: { balancePaise: number }) {
-  if (balancePaise >= 20_000) return null; // ≥₹200 — no warning
-  const critical = balancePaise < 5_000; // <₹50
-  return (
-    <View style={[S.warningBanner, critical ? S.warningCritical : S.warningAmber]}>
-      <Text style={S.warningIcon}>{critical ? "🔴" : "⚠️"}</Text>
-      <Text style={S.warningText}>
-        {critical
-          ? "Critical: Balance below ₹50. Top up now to continue AI calling."
-          : "Low balance. Top up to avoid service interruption."}
-      </Text>
-    </View>
-  );
-}
-
-// ─── Top-Up Modal ─────────────────────────────────────────────────────────
-
-interface TopUpModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: (amountPaise: number) => Promise<void>;
-  isLoading: boolean;
-}
-
-function TopUpModal({ visible, onClose, onConfirm, isLoading }: TopUpModalProps) {
-  const [selectedPaise, setSelectedPaise] = useState<number | null>(null);
-  const [customRupees, setCustomRupees] = useState("");
-
-  function getAmountPaise(): number | null {
-    if (selectedPaise !== null) return selectedPaise;
-    const parsed = parseFloat(customRupees.replace(/,/g, ""));
-    if (!isNaN(parsed) && parsed >= 50) return Math.round(parsed * 100);
-    return null;
-  }
-
-  const amountPaise = getAmountPaise();
-  const canConfirm = amountPaise !== null && !isLoading;
-
-  function handleCustomChange(val: string) {
-    setSelectedPaise(null);
-    setCustomRupees(val.replace(/[^0-9.]/g, ""));
-  }
-
-  async function handleConfirm() {
-    if (!amountPaise) return;
-    await onConfirm(amountPaise);
-    setSelectedPaise(null);
-    setCustomRupees("");
-  }
-
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={S.modalOverlay}
-      >
-        <View style={S.modalSheet}>
-          <View style={S.modalHandle} />
-          <Text style={S.modalTitle}>Top-Up Wallet</Text>
-          <Text style={S.modalSubtitle}>Select or enter an amount (min ₹50)</Text>
-
-          {/* Preset chips */}
-          <View style={S.presetRow}>
-            {PRESETS.map((p) => (
-              <TouchableOpacity
-                key={p.paise}
-                style={[
-                  S.presetChip,
-                  selectedPaise === p.paise && S.presetChipActive,
-                ]}
-                onPress={() => {
-                  setSelectedPaise(p.paise);
-                  setCustomRupees("");
-                }}
-              >
-                <Text
-                  style={[
-                    S.presetChipText,
-                    selectedPaise === p.paise && S.presetChipTextActive,
-                  ]}
-                >
-                  {p.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Custom amount */}
-          <View style={S.customInputRow}>
-            <Text style={S.currencyPrefix}>₹</Text>
-            <TextInput
-              style={S.customInput}
-              value={customRupees}
-              onChangeText={handleCustomChange}
-              placeholder="Custom amount"
-              placeholderTextColor={C.textFaint}
-              keyboardType="numeric"
-              returnKeyType="done"
-            />
-          </View>
-
-          {amountPaise !== null && (
-            <Text style={S.selectedAmount}>
-              You will add{" "}
-              <Text style={{ color: C.green, fontWeight: "700" }}>
-                ₹{(amountPaise / 100).toLocaleString("en-IN")}
-              </Text>{" "}
-              to your wallet.
-            </Text>
-          )}
-
-          <View style={S.infoBox}>
-            <Text style={S.infoText}>
-              {process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID
-                ? "Payment processed via Razorpay. (NOTE: Native checkout wrapper integration is pending)."
-                : "🧪 Demo mode — no real payment. Balance is credited instantly for testing."}
-            </Text>
-          </View>
-
-          <View style={S.modalActions}>
-            <TouchableOpacity style={S.cancelBtn} onPress={onClose} disabled={isLoading}>
-              <Text style={S.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[S.confirmBtn, !canConfirm && S.confirmBtnDisabled]}
-              onPress={handleConfirm}
-              disabled={!canConfirm}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={S.confirmBtnText}>Confirm Top-Up</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
-  );
-}
-
-// ─── Transaction Row ──────────────────────────────────────────────────────
-
-function TxnRow({ item }: { item: import("../../../shared/contracts").WalletTransactionItem }) {
-  const isCredit = item.type === "credit";
-  return (
-    <GlassCard style={S.txnCard} padded={false} radius={12}>
-      <View
-        style={[
-          S.txnIconCircle,
-          { backgroundColor: isCredit ? "rgba(0,208,132,0.13)" : "rgba(79,140,255,0.13)" },
-        ]}
-      >
-        <Text style={S.txnIcon}>{isCredit ? "💳" : "📞"}</Text>
-      </View>
-      <View style={S.txnCenterCol}>
-        <Text style={S.txnLabel} numberOfLines={1}>
-          {item.description}
-        </Text>
-        {item.providerOrderId && (
-          <Text style={S.txnMethod} numberOfLines={1}>
-            {item.providerOrderId.startsWith("mock") ? "Demo payment" : item.providerOrderId}
-          </Text>
-        )}
-        <Text style={S.txnDate}>{new Date(item.createdAt).toLocaleString("en-IN")}</Text>
-      </View>
-      <View style={S.txnRightCol}>
-        <Text style={isCredit ? S.txnAmountCredit : S.txnAmountDebit}>
-          {isCredit ? "+" : "-"}
-          {item.amountFormatted}
-        </Text>
-        <StatusPill
-          label={item.status}
-          tone={
-            item.status === "completed"
-              ? "success"
-              : item.status === "failed"
-              ? "danger"
-              : "info"
-          }
-          style={{ alignSelf: "flex-end", paddingHorizontal: 8, paddingVertical: 2 }}
-        />
-      </View>
-    </GlassCard>
-  );
-}
-
-// ─── Main Screen ──────────────────────────────────────────────────────────
+type FilterKey = (typeof FILTERS)[number];
 
 export default function LexusWallet() {
-  const { planLabel, limits, vocabulary } = useCapabilities();
+  const { colors, isDark } = useLexusTheme();
+  const { isDesktop } = useResponsive();
+  const s = useMemo(() => createStyles(colors, isDark, isDesktop), [colors, isDark, isDesktop]);
+  const bottomSpacer = isDesktop ? 112 : 72;
+
+  const { planLabel } = useCapabilities();
   const {
     balance,
     transactions,
@@ -245,292 +34,372 @@ export default function LexusWallet() {
     topUpResult,
     refreshBalance,
     topUp,
+    simulateTopUpSuccess,
     loadMoreTransactions,
   } = useWallet();
 
   const [filter, setFilter] = useState<FilterKey>("all");
-  const [topUpVisible, setTopUpVisible] = useState(false);
+  const [manualTopUpRupees, setManualTopUpRupees] = useState("");
 
-  const filteredTxns =
-    filter === "all"
-      ? transactions
-      : transactions.filter((t) => t.type === filter);
+  const filteredTxns = useMemo(() => {
+    if (filter === "all") {
+      return transactions;
+    }
+    return transactions.filter((txn) => txn.type === filter);
+  }, [filter, transactions]);
 
   const hasMore = transactions.length < totalTransactions;
 
-  async function handleTopUp(amountPaise: number) {
+  const summary = {
+    spent: transactions.filter((item) => item.type === "debit").reduce((sum, item) => sum + item.amountPaise, 0),
+    recharged: transactions.filter((item) => item.type === "credit").reduce((sum, item) => sum + item.amountPaise, 0),
+    lastDeduction:
+      transactions.find((item) => item.type === "debit")?.amountPaise ?? 0,
+  };
+
+  async function handleQuickTopUp(amountPaise: number) {
     const ok = await topUp(amountPaise);
-    if (ok) {
-      setTopUpVisible(false);
-    } else {
+    if (!ok) {
       Alert.alert("Top-Up Failed", "Please try again or contact support.");
     }
   }
 
+  async function handleManualTopUp() {
+    const rupees = Number(manualTopUpRupees.trim());
+
+    if (!Number.isFinite(rupees) || !Number.isInteger(rupees)) {
+      Alert.alert("Invalid Amount", "Please enter a valid whole number amount.");
+      return;
+    }
+
+    if (rupees < MIN_TOPUP_RUPEES) {
+      Alert.alert("Minimum Amount", `Minimum top-up amount is ₹${MIN_TOPUP_RUPEES}.`);
+      return;
+    }
+
+    const ok = await topUp(rupees * 100);
+    if (!ok) {
+      Alert.alert("Top-Up Failed", "Please try again or contact support.");
+      return;
+    }
+
+    setManualTopUpRupees("");
+  }
+
+  async function handleSimulateSuccess() {
+    const rupees = Number(manualTopUpRupees.trim() || String(MIN_TOPUP_RUPEES));
+
+    if (!Number.isFinite(rupees) || !Number.isInteger(rupees)) {
+      Alert.alert("Invalid Amount", "Please enter a valid whole number amount.");
+      return;
+    }
+
+    if (rupees < MIN_TOPUP_RUPEES) {
+      Alert.alert("Minimum Amount", `Minimum top-up amount is ₹${MIN_TOPUP_RUPEES}.`);
+      return;
+    }
+
+    const ok = await simulateTopUpSuccess(rupees * 100);
+    if (!ok) {
+      Alert.alert("Simulation Failed", "Unable to simulate successful payment.");
+      return;
+    }
+
+    setManualTopUpRupees("");
+  }
+
   return (
-    <SafeAreaView style={S.safe}>
-      <ScrollView
-        contentContainerStyle={S.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        <SectionHeader
-          title="Wallet"
-          subtitle="Balance & transaction history"
-          style={{ paddingHorizontal: 20, marginTop: 18, marginBottom: 8 }}
-        />
+    <SafeAreaView style={s.safe}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <View style={s.headerRow}>
+          <Text style={s.headerTitle}>Payment History</Text>
+        </View>
 
-        {/* Balance Card */}
-        <GlassCard style={S.balanceCard} padded>
-          <Text style={S.balanceLabel}>Current Balance</Text>
-          {isLoading && !balance ? (
-            <ActivityIndicator color={C.blue} style={{ marginVertical: 12 }} />
-          ) : (
-            <Text style={S.balanceValue}>
-              {balance ? balance.balanceFormatted : "₹--"}
-            </Text>
-          )}
-          <Text style={S.balanceSubtext}>
-            {planLabel} Plan · {vocabulary.callsLabel} tracked:{" "}
-            {limits?.monthlyCallMinutes ?? 0} min/mo
-          </Text>
+        <SectionHeader title="Transaction History" subtitle="View all wallet activity" />
 
-          {balance && <BalanceWarning balancePaise={balance.balancePaise} />}
+        <View style={s.kpiRow}>
+          <GlassCard style={s.kpiCard} padded={false}>
+            <Text style={s.kpiLabel}>Transactions</Text>
+            <Text style={s.kpiValue}>{totalTransactions}</Text>
+          </GlassCard>
+          <GlassCard style={s.kpiCard} padded={false}>
+            <Text style={s.kpiLabel}>Total Debited</Text>
+            <Text style={s.kpiValue}>₹{(summary.spent / 100).toLocaleString("en-IN")}</Text>
+          </GlassCard>
+        </View>
 
-          <View style={S.cardActions}>
-            <PillButton
-              title="Top-Up Wallet"
-              variant="primary"
-              style={{ flex: 1, marginRight: 8 }}
-              onPress={() => setTopUpVisible(true)}
-            />
-            <TouchableOpacity
-              style={S.refreshBtn}
-              onPress={() => void refreshBalance()}
-              disabled={isLoading}
-            >
-              <Text style={S.refreshIcon}>{isLoading ? "⏳" : "↻"}</Text>
-            </TouchableOpacity>
+        {error && (
+          <GlassCard style={s.errorCard}>
+            <Text style={s.errorText}>{error}</Text>
+          </GlassCard>
+        )}
+
+        <SectionHeader title="Current Balance" />
+        <GlassCard style={s.balanceHero}>
+          <View style={s.balanceTop}>
+            <Text style={s.balanceIcon}>👛</Text>
+            <StatusPill label="Live" tone="success" />
+          </View>
+          <Text style={s.balanceHeading}>Available Balance</Text>
+          <PillButton title="Pricing Info" variant="ghost" style={s.pricingButton} onPress={() => Alert.alert("Pricing", `${planLabel} plan billing details will be configurable soon.`)} />
+          <Text style={s.balanceValue}>{balance ? balance.balanceFormatted : "₹--"}</Text>
+
+          <View style={s.balanceDivider} />
+
+          <View style={s.balanceGrid}>
+            <View style={s.balanceStatCell}>
+              <Text style={s.balanceStatLabel}>Total Balance</Text>
+              <Text style={s.balanceStatValue}>{balance ? balance.balanceFormatted : "₹--"}</Text>
+            </View>
+            <View style={s.balanceStatCell}>
+              <Text style={s.balanceStatLabel}>Locked Balance</Text>
+              <Text style={s.balanceStatValue}>₹0</Text>
+            </View>
+            <View style={s.balanceStatCellWide}>
+              <Text style={s.balanceStatLabel}>Available Balance</Text>
+              <Text style={s.balanceStatValue}>{balance ? balance.balanceFormatted : "₹--"}</Text>
+            </View>
           </View>
         </GlassCard>
 
-        {/* Top-Up Success/Pending Banner */}
-        {topUpResult?.success && (
-          <View style={[S.successBanner, !topUpResult.mock && { backgroundColor: "rgba(245,166,35,0.13)", borderColor: "rgba(245,166,35,0.30)" }]}>
-            <Text style={[S.successText, !topUpResult.mock && { color: "#F5A623" }]}>
-              {topUpResult.mock 
-                ? `✅ ${topUpResult.amountFormatted} top-up credited (demo)`
-                : `🚧 Native SDK pending for Order ${topUpResult.orderId}. API integration required to complete ${topUpResult.amountFormatted} payment.`
-              }
-            </Text>
-          </View>
-        )}
+        <SectionHeader title="Wallet Statistics" actionLabel="Refresh" onAction={() => void refreshBalance()} />
+        <View style={s.kpiRow}>
+          <StatCard styles={s} icon="↓" label="Total Spent" value={`₹${(summary.spent / 100).toLocaleString("en-IN")}`} />
+          <StatCard styles={s} icon="↑" label="Total Recharged" value={`₹${(summary.recharged / 100).toLocaleString("en-IN")}`} />
+          <StatCard styles={s} icon="💳" label="Last Deduction" value={`₹${(summary.lastDeduction / 100).toLocaleString("en-IN")}`} />
+        </View>
 
-        {/* Error Banner */}
-        {error && (
-          <View style={S.errorBanner}>
-            <Text style={S.errorText}>⚠ {error}</Text>
-          </View>
-        )}
+        <SectionHeader title="Pending Batches (Low Balance)" />
+        <GlassCard style={s.pendingCard}>
+          <Text style={s.pendingText}>No pending batches.</Text>
+        </GlassCard>
 
-        {/* Transactions Header */}
-        <SectionHeader
-          title="Transactions"
-          style={{ paddingHorizontal: 20, marginTop: 12, marginBottom: 4 }}
-        />
+        <GlassCard style={s.infoCard}>
+          <Text style={s.infoText}>ℹ️ Each call costs ₹14. Locked balance is held for running batches.</Text>
+        </GlassCard>
 
-        {/* Filter Tabs */}
-        <View style={S.filterRow}>
-          {FILTERS.map((f) => (
-            <TouchableOpacity
-              key={f.key}
-              style={[
-                S.filterTab,
-                filter === f.key ? S.filterTabActive : S.filterTabInactive,
-              ]}
-              onPress={() => setFilter(f.key)}
-            >
-              <Text
-                style={
-                  filter === f.key ? S.filterTabTextActive : S.filterTabTextInactive
-                }
-              >
-                {f.label}
-              </Text>
-            </TouchableOpacity>
+        <SectionHeader title="Test Mode Actions" />
+        <View style={s.quickActionsRow}>
+          {QUICK_TOPUPS.map((amount) => (
+            <PillButton
+              key={amount}
+              title={`+ Add ₹${(amount / 100).toLocaleString("en-IN")}`}
+              variant="ghost"
+              style={s.quickActionButton}
+              onPress={() => void handleQuickTopUp(amount)}
+            />
           ))}
-          <Text style={S.txnCount}>
-            {totalTransactions} total
-          </Text>
         </View>
 
-        {/* Transaction List */}
-        <View style={S.txnList}>
-          {isLoading && transactions.length === 0 ? (
-            <ActivityIndicator color={C.blue} style={{ marginVertical: 24 }} />
-          ) : filteredTxns.length === 0 ? (
-            <Text style={S.emptyText}>No {filter !== "all" ? filter : ""} transactions yet.</Text>
-          ) : (
-            filteredTxns.map((txn) => <TxnRow key={txn.id} item={txn} />)
-          )}
-        </View>
+        <GlassCard style={s.manualTopUpCard}>
+          <Text style={s.manualTopUpLabel}>Manual Top-Up (Minimum ₹{MIN_TOPUP_RUPEES})</Text>
+          <View style={s.manualTopUpRow}>
+            <TextInput
+              style={s.manualTopUpInput}
+              placeholder="Enter amount in ₹"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="number-pad"
+              value={manualTopUpRupees}
+              onChangeText={setManualTopUpRupees}
+            />
+            <PillButton
+              title="Add Amount"
+              onPress={() => void handleManualTopUp()}
+              style={s.manualTopUpButton}
+            />
+          </View>
+          <View style={s.devSimulationRow}>
+            <PillButton
+              title="Simulate Success (Dev)"
+              variant="ghost"
+              onPress={() => void handleSimulateSuccess()}
+              style={s.devSimulationButton}
+            />
+          </View>
+        </GlassCard>
 
-        {/* Load More */}
-        {hasMore && filter === "all" && (
-          <TouchableOpacity style={S.loadMoreBtn} onPress={() => void loadMoreTransactions()}>
-            <Text style={S.loadMoreText}>Load more</Text>
+        {isTopUpLoading && <Text style={s.pendingText}>Processing top-up...</Text>}
+        {topUpResult?.success && (
+          <GlassCard style={s.successCard}>
+            <Text style={s.successText}>
+              {topUpResult.mock
+                ? `✅ ${topUpResult.amountFormatted} credited (demo)`
+                : `Order ${topUpResult.orderId} created for ${topUpResult.amountFormatted}.`}
+            </Text>
+          </GlassCard>
+        )}
+
+        <SectionHeader title="Payment Log" />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+          {FILTERS.map((item) => {
+            const active = item === filter;
+            return (
+              <TouchableOpacity key={item} style={[s.filterPill, active && s.filterPillActive]} onPress={() => setFilter(item)}>
+                <Text style={[s.filterText, active && s.filterTextActive]}>{item.toUpperCase()}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {isLoading && transactions.length === 0 ? (
+          <ActivityIndicator color={colors.blue} style={{ marginVertical: 20 }} />
+        ) : filteredTxns.length === 0 ? (
+          <GlassCard>
+            <Text style={s.pendingText}>No transactions found for selected filter.</Text>
+          </GlassCard>
+        ) : (
+          filteredTxns.map((txn) => (
+            <GlassCard key={txn.id} style={s.txnCard} padded={false}>
+              <View style={s.txnTop}>
+                <Text style={s.txnDescription}>{txn.description}</Text>
+                <Text style={txn.type === "credit" ? s.txnAmountCredit : s.txnAmountDebit}>
+                  {txn.type === "credit" ? "+" : "-"}
+                  {txn.amountFormatted}
+                </Text>
+              </View>
+              <Text style={s.txnMeta}>{new Date(txn.createdAt).toLocaleString("en-IN")}</Text>
+              <Text style={s.txnMeta}>{txn.providerOrderId || "wallet-entry"}</Text>
+            </GlassCard>
+          ))
+        )}
+
+        {hasMore && (
+          <TouchableOpacity style={s.loadMoreButton} onPress={() => void loadMoreTransactions()}>
+            <Text style={s.loadMoreText}>Load more</Text>
           </TouchableOpacity>
         )}
 
-        <View style={{ height: 60 }} />
+        <View style={{ height: bottomSpacer }} />
       </ScrollView>
-
-      <TopUpModal
-        visible={topUpVisible}
-        onClose={() => setTopUpVisible(false)}
-        onConfirm={handleTopUp}
-        isLoading={isTopUpLoading}
-      />
     </SafeAreaView>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────
+function StatCard({
+  styles,
+  icon,
+  label,
+  value,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  icon: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <GlassCard style={styles.statCard} padded={false}>
+      <Text style={styles.statIcon}>{icon}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </GlassCard>
+  );
+}
 
-const S = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingBottom: 32 },
+function createStyles(colors: LexusThemeColors, isDark: boolean, isDesktop: boolean) {
+  const scale = isDesktop ? 0.82 : 1;
+  const px = (value: number) => Math.round(value * scale);
 
-  // Balance card
-  balanceCard: { marginHorizontal: 20, marginBottom: 16 },
-  balanceLabel: { color: C.textFaint, fontSize: 13, fontWeight: "600", marginBottom: 4, textAlign: "center" },
-  balanceValue: { color: C.text, fontWeight: "700", fontSize: 36, marginBottom: 4, textAlign: "center" },
-  balanceSubtext: { color: C.textMuted, fontSize: 13, marginBottom: 12, textAlign: "center" },
-  cardActions: { flexDirection: "row", alignItems: "center", marginTop: 4 },
-  refreshBtn: {
-    width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(79,140,255,0.10)",
-    alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.border,
-  },
-  refreshIcon: { fontSize: 20, color: C.blue },
-
-  // Warning
-  warningBanner: {
-    flexDirection: "row", alignItems: "center", borderRadius: 10,
-    padding: 10, marginBottom: 12,
-  },
-  warningCritical: { backgroundColor: "rgba(255,107,107,0.15)", borderWidth: 1, borderColor: "rgba(255,107,107,0.35)" },
-  warningAmber: { backgroundColor: "rgba(245,166,35,0.13)", borderWidth: 1, borderColor: "rgba(245,166,35,0.30)" },
-  warningIcon: { fontSize: 16, marginRight: 8 },
-  warningText: { color: C.text, fontSize: 13, flex: 1, lineHeight: 18 },
-
-  // Banners
-  successBanner: {
-    marginHorizontal: 20, marginBottom: 12, backgroundColor: "rgba(0,208,132,0.12)",
-    borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "rgba(0,208,132,0.30)",
-  },
-  successText: { color: C.green, fontSize: 14, fontWeight: "600" },
-  errorBanner: {
-    marginHorizontal: 20, marginBottom: 12, backgroundColor: "rgba(255,107,107,0.12)",
-    borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "rgba(255,107,107,0.30)",
-  },
-  errorText: { color: C.red, fontSize: 14, fontWeight: "600" },
-
-  // Filter tabs
-  filterRow: {
-    flexDirection: "row", paddingHorizontal: 20, marginBottom: 10,
-    alignItems: "center", gap: 8,
-  },
-  filterTab: {
-    paddingHorizontal: 16, height: 34, borderRadius: 17,
-    alignItems: "center", justifyContent: "center", borderWidth: 1,
-  },
-  filterTabActive: { backgroundColor: C.blue, borderColor: C.blue },
-  filterTabInactive: { backgroundColor: "rgba(13,31,56,0.92)", borderColor: C.border },
-  filterTabTextActive: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  filterTabTextInactive: { color: C.textMuted, fontWeight: "600", fontSize: 14 },
-  txnCount: { color: C.textFaint, fontSize: 13, marginLeft: "auto" },
-
-  // Transactions
-  txnList: { marginHorizontal: 20, marginBottom: 8 },
-  emptyText: { color: C.textFaint, fontSize: 15, textAlign: "center", marginVertical: 28 },
-  txnCard: {
-    flexDirection: "row", alignItems: "center",
-    paddingVertical: 14, paddingHorizontal: 14, marginBottom: 10,
-  },
-  txnIconCircle: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: "center", justifyContent: "center", marginRight: 12,
-  },
-  txnIcon: { fontSize: 20 },
-  txnCenterCol: { flex: 1, justifyContent: "center" },
-  txnLabel: { color: C.text, fontWeight: "700", fontSize: 14, marginBottom: 2 },
-  txnMethod: { color: C.textMuted, fontSize: 12, marginBottom: 1 },
-  txnDate: { color: C.textFaint, fontSize: 11 },
-  txnRightCol: { alignItems: "flex-end", justifyContent: "center", minWidth: 90, marginLeft: 8 },
-  txnAmountCredit: { color: C.green, fontWeight: "700", fontSize: 15, marginBottom: 4 },
-  txnAmountDebit: { color: C.red, fontWeight: "700", fontSize: 15, marginBottom: 4 },
-
-  // Load more
-  loadMoreBtn: {
-    alignSelf: "center", marginTop: 4, marginBottom: 8,
-    paddingHorizontal: 24, paddingVertical: 10,
-    backgroundColor: "rgba(79,140,255,0.10)", borderRadius: 20,
-    borderWidth: 1, borderColor: C.border,
-  },
-  loadMoreText: { color: C.blue, fontWeight: "600", fontSize: 14 },
-
-  // Modal
-  modalOverlay: {
-    flex: 1, backgroundColor: "rgba(0,0,0,0.65)",
-    justifyContent: "flex-end",
-  },
-  modalSheet: {
-    backgroundColor: "#0a1628", borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingHorizontal: 24, paddingBottom: Platform.OS === "ios" ? 40 : 28,
-    paddingTop: 16, borderTopWidth: 1, borderColor: C.border,
-  },
-  modalHandle: {
-    width: 40, height: 4, borderRadius: 2,
-    backgroundColor: "rgba(255,255,255,0.15)", alignSelf: "center", marginBottom: 20,
-  },
-  modalTitle: { color: C.text, fontSize: 20, fontWeight: "700", marginBottom: 4 },
-  modalSubtitle: { color: C.textMuted, fontSize: 14, marginBottom: 20 },
-  presetRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
-  presetChip: {
-    flex: 1, paddingVertical: 12, borderRadius: 12,
-    backgroundColor: "rgba(79,140,255,0.08)", borderWidth: 1, borderColor: C.border,
-    alignItems: "center",
-  },
-  presetChipActive: { backgroundColor: "rgba(79,140,255,0.25)", borderColor: C.blue },
-  presetChipText: { color: C.textMuted, fontWeight: "700", fontSize: 15 },
-  presetChipTextActive: { color: C.blue },
-  customInputRow: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "rgba(13,31,56,0.98)", borderRadius: 12,
-    borderWidth: 1, borderColor: C.border, paddingHorizontal: 14,
-    marginBottom: 16,
-  },
-  currencyPrefix: { color: C.textMuted, fontSize: 18, fontWeight: "700", marginRight: 6 },
-  customInput: {
-    flex: 1, color: C.text, fontSize: 18, fontWeight: "600",
-    paddingVertical: 14,
-  },
-  selectedAmount: { color: C.textMuted, fontSize: 14, marginBottom: 16, textAlign: "center" },
-  infoBox: {
-    backgroundColor: "rgba(79,140,255,0.07)", borderRadius: 10,
-    padding: 12, marginBottom: 20, borderWidth: 1, borderColor: C.border,
-  },
-  infoText: { color: C.textMuted, fontSize: 13, lineHeight: 18 },
-  modalActions: { flexDirection: "row", gap: 12 },
-  cancelBtn: {
-    flex: 1, paddingVertical: 14, borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: C.border,
-    alignItems: "center",
-  },
-  cancelBtnText: { color: C.textMuted, fontWeight: "600", fontSize: 15 },
-  confirmBtn: {
-    flex: 2, paddingVertical: 14, borderRadius: 12,
-    backgroundColor: C.blue, alignItems: "center",
-  },
-  confirmBtnDisabled: { backgroundColor: "rgba(79,140,255,0.30)" },
-  confirmBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
-});
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    scroll: { paddingHorizontal: px(16), paddingTop: px(12), paddingBottom: px(32) },
+    headerRow: { alignItems: "center", marginBottom: px(8) },
+    headerTitle: { color: colors.text, fontSize: px(26), fontWeight: "800" },
+    kpiRow: { flexDirection: "row", gap: px(10), marginBottom: px(12) },
+    kpiCard: { flex: 1, minHeight: px(84), borderRadius: px(14), justifyContent: "center", paddingHorizontal: px(14) },
+    kpiLabel: { color: colors.textMuted, fontSize: px(13), marginBottom: px(6) },
+    kpiValue: { color: colors.text, fontSize: px(31), fontWeight: "800" },
+    errorCard: {
+      marginBottom: px(14),
+      borderColor: "rgba(224,85,85,0.35)",
+      backgroundColor: isDark ? "rgba(224,85,85,0.16)" : "rgba(224,85,85,0.10)",
+    },
+    errorText: { color: colors.red, fontSize: px(13), lineHeight: px(19) },
+    balanceHero: {
+      marginBottom: px(14),
+      backgroundColor: "#0d1f53",
+      borderColor: "rgba(255,255,255,0.12)",
+    },
+    balanceTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: px(8) },
+    balanceIcon: { fontSize: px(28) },
+    balanceHeading: { color: "rgba(255,255,255,0.72)", fontSize: px(14), marginBottom: px(8) },
+    pricingButton: { alignSelf: "flex-start", height: px(34), marginBottom: px(8), borderColor: "rgba(255,255,255,0.24)" },
+    balanceValue: { color: "#ffffff", fontSize: px(50), fontWeight: "800", marginBottom: px(10) },
+    balanceDivider: { height: 1, backgroundColor: "rgba(255,255,255,0.18)", marginBottom: px(12) },
+    balanceGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: px(10) },
+    balanceStatCell: { width: "50%" },
+    balanceStatCellWide: { width: "100%" },
+    balanceStatLabel: { color: "rgba(255,255,255,0.65)", fontSize: px(12), marginBottom: px(2) },
+    balanceStatValue: { color: "#ffffff", fontSize: px(31), fontWeight: "700" },
+    statCard: { flex: 1, minHeight: px(110), alignItems: "center", justifyContent: "center" },
+    statIcon: { fontSize: px(28), marginBottom: px(6) },
+    statValue: { color: colors.text, fontSize: px(34), fontWeight: "800", marginBottom: px(2) },
+    statLabel: { color: colors.textMuted, fontSize: px(12), textAlign: "center" },
+    pendingCard: { marginBottom: px(10) },
+    pendingText: { color: colors.textMuted, fontSize: px(14) },
+    infoCard: {
+      marginBottom: px(12),
+      backgroundColor: isDark ? "rgba(79,140,255,0.09)" : "rgba(79,140,255,0.08)",
+      borderColor: colors.border,
+    },
+    infoText: { color: colors.textMuted, fontSize: px(13), lineHeight: px(19) },
+    quickActionsRow: { flexDirection: "row", gap: px(8), marginBottom: px(10) },
+    quickActionButton: { flex: 1, minWidth: px(96) },
+    manualTopUpCard: { marginBottom: px(12) },
+    manualTopUpLabel: { color: colors.text, fontSize: px(13), fontWeight: "700", marginBottom: px(8) },
+    manualTopUpRow: { flexDirection: "row", gap: px(8), alignItems: "center" },
+    manualTopUpInput: {
+      flex: 1,
+      height: px(42),
+      borderRadius: px(10),
+      borderWidth: 1,
+      borderColor: colors.border,
+      color: colors.text,
+      paddingHorizontal: px(12),
+      backgroundColor: isDark ? "rgba(13,31,56,0.9)" : "rgba(79,140,255,0.06)",
+    },
+    manualTopUpButton: { minWidth: px(110) },
+    devSimulationRow: { marginTop: px(10), alignItems: "flex-start" },
+    devSimulationButton: { minWidth: px(190) },
+    successCard: {
+      marginBottom: px(12),
+      borderColor: "rgba(0,168,107,0.35)",
+      backgroundColor: isDark ? "rgba(0,168,107,0.16)" : "rgba(0,168,107,0.10)",
+    },
+    successText: { color: colors.green, fontSize: px(13), fontWeight: "700" },
+    filterRow: { gap: px(8), marginBottom: px(12) },
+    filterPill: {
+      paddingHorizontal: px(14),
+      height: px(34),
+      borderRadius: px(17),
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: px(8),
+      backgroundColor: isDark ? "rgba(13,31,56,0.9)" : "rgba(79,140,255,0.08)",
+    },
+    filterPillActive: {
+      backgroundColor: isDark ? "rgba(79,140,255,0.22)" : "rgba(79,140,255,0.18)",
+      borderColor: colors.blue,
+    },
+    filterText: { color: colors.textMuted, fontWeight: "600", fontSize: px(12) },
+    filterTextActive: { color: colors.text, fontWeight: "800" },
+    txnCard: { marginBottom: px(10), paddingHorizontal: px(12), paddingVertical: px(10) },
+    txnTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: px(6) },
+    txnDescription: { color: colors.text, fontSize: px(14), fontWeight: "700", flex: 1, marginRight: px(8) },
+    txnAmountCredit: { color: colors.green, fontSize: px(14), fontWeight: "700" },
+    txnAmountDebit: { color: colors.red, fontSize: px(14), fontWeight: "700" },
+    txnMeta: { color: colors.textMuted, fontSize: px(12), marginBottom: 1 },
+    loadMoreButton: {
+      alignSelf: "center",
+      paddingHorizontal: px(22),
+      paddingVertical: px(10),
+      borderRadius: px(20),
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: isDark ? "rgba(79,140,255,0.14)" : "rgba(79,140,255,0.1)",
+      marginTop: px(4),
+    },
+    loadMoreText: { color: colors.blue, fontSize: px(14), fontWeight: "700" },
+  });
+}

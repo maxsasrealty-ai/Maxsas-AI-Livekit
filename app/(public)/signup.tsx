@@ -297,6 +297,13 @@ export default function PremiumSignupScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const fillDevCredentials = () => {
+    setMode("login");
+    setEmail("admin@maxsas.com");
+    setPassword("Admin@123456");
+    setErrorMessage(null);
+  };
+
   const handleAuth = async () => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedFullName = fullName.trim();
@@ -328,7 +335,11 @@ export default function PremiumSignupScreen() {
             });
 
       if (!response.success) {
-        setErrorMessage(response.error.message || "Authentication failed.");
+        if (__DEV__ && response.error.code === "INVALID_CREDENTIALS") {
+          setErrorMessage("Invalid email or password. Try dev login: admin@maxsas.com / Admin@123456");
+        } else {
+          setErrorMessage(response.error.message || "Authentication failed.");
+        }
         return;
       }
 
@@ -516,15 +527,31 @@ export default function PremiumSignupScreen() {
               </Text>
 
               {/* Dev Shortcut - De-emphasized slightly */}
-              <TouchableOpacity 
-                onPress={() => router.replace('/(protected)/lexus')}
-                style={{ 
-                  backgroundColor: 'rgba(124,58,237,0.05)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.2)', 
-                  height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center' 
-                }}
-              >
-                <Text style={{ color: C.purple, fontSize: 13, fontWeight: '700' }}>🚀 DEV LOGIN (Bypass)</Text>
-              </TouchableOpacity>
+              <View style={{ gap: 8 }}>
+                <TouchableOpacity
+                  onPress={fillDevCredentials}
+                  style={{
+                    backgroundColor: 'rgba(79,140,255,0.08)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(79,140,255,0.28)',
+                    height: 40,
+                    borderRadius: 8,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text style={{ color: C.blue, fontSize: 12, fontWeight: '700' }}>Use Dev Credentials</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => router.replace('/(protected)/lexus')}
+                  style={{ 
+                    backgroundColor: 'rgba(124,58,237,0.05)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.2)', 
+                    height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center' 
+                  }}
+                >
+                  <Text style={{ color: C.purple, fontSize: 13, fontWeight: '700' }}>DEV LOGIN (Bypass)</Text>
+                </TouchableOpacity>
+              </View>
 
               {/* Divider */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 24 }}>

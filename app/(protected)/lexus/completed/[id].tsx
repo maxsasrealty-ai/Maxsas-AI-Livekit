@@ -1,301 +1,360 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
-import {
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import GlassCard from "../../../../components/lexus/GlassCard";
-import LiveStageStrip from "../../../../components/lexus/live/LiveStageStrip";
-import LockedModuleCard from "../../../../components/lexus/locks/LockedModuleCard";
 import PillButton from "../../../../components/lexus/PillButton";
 import StatusPill from "../../../../components/lexus/StatusPill";
-import { C } from "../../../../components/lexus/theme";
+import { LexusThemeColors } from "../../../../components/lexus/theme";
+import { useLexusTheme } from "../../../../context/LexusThemeContext";
 import { useCallDetail } from "../../../../hooks/useCallDetail";
+import { useCalls } from "../../../../hooks/useCalls";
 import { useCapabilities } from "../../../../hooks/useCapabilities";
-import { formatDuration, formatTime, statusTone } from "../../../../lib/adapters/calls";
+import { useResponsive } from "../../../../hooks/useResponsive";
+import { formatBatchName, formatTime, statusTone } from "../../../../lib/adapters/calls";
+import type { CallSummary } from "../../../../shared/contracts";
 
-const FILTERS = ["All", "User", "Agent"] as const;
+const RESULT_FILTERS = ["All", "Qualified", "Neutral", "Retry", "Failed"] as const;
 
 export default function LexusCompletedBatchDetail() {
+  const { colors, isDark } = useLexusTheme();
+  const { isDesktop } = useResponsive();
+  const s = useMemo(() => createStyles(colors, isDark, isDesktop), [colors, isDark, isDesktop]);
+  const bottomSpacer = isDesktop ? 112 : 72;
+
   const { id } = useLocalSearchParams<{ id: string }>();
-  const callId = typeof id === "string" ? decodeURIComponent(id) : "";
-  const [activeFilter, setActiveFilter] = useState<(typeof FILTERS)[number]>("All");
+  const roomId = typeof id === "string" ? decodeURIComponent(id) : "";
+  const [activeFilter, setActiveFilter] = useState<(typeof RESULT_FILTERS)[number]>("All");
 
-  const { isLoading, error, detail, lead, transcript, live } = useCallDetail(callId);
-  const { can, upgradeLabel, premiumPlanLabel } = useCapabilities();
+  const { calls, isLoading, isBootstrapping, error } = useCalls();
+  const { can } = useCapabilities();
 
-  const canViewHistory = can("calls.history");
-  const canViewTranscript = can("transcripts.full");
-  const canRetry = can("calls.live");
-  const canPlayback = can("recordings.playback");
+  const batchCalls = useMemo(() => calls.filter((item) => item.roomId === roomId), [calls, roomId]);
 
-  const filteredTranscript = useMemo(() => {
+  const summary = useMemo(() => {
+    const total = batchCalls.length;
+    const qualified = batchCalls.filter((call) => call.state === "completed").length;
+    const failed = batchCalls.filter((call) => call.state === "failed").length;
+    const neutral = Math.max(total - qualified - failed, 0);
+
+    return {
+      total,
+      qualified,
+      neutral,
+      failed,
+      completedAt: formatTime(batchCalls[0]?.initiatedAt),
+      status: qualified + failed === total && total > 0 ? "COMPLETED" : "IN PROGRESS",
+    };
+  }, [batchCalls]);
+
+  const outcomeRows = useMemo(() => {
+    const bucket = new Map<string, number>();
+
+    batchCalls.forEach((call) => {
+      const label =
+        call.state === "failed"
+          ? "Failed"
+          : call.state === "completed"
+          ? "Qualified Lead"
+          : "Attempt Limit Reached";
+      bucket.set(label, (bucket.get(label) || 0) + 1);
+    });
+
+    return [...bucket.entries()].map(([label, count]) => ({
+      label,
+      count,
+      ratio: summary.total ? Math.round((count / summary.total) * 100) : 0,
+    }));
+  }, [batchCalls, summary.total]);
+
+  const filteredLeads = useMemo(() => {
     if (activeFilter === "All") {
-      return transcript;
+      return batchCalls;
+    }
+    if (activeFilter === "Qualified") {
+      return batchCalls.filter((call) => call.state === "completed");
+    }
+    if (activeFilter === "Neutral") {
+      return batchCalls.filter((call) => call.state !== "completed" && call.state !== "failed");
+    }
+    if (activeFilter === "Retry") {
+      const retryOutcomes = new Set([
+        "busy_line",
+        "user_no_response",
+        "not_available_callback_requested",
+        "voicemail_detected",
+      ]);
+
+      return batchCalls.filter((call) => {
+        if (call.lead_bucket === "Retry") return true;
+        const outcome = (call.raw_call_outcome || "").toLowerCase();
+        return retryOutcomes.has(outcome);
+      });
     }
 
-    const speaker = activeFilter.toLowerCase() === "user" ? "user" : "agent";
-    return transcript.filter((item) => item.speaker === speaker);
-  }, [activeFilter, transcript]);
+    return batchCalls.filter((call) => call.state === "failed");
+  }, [activeFilter, batchCalls]);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backIcon}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Call Results</Text>
-      </View>
+    <SafeAreaView style={s.safe}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <View style={s.headerRow}>
+          <TouchableOpacity style={s.backBtn} onPress={() => router.push("/(protected)/lexus" as any)}>
+            <Text style={s.backLabel}>Back to Summary</Text>
+          </TouchableOpacity>
+          <Text style={s.headerTitle}>Batch Results</Text>
+        </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {!canViewHistory && (
-          <GlassCard style={styles.card} padded={true}>
-            <Text style={styles.emptyTitle}>Call history is unavailable on your plan.</Text>
+        {!can("calls.history") && (
+          <GlassCard style={s.card}>
+            <Text style={s.infoText}>Call history is unavailable on your plan.</Text>
           </GlassCard>
         )}
 
-        {canViewHistory && isLoading && (
-          <GlassCard style={styles.card} padded={true}>
-            <Text style={styles.emptyTitle}>Loading call details...</Text>
+        {can("calls.history") && (isLoading || isBootstrapping) && (
+          <GlassCard style={s.card}>
+            <Text style={s.infoText}>Loading batch results...</Text>
           </GlassCard>
         )}
 
-        {canViewHistory && !isLoading && error && (
-          <GlassCard style={styles.card} padded={true}>
-            <Text style={styles.emptyTitle}>Failed to load call details.</Text>
-            <Text style={styles.emptySubtitle}>{error}</Text>
+        {can("calls.history") && !isLoading && !isBootstrapping && error && (
+          <GlassCard style={s.card}>
+            <Text style={s.errorText}>Failed to load batch results: {error}</Text>
           </GlassCard>
         )}
 
-        {canViewHistory && !isLoading && !error && !detail && (
-          <GlassCard style={styles.card} padded={true}>
-            <Text style={styles.emptyTitle}>Call not found.</Text>
-          </GlassCard>
-        )}
-
-        {canViewHistory && !isLoading && !error && detail && (
+        {can("calls.history") && !isLoading && !isBootstrapping && !error && (
           <>
-            <GlassCard style={styles.cardMain} padded={true}>
-              <View style={styles.cardTop}>
-                <View>
-                  <Text style={styles.cardLabel}>Call ID</Text>
-                  <Text style={styles.cardValue}>{detail.callId}</Text>
-                </View>
-                <StatusPill label={detail.state} tone={statusTone(detail.state)} />
+            <View style={s.batchHeadRow}>
+              <View>
+                <Text style={s.batchName}>{formatBatchName(roomId)}</Text>
+                <Text style={s.batchSub}>Live batch {roomId.slice(0, 8)} · contact-wise calling outcome</Text>
               </View>
+            </View>
 
-              <Text style={styles.metaText}>Room: {detail.roomId}</Text>
-              <Text style={styles.metaText}>Started: {formatTime(detail.initiatedAt)}</Text>
-              <Text style={styles.metaText}>Duration: {formatDuration(detail.durationSec)}</Text>
-              <Text style={styles.metaText}>Turns: {detail.transcriptTurns || 0}</Text>
-
-              <View style={styles.summaryStrip}>
-                <Text style={styles.summaryText}>
-                  Events captured: {detail.eventSummary.reduce((sum, item) => sum + item.count, 0)}
-                </Text>
+            <GlassCard style={s.card}>
+              <Text style={s.highlightTitle}>Live Calling Overview</Text>
+              <View style={s.metaRow}>
+                <Text style={s.metaLabel}>Batch ID</Text>
+                <Text style={s.metaValue}>{roomId || "-"}</Text>
               </View>
-
-              {live && <LiveStageStrip snapshot={live} />}
-
-              {detail.state === "failed" && (
-                <View style={{ marginTop: 12 }}>
-                  <PillButton
-                    title="Retry Call"
-                    variant={canRetry ? "primary" : "ghost"}
-                    onPress={() =>
-                      canRetry
-                        ? router.push("/(protected)/lexus/leads-upload" as any)
-                        : router.push("/(protected)/lexus/profile" as any)
-                    }
-                  />
-                </View>
-              )}
+              <View style={s.metaRow}>
+                <Text style={s.metaLabel}>Completed At</Text>
+                <Text style={s.metaValue}>{summary.completedAt}</Text>
+              </View>
+              <View style={s.metaRow}>
+                <Text style={s.metaLabel}>Status</Text>
+                <StatusPill label={summary.status} tone="success" />
+              </View>
             </GlassCard>
 
-            <Text style={styles.sectionTitle}>Lead Insight</Text>
-            <GlassCard style={styles.card} padded={true}>
-              {lead ? (
-                <>
-                  <Text style={styles.leadName}>{lead.fields.name || "Unnamed lead"}</Text>
-                  <Text style={styles.metaText}>Phone: {lead.fields.phone || "-"}</Text>
-                  <Text style={styles.metaText}>Extracted: {formatTime(lead.extractedAt)}</Text>
-                  <Text style={styles.leadSummary}>{lead.fields.summary}</Text>
-                  <TouchableOpacity
-                    style={styles.linkButton}
-                    onPress={() =>
-                      router.push(`/(protected)/lexus/completed/leads/${encodeURIComponent(detail.callId)}` as any)
-                    }
-                  >
-                    <Text style={styles.linkText}>Open detailed lead view</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <Text style={styles.emptySubtitle}>No lead extraction was generated for this call.</Text>
-              )}
-            </GlassCard>
-
-            <Text style={styles.sectionTitle}>Transcript</Text>
-            {!canViewTranscript && (
-              <LockedModuleCard
-                title="Full Transcript"
-                description={`Full transcript is locked on your current plan. Upgrade to ${premiumPlanLabel} to unlock complete transcript history.`}
-                ctaLabel={upgradeLabel}
-                onPress={() => router.push("/(protected)/lexus/profile" as any)}
+            <View style={s.actionsRow}>
+              <PillButton
+                title="View Billing Detail"
+                variant="secondary"
+                style={{ flex: 1 }}
+                onPress={() => router.push("/(protected)/lexus/wallet" as any)}
               />
-            )}
+            </View>
 
-            {canViewTranscript && (
-              <>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.filterRow}
-                >
-                  {FILTERS.map((filter) => {
-                    const isActive = filter === activeFilter;
-                    return (
-                      <TouchableOpacity
-                        key={filter}
-                        style={[styles.filterPill, isActive ? styles.filterPillActive : styles.filterPillInactive]}
-                        onPress={() => setActiveFilter(filter)}
-                      >
-                        <Text style={isActive ? styles.filterTextActive : styles.filterTextInactive}>{filter}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
+            <Text style={s.sectionTitle}>Calling Snapshot</Text>
+            <View style={s.kpiRow}>
+              <KpiCard styles={s} label="Total Leads" value={summary.total} />
+              <KpiCard styles={s} label="Qualified Leads" value={summary.qualified} accent />
+              <KpiCard styles={s} label="Neutral" value={summary.neutral} />
+            </View>
 
-                <View style={styles.transcriptList}>
-                  {filteredTranscript.length === 0 ? (
-                    <GlassCard style={styles.card} padded={true}>
-                      <Text style={styles.emptySubtitle}>No transcript segments for this filter.</Text>
-                    </GlassCard>
-                  ) : (
-                    filteredTranscript.map((segment) => (
-                      <GlassCard key={segment.id} style={styles.transcriptCard} padded={true} radius={12}>
-                        <View style={styles.segmentTop}>
-                          <StatusPill
-                            label={segment.speaker.toUpperCase()}
-                            tone={segment.speaker === "agent" ? "info" : "success"}
-                          />
-                          <Text style={styles.segmentMeta}>#{segment.sequenceNo}</Text>
-                        </View>
-                        <Text style={styles.segmentText}>{segment.text}</Text>
-                        <Text style={styles.segmentMeta}>{formatTime(segment.occurredAt)}</Text>
-                      </GlassCard>
-                    ))
-                  )}
-                </View>
-              </>
-            )}
-
-            <Text style={styles.sectionTitle}>Recording</Text>
-            {!canPlayback && (
-              <LockedModuleCard
-                title="Call Recording"
-                description={`Recording playback is available on ${premiumPlanLabel}.`}
-                ctaLabel={upgradeLabel}
-                onPress={() => router.push("/(protected)/lexus/profile" as any)}
-              />
-            )}
-
-            {canPlayback && (
-              <GlassCard style={styles.card} padded={true}>
-                <Text style={styles.emptySubtitle}>
-                  {live?.recordingState === "available"
-                    ? "Recording is now available and synced."
-                    : "Recording is still processing. This card updates automatically when ready."}
-                </Text>
-              </GlassCard>
-            )}
-
-            <Text style={styles.sectionTitle}>Analysis</Text>
-            <GlassCard style={styles.card} padded={true}>
-              <Text style={styles.emptySubtitle}>
-                {live?.analysisState === "ready"
-                  ? "Lead extraction and analysis are ready."
-                  : "Analysis is pending. This module refreshes as delayed assets arrive."}
+            <Text style={s.sectionTitle}>Qualified Outcomes</Text>
+            <GlassCard style={s.card}>
+              <Text style={s.infoText}>
+                {summary.qualified > 0
+                  ? `${summary.qualified} qualified lead(s) are available in this batch.`
+                  : "No qualified leads in this batch."}
               </Text>
             </GlassCard>
+
+            <Text style={s.sectionTitle}>Outcome Breakdown</Text>
+            <GlassCard style={s.card}>
+              {outcomeRows.length === 0 ? (
+                <Text style={s.infoText}>No outcomes captured yet.</Text>
+              ) : (
+                outcomeRows.map((item) => (
+                  <View key={item.label} style={s.outcomeRow}>
+                    <View style={s.outcomeTop}>
+                      <Text style={s.outcomeLabel}>{item.label}</Text>
+                      <Text style={s.outcomeRatio}>{item.count} ({item.ratio}%)</Text>
+                    </View>
+                    <View style={s.outcomeTrack}>
+                      <View style={[s.outcomeFill, { width: `${item.ratio}%` }]} />
+                    </View>
+                  </View>
+                ))
+              )}
+            </GlassCard>
+
+            <Text style={s.sectionTitle}>Contact Results</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+              {RESULT_FILTERS.map((filter) => {
+                const active = filter === activeFilter;
+                return (
+                  <TouchableOpacity
+                    key={filter}
+                    style={[s.filterPill, active && s.filterPillActive]}
+                    onPress={() => setActiveFilter(filter)}
+                  >
+                    <Text style={[s.filterText, active && s.filterTextActive]}>{filter}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            {filteredLeads.length === 0 ? (
+              <GlassCard style={s.card}>
+                <Text style={s.infoText}>No contact results for this filter.</Text>
+              </GlassCard>
+            ) : (
+              filteredLeads.map((call) => <LeadResultCard key={call.callId} callId={call.callId} call={call} styles={s} />)
+            )}
           </>
         )}
 
-        <View style={{ height: 60 }} />
+        <View style={{ height: bottomSpacer }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingHorizontal: 16, paddingBottom: 32 },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: Platform.OS === "android" ? 18 : 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    height: 56,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(13,31,56,0.85)",
-    borderWidth: 1,
-    borderColor: C.border,
-    marginRight: 2,
-  },
-  backIcon: { color: C.blue, fontSize: 26, fontWeight: "600", marginTop: -2 },
-  headerTitle: { flex: 1, textAlign: "center", color: C.text, fontWeight: "700", fontSize: 18 },
-  cardMain: { marginBottom: 14 },
-  card: { marginBottom: 14 },
-  cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  cardLabel: { color: C.textFaint, fontSize: 12 },
-  cardValue: { color: C.text, fontSize: 14, fontWeight: "700" },
-  metaText: { color: C.textMuted, fontSize: 13, marginBottom: 4 },
-  summaryStrip: {
-    marginTop: 8,
-    backgroundColor: "rgba(79,140,255,0.10)",
-    borderWidth: 1,
-    borderColor: "rgba(79,140,255,0.18)",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-  },
-  summaryText: { color: C.text, fontSize: 13 },
-  sectionTitle: { color: C.text, fontSize: 16, fontWeight: "700", marginBottom: 8, marginTop: 6 },
-  leadName: { color: C.text, fontWeight: "700", fontSize: 16, marginBottom: 6 },
-  leadSummary: { color: C.text, fontSize: 14, marginTop: 8, lineHeight: 21 },
-  linkButton: { marginTop: 12 },
-  linkText: { color: C.blue, fontSize: 14, fontWeight: "700" },
-  filterRow: { gap: 8, paddingVertical: 8, marginBottom: 8 },
-  filterPill: {
-    paddingHorizontal: 14,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  filterPillActive: { backgroundColor: C.blue, borderColor: C.blue },
-  filterPillInactive: { backgroundColor: "rgba(13,31,56,0.92)", borderColor: C.border },
-  filterTextActive: { color: "#fff", fontWeight: "700", fontSize: 13 },
-  filterTextInactive: { color: C.textMuted, fontWeight: "600", fontSize: 13 },
-  transcriptList: { marginBottom: 12 },
-  transcriptCard: { marginBottom: 10 },
-  segmentTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  segmentMeta: { color: C.textFaint, fontSize: 12 },
-  segmentText: { color: C.text, fontSize: 14, lineHeight: 20, marginBottom: 8 },
-  emptyTitle: { color: C.text, fontSize: 15, fontWeight: "700", marginBottom: 4 },
-  emptySubtitle: { color: C.textMuted, fontSize: 14 },
-});
+function KpiCard({
+  styles,
+  label,
+  value,
+  accent = false,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  label: string;
+  value: number;
+  accent?: boolean;
+}) {
+  return (
+    <GlassCard style={[styles.kpiCard, accent && styles.kpiAccent]} padded={false}>
+      <Text style={[styles.kpiValue, accent && styles.kpiValueAccent]}>{value}</Text>
+      <Text style={styles.kpiLabel}>{label}</Text>
+    </GlassCard>
+  );
+}
+
+function LeadResultCard({
+  callId,
+  call,
+  styles,
+}: {
+  callId: string;
+  call: CallSummary;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const { detail, lead } = useCallDetail(callId);
+  const mobileNumber = lead?.fields.phone || detail?.phoneNumber || "-";
+
+  const handlePress = () => {
+    router.push(`/(protected)/lexus/call/${encodeURIComponent(call.callId)}` as any);
+  };
+
+  return (
+    <TouchableOpacity activeOpacity={0.85} onPress={handlePress}>
+      <GlassCard style={styles.resultCard} padded={false}>
+        <View style={styles.resultTop}>
+          <Text style={styles.resultId}>{call.callId.slice(0, 10)}</Text>
+          <StatusPill label={call.state} tone={statusTone(call.state)} />
+        </View>
+        <Text style={styles.resultMeta}>Room: {call.roomId}</Text>
+        <Text style={styles.resultMeta}>Mobile No: {mobileNumber}</Text>
+        <Text style={styles.resultMeta}>Started: {formatTime(call.initiatedAt)}</Text>
+      </GlassCard>
+    </TouchableOpacity>
+  );
+}
+
+function createStyles(colors: LexusThemeColors, isDark: boolean, isDesktop: boolean) {
+  const scale = isDesktop ? 0.82 : 1;
+  const px = (value: number) => Math.round(value * scale);
+
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    scroll: { paddingHorizontal: px(16), paddingTop: px(10), paddingBottom: px(32) },
+    headerRow: { flexDirection: "row", alignItems: "center", marginBottom: px(14) },
+    backBtn: {
+      minWidth: px(92),
+      height: px(36),
+      borderRadius: px(18),
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark ? "rgba(13,31,56,0.9)" : "rgba(79,140,255,0.12)",
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: px(8),
+      paddingHorizontal: px(14),
+    },
+    backLabel: { color: colors.text, fontSize: px(12), fontWeight: "700" },
+    headerTitle: { color: colors.text, fontSize: px(24), fontWeight: "800", flex: 1, textAlign: "center", marginRight: px(44) },
+    card: { marginBottom: px(12) },
+    infoText: { color: colors.textMuted, fontSize: px(14) },
+    errorText: { color: colors.red, fontSize: px(14) },
+    batchHeadRow: { flexDirection: "row", alignItems: "center", marginBottom: px(10) },
+    batchName: { color: colors.text, fontSize: px(19), fontWeight: "800" },
+    batchSub: { color: colors.textMuted, fontSize: px(13), marginTop: px(2) },
+    highlightTitle: { color: colors.green, fontSize: px(15), fontWeight: "800", marginBottom: px(8) },
+    metaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: px(6) },
+    metaLabel: { color: colors.textMuted, fontSize: px(13) },
+    metaValue: { color: colors.text, fontSize: px(14), fontWeight: "700", flex: 1, textAlign: "right", marginLeft: px(8) },
+    actionsRow: { flexDirection: "row", marginBottom: px(12) },
+    sectionTitle: { color: colors.text, fontSize: px(18), fontWeight: "800", marginBottom: px(8), marginTop: px(4) },
+    kpiRow: { flexDirection: "row", gap: px(10), marginBottom: px(12) },
+    kpiCard: {
+      flex: 1,
+      minHeight: px(88),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: px(14),
+    },
+    kpiAccent: {
+      borderColor: "rgba(0,168,107,0.45)",
+      backgroundColor: isDark ? "rgba(0,168,107,0.16)" : "rgba(0,168,107,0.12)",
+    },
+    kpiValue: { color: colors.text, fontSize: px(36), fontWeight: "800" },
+    kpiValueAccent: { color: colors.green },
+    kpiLabel: { color: colors.textMuted, fontSize: px(12), textAlign: "center", marginTop: px(2) },
+    outcomeRow: { marginBottom: px(10) },
+    outcomeTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: px(4) },
+    outcomeLabel: { color: colors.text, fontWeight: "700", fontSize: px(14) },
+    outcomeRatio: { color: colors.textMuted, fontSize: px(13) },
+    outcomeTrack: {
+      height: px(10),
+      borderRadius: 999,
+      backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(16,33,61,0.12)",
+      overflow: "hidden",
+    },
+    outcomeFill: { height: px(10), borderRadius: 999, backgroundColor: "#6f7a8f" },
+    filterRow: { gap: px(8), marginBottom: px(12) },
+    filterPill: {
+      height: px(38),
+      borderRadius: px(19),
+      paddingHorizontal: px(14),
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: px(8),
+      backgroundColor: isDark ? "rgba(13,31,56,0.9)" : "rgba(79,140,255,0.08)",
+    },
+    filterPillActive: {
+      backgroundColor: isDark ? "rgba(79,140,255,0.22)" : "rgba(79,140,255,0.18)",
+      borderColor: colors.blue,
+    },
+    filterText: { color: colors.textMuted, fontWeight: "600", fontSize: px(13) },
+    filterTextActive: { color: colors.text, fontWeight: "700" },
+    resultCard: { marginBottom: px(10), paddingHorizontal: px(12), paddingVertical: px(10) },
+    resultTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: px(6) },
+    resultId: { color: colors.text, fontSize: px(14), fontWeight: "700" },
+    resultMeta: { color: colors.textMuted, fontSize: px(12), marginBottom: px(2) },
+  });
+}

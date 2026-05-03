@@ -1,32 +1,31 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
-import {
-    Alert,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import GlassCard from "../../../../components/lexus/GlassCard";
 import PillButton from "../../../../components/lexus/PillButton";
 import SectionHeader from "../../../../components/lexus/SectionHeader";
 import StatusPill from "../../../../components/lexus/StatusPill";
-import { C } from "../../../../components/lexus/theme";
+import { LexusThemeColors } from "../../../../components/lexus/theme";
+import { useLexusTheme } from "../../../../context/LexusThemeContext";
+import { useCallDetail } from "../../../../hooks/useCallDetail";
 import { useCalls } from "../../../../hooks/useCalls";
 import { useCapabilities } from "../../../../hooks/useCapabilities";
+import { useResponsive } from "../../../../hooks/useResponsive";
 import { formatBatchName, formatTime, statusTone } from "../../../../lib/adapters/calls";
 
 const CONTACT_TABS = [
-  { key: "pending", label: "Pending" },
-  { key: "completed", label: "Completed" },
-  { key: "failed", label: "Failed" },
+  { key: "pending", label: "Show Pending" },
+  { key: "completed", label: "Show Completed" },
+  { key: "failed", label: "Show Failed" },
 ] as const;
 
 export default function LexusBatchDetail() {
+  const { colors, isDark } = useLexusTheme();
+  const { isDesktop } = useResponsive();
+  const s = useMemo(() => createStyles(colors, isDark, isDesktop), [colors, isDark, isDesktop]);
+  const bottomSpacer = isDesktop ? 112 : 72;
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const roomId = typeof id === "string" ? decodeURIComponent(id) : "";
   const batchLabel = formatBatchName(roomId);
@@ -35,21 +34,20 @@ export default function LexusBatchDetail() {
   const { can } = useCapabilities();
   const [tab, setTab] = useState<(typeof CONTACT_TABS)[number]["key"]>("pending");
 
-  const batchCalls = useMemo(
-    () => calls.filter((item) => item.roomId === roomId),
-    [calls, roomId]
-  );
+  const batchCalls = useMemo(() => calls.filter((item) => item.roomId === roomId), [calls, roomId]);
 
-  // TODO: Swap this derived batch model with native batch entities once batch APIs are available.
   const batch = useMemo(() => {
     const completed = batchCalls.filter((item) => item.state === "completed").length;
     const failed = batchCalls.filter((item) => item.state === "failed").length;
     const pending = Math.max(batchCalls.length - completed - failed, 0);
     const progress = batchCalls.length ? Math.round((completed / batchCalls.length) * 100) : 0;
 
+    const finished = completed + failed;
+
     return {
       id: roomId,
-      status: completed === batchCalls.length && batchCalls.length > 0 ? "completed" : "running",
+      // consider the batch finished when all contacts have reached a terminal state (completed or failed)
+      status: batchCalls.length > 0 && finished === batchCalls.length ? "completed" : "running",
       createdAt: formatTime(batchCalls[0]?.initiatedAt),
       totalContacts: batchCalls.length,
       completed,
@@ -71,170 +69,296 @@ export default function LexusBatchDetail() {
   }, [batch.contacts, tab]);
 
   return (
-    <SafeAreaView style={S.safe}>
-      <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
-        <View style={S.headerRow}>
-          <TouchableOpacity style={S.backBtn} onPress={() => router.back()}>
-            <Text style={S.backIcon}>‹</Text>
+    <SafeAreaView style={s.safe}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <View style={s.headerRow}>
+          <TouchableOpacity style={s.backBtn} onPress={() => router.push("/(protected)/lexus" as any)}>
+            <Text style={s.backLabel}>Back to Home</Text>
           </TouchableOpacity>
-          <Text style={S.headerTitle}>Batch Details</Text>
+          <View style={s.headerCenter}>
+            <Text style={s.headerKicker}>LIVE MONITOR</Text>
+            <Text style={s.headerTitle}>Live Call Monitor</Text>
+          </View>
+          <View style={s.headerSpacer} />
         </View>
 
         {!can("calls.history") && (
-          <GlassCard style={S.mb14} padded={true}>
-            <Text style={S.emptyContacts}>Batch insights are unavailable on your current plan.</Text>
+          <GlassCard style={s.card}>
+            <Text style={s.emptyText}>Batch insights are unavailable on your current plan.</Text>
           </GlassCard>
         )}
 
         {can("calls.history") && (isLoading || isBootstrapping) && (
-          <GlassCard style={S.mb14} padded={true}>
-            <Text style={S.emptyContacts}>Loading batch details...</Text>
+          <GlassCard style={s.card}>
+            <Text style={s.emptyText}>Loading batch details...</Text>
           </GlassCard>
         )}
 
         {can("calls.history") && !isLoading && !isBootstrapping && error && (
-          <GlassCard style={S.mb14} padded={true}>
-            <Text style={S.emptyContacts}>Failed to load batch details: {error}</Text>
+          <GlassCard style={s.card}>
+            <Text style={s.emptyText}>Failed to load batch details: {error}</Text>
           </GlassCard>
         )}
 
         {can("calls.history") && !isLoading && !isBootstrapping && !error && (
           <>
-            <View style={S.headerSubtitleRow}>
-              <Text style={S.headerSubtitle}>{batchLabel} • {batch.status.toUpperCase()}</Text>
-            </View>
-
-            <GlassCard style={S.cardMain} padded={true}>
-              <Text style={S.cardLabel}>Batch ID</Text>
-              <Text style={S.cardValue}>{batch.id || "-"}</Text>
-              <View style={S.cardRow}>
-                <View style={S.cardCol}><Text style={S.cardColLabel}>Total Calls</Text><Text style={S.cardColValue}>{batch.totalContacts}</Text></View>
-                <View style={S.cardCol}><Text style={S.cardColLabel}>Created</Text><Text style={S.cardColValue}>{batch.createdAt}</Text></View>
-              </View>
-              <View style={[S.statusStrip, { backgroundColor: batch.status === "completed" ? C.blue : C.green }]}> 
-                <Text style={S.statusStripText}>
-                  {batch.status === "completed" ? "✅ AI Campaign Completed" : "📞 Calling in progress"}
-                </Text>
+            <GlassCard style={s.bannerCard}>
+              <View style={s.bannerTopRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.bannerTitle}>{batchLabel}</Text>
+                  <Text style={s.bannerSub}>Live calling status • {batch.status.toUpperCase()} • MANUAL</Text>
+                </View>
+                <StatusPill label="LIVE" tone={batch.status === "completed" ? "success" : "info"} />
               </View>
             </GlassCard>
 
-            <PillButton
-              title="View Billing Detail"
-              variant="ghost"
-              style={{ alignSelf: "center", marginBottom: 14, height: 40 }}
-              onPress={() => Alert.alert("Billing detail is pending billing backend support")}
-            />
-
-            <GlassCard style={S.mb14}>
-              <View style={S.progressRow}>
-                <Text style={S.progressLabel}>Progress</Text>
-                <Text style={S.progressPercent}>{batch.progress}%</Text>
-              </View>
-              <View style={S.progressBarTrack}>
-                <View style={[S.progressBarFill, { width: `${batch.progress}%` }]} />
-              </View>
-              <Text style={S.progressNote}>{batch.completed} completed • {batch.pending} pending</Text>
+            <GlassCard style={s.card}>
+              <InfoRow styles={s} label="Batch ID" value={batch.id || "-"} />
+              <Divider styles={s} />
+              <InfoRow styles={s} label="Total Contacts" value={String(batch.totalContacts)} />
+              <Divider styles={s} />
+              <InfoRow styles={s} label="Created" value={batch.createdAt} />
             </GlassCard>
 
-            <View style={S.kpiRow}>
-              <GlassCard style={S.kpiCard} padded={false} radius={12}><Text style={S.kpiIcon}>👥</Text><Text style={S.kpiValue}>{batch.totalContacts}</Text><Text style={S.kpiLabel}>Total Calls</Text></GlassCard>
-              <GlassCard style={S.kpiCard} padded={false} radius={12}><Text style={S.kpiIcon}>✅</Text><Text style={S.kpiValue}>{batch.completed}</Text><Text style={S.kpiLabel}>Success</Text></GlassCard>
-              <GlassCard style={S.kpiCard} padded={false} radius={12}><Text style={S.kpiIcon}>❗️</Text><Text style={S.kpiValue}>{batch.failed}</Text><Text style={S.kpiLabel}>Failed</Text></GlassCard>
+            <GlassCard style={s.statusCard}>
+              <Text style={s.statusText}>{batch.status === "completed" ? "✅ Batch completed" : "📞 Calls in progress"}</Text>
+            </GlassCard>
+
+            <View style={s.actionsRow}>
+              <View style={{ flex: 1 }} />
+              <View style={{ flex: 1 }}>
+                <TouchableOpacity onPress={() => router.push(`/(protected)/lexus/completed/${encodeURIComponent(roomId)}` as any)}>
+                  <Text style={s.resultsLink}>View Results</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
-            <SectionHeader title="Contact(s)" style={{ marginTop: 10 }} />
-            <View style={S.tabsRow}>
-              {CONTACT_TABS.map((t) => (
+            <GlassCard style={s.card}>
+              <View style={s.progressTopRow}>
+                <Text style={s.progressLabel}>Progress</Text>
+                <Text style={s.progressValue}>{batch.progress}%</Text>
+              </View>
+              <View style={s.progressTrack}>
+                <View style={[s.progressFill, { width: `${batch.progress}%` }]} />
+              </View>
+              <Text style={s.progressMeta}>{batch.completed} completed</Text>
+              <Text style={s.progressMeta}>{batch.pending} pending</Text>
+            </GlassCard>
+
+            {batch.status === "completed" && (
+              <GlassCard style={s.resultsCard}>
+                <View style={s.resultsWrap}>
+                  <PillButton
+                    title="View Results"
+                    variant="primary"
+                    style={s.resultsButton}
+                    onPress={() => router.push(`/(protected)/lexus/completed/${encodeURIComponent(roomId)}` as any)}
+                  />
+                </View>
+              </GlassCard>
+            )}
+
+            <Text style={s.sectionTitle}>Live Snapshot</Text>
+            <View style={s.kpiRow}>
+              <KpiCard styles={s} icon="📞" label="Contacts" value={batch.totalContacts} />
+              <KpiCard styles={s} icon="✅" label="Completed" value={batch.completed} />
+              <KpiCard styles={s} icon="⏳" label="Pending" value={batch.pending} />
+            </View>
+
+            <SectionHeader title={`${batch.totalContacts} Live Contact(s)`} subtitle="Track each contact inside this call batch" />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+              {CONTACT_TABS.map((item) => (
                 <TouchableOpacity
-                  key={t.key}
-                  style={[S.tabPill, tab === t.key ? S.tabPillActive : S.tabPillInactive]}
-                  onPress={() => setTab(t.key)}
+                  key={item.key}
+                  style={[s.filterPill, tab === item.key && s.filterPillActive]}
+                  onPress={() => setTab(item.key)}
                 >
-                  <Text style={tab === t.key ? S.tabPillTextActive : S.tabPillTextInactive}>{t.label}</Text>
+                  <Text style={[s.filterPillText, tab === item.key && s.filterPillTextActive]}>{item.label}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
 
-            <View style={S.contactsList}>
-              {contacts.length === 0 ? (
-                <Text style={S.emptyContacts}>No contacts in this state.</Text>
-              ) : (
-                contacts.map((call, i) => (
-                  <GlassCard key={call.callId} style={S.contactRow} padded={false} radius={12}>
-                    <View style={S.contactCircle}><Text style={S.contactCircleText}>{i + 1}.</Text></View>
-                    <View style={S.contactCol}>
-                      <Text style={S.contactPhone}>Lead {i + 1}</Text>
-                      <Text style={S.contactRetry}>Call: {call.callId.slice(0, 8)}...</Text>
-                      <Text style={S.contactNote}>Started: {formatTime(call.initiatedAt)}</Text>
-                    </View>
-                    <View style={S.contactStatusCol}>
-                      <StatusPill label={call.state} tone={statusTone(call.state)} style={{ marginBottom: 6 }} />
-                      {call.state === "failed" && (
-                        <PillButton
-                          title="Retry"
-                          variant="primary"
-                          style={{ height: 32, paddingHorizontal: 12 }}
-                          onPress={() => Alert.alert(`Retry orchestration is pending for call ${call.callId}`)}
-                        />
-                      )}
-                    </View>
-                  </GlassCard>
-                ))
-              )}
-            </View>
+            {contacts.length === 0 ? (
+              <GlassCard style={s.card}>
+                <Text style={s.emptyText}>No live contacts in this state.</Text>
+              </GlassCard>
+            ) : (
+              contacts.map((call, index) => <LiveContactCard key={call.callId} call={call} index={index} styles={s} />)
+            )}
           </>
         )}
 
-        <View style={{ height: 60 }} />
+        <View style={{ height: bottomSpacer }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const S = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingHorizontal: 16, paddingBottom: 32 },
-  headerRow: { flexDirection: "row", alignItems: "center", paddingTop: Platform.OS === "android" ? 18 : 0, paddingHorizontal: 2, marginBottom: 2, height: 56 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(13,31,56,0.85)", borderWidth: 1, borderColor: C.border, marginRight: 2 },
-  backIcon: { color: C.blue, fontSize: 26, fontWeight: "600", marginTop: -2 },
-  headerTitle: { flex: 1, textAlign: "center", color: C.text, fontWeight: "700", fontSize: 18, letterSpacing: 0.5 },
-  headerSubtitleRow: { alignItems: "center", marginBottom: 10 },
-  headerSubtitle: { color: C.textMuted, fontSize: 13, fontWeight: "600", letterSpacing: 1 },
-  mb14: { marginBottom: 14 },
-  cardMain: { alignItems: "center", marginBottom: 14 },
-  cardLabel: { color: C.textFaint, fontSize: 13, fontWeight: "600", marginBottom: 2 },
-  cardValue: { color: C.text, fontWeight: "700", fontSize: 16, marginBottom: 8 },
-  cardRow: { flexDirection: "row", width: "100%", justifyContent: "space-between", marginBottom: 8 },
-  cardCol: { flex: 1, alignItems: "center" },
-  cardColLabel: { color: C.textMuted, fontSize: 12, marginBottom: 2 },
-  cardColValue: { color: C.text, fontWeight: "700", fontSize: 14 },
-  statusStrip: { width: "100%", borderRadius: 12, paddingVertical: 7, alignItems: "center", marginTop: 6, marginBottom: 2 },
-  statusStripText: { color: "#fff", fontWeight: "700", fontSize: 14, letterSpacing: 0.5 },
-  progressRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
-  progressLabel: { color: C.text, fontWeight: "700", fontSize: 15 },
-  progressPercent: { color: C.green, fontWeight: "700", fontSize: 15 },
-  progressBarTrack: { width: "100%", height: 10, borderRadius: 999, backgroundColor: "rgba(79,140,255,0.13)", marginBottom: 6, overflow: "hidden" },
-  progressBarFill: { height: 10, borderRadius: 999, backgroundColor: C.green },
-  progressNote: { color: C.textFaint, fontSize: 12, marginTop: 2 },
-  kpiRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
-  kpiCard: { flex: 1, alignItems: "center", marginHorizontal: 4, paddingVertical: 12 },
-  kpiIcon: { fontSize: 20, marginBottom: 2 },
-  kpiValue: { color: C.text, fontWeight: "700", fontSize: 16, marginBottom: 2 },
-  kpiLabel: { color: C.textFaint, fontSize: 12, fontWeight: "600" },
-  tabsRow: { flexDirection: "row", marginBottom: 8, gap: 8 },
-  tabPill: { paddingHorizontal: 14, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 8, borderWidth: 1 },
-  tabPillActive: { backgroundColor: C.blue, borderColor: C.blue },
-  tabPillInactive: { backgroundColor: "rgba(13,31,56,0.92)", borderColor: C.border },
-  tabPillTextActive: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  tabPillTextInactive: { color: C.textMuted, fontWeight: "600", fontSize: 14 },
-  contactsList: { marginBottom: 24 },
-  emptyContacts: { color: C.textFaint, fontSize: 14, textAlign: "center", marginVertical: 18 },
-  contactRow: { flexDirection: "row", alignItems: "flex-start", paddingVertical: 12, paddingHorizontal: 14, marginBottom: 10 },
-  contactCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(79,140,255,0.13)", alignItems: "center", justifyContent: "center", marginRight: 10, marginTop: 2 },
-  contactCircleText: { color: C.blue, fontWeight: "700", fontSize: 15 },
-  contactCol: { flex: 1, justifyContent: "center" },
-  contactPhone: { color: C.text, fontWeight: "700", fontSize: 15, marginBottom: 2 },
-  contactRetry: { color: C.textMuted, fontSize: 12, marginBottom: 1 },
-  contactNote: { color: C.textFaint, fontSize: 12 },
-  contactStatusCol: { alignItems: "flex-end", justifyContent: "center", minWidth: 90, marginLeft: 8 },
-});
+function InfoRow({
+  styles,
+  label,
+  value,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  );
+}
+
+function LiveContactCard({ call, index, styles }: { call: any; index: number; styles: ReturnType<typeof createStyles> }) {
+  const { detail, lead } = useCallDetail(call.callId);
+  const mobile = lead?.fields?.phone || detail?.phoneNumber || "-";
+
+  return (
+    <GlassCard style={styles.contactCard} padded={false}>
+      <View style={styles.contactTopRow}>
+        <View style={styles.contactBadge}>
+          <Text style={styles.contactBadgeText}>{index + 1}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.contactTitle}>{call.callId.slice(0, 10)}</Text>
+          <Text style={styles.contactMeta}>{mobile}</Text>
+        </View>
+        <StatusPill label={call.state} tone={statusTone(call.state)} />
+      </View>
+      <Text style={styles.contactMeta}>Updated: {formatTime(call.initiatedAt)} · Status: {call.state}</Text>
+      <Text style={styles.contactMeta}>Retry cycle: {index + 1}/3</Text>
+    </GlassCard>
+  );
+}
+
+function Divider({ styles }: { styles: ReturnType<typeof createStyles> }) {
+  return <View style={styles.divider} />;
+}
+
+function KpiCard({
+  styles,
+  icon,
+  label,
+  value,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  icon: string;
+  label: string;
+  value: number;
+}) {
+  return (
+    <GlassCard style={styles.kpiCard} padded={false}>
+      <Text style={styles.kpiIcon}>{icon}</Text>
+      <Text style={styles.kpiValue}>{value}</Text>
+      <Text style={styles.kpiLabel}>{label}</Text>
+    </GlassCard>
+  );
+}
+
+function createStyles(colors: LexusThemeColors, isDark: boolean, isDesktop: boolean) {
+  const scale = isDesktop ? 0.84 : 1;
+  const px = (value: number) => Math.round(value * scale);
+
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    scroll: { paddingHorizontal: px(16), paddingBottom: px(32), paddingTop: px(10) },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: px(12),
+      paddingTop: Platform.OS === "android" ? 12 : 0,
+    },
+    backBtn: {
+      width: px(36),
+      height: px(36),
+      borderRadius: px(18),
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark ? "rgba(13,31,56,0.9)" : "rgba(79,140,255,0.12)",
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: px(8),
+    },
+    backLabel: { color: colors.text, fontSize: px(12), fontWeight: "700" },
+    headerCenter: { flex: 1, alignItems: "center", justifyContent: "center" },
+    headerKicker: { color: colors.blue, fontSize: px(10), fontWeight: "800", letterSpacing: 1.2, marginBottom: px(2) },
+    headerTitle: { color: colors.text, fontSize: px(24), fontWeight: "800", textAlign: "center" },
+    headerSpacer: { width: px(36), height: px(36) },
+    card: { marginBottom: px(12) },
+    emptyText: { color: colors.textMuted, fontSize: px(14), textAlign: "center" },
+    sectionTitle: { color: colors.text, fontSize: px(18), fontWeight: "800", marginBottom: px(10) },
+    bannerCard: {
+      backgroundColor: isDark ? "rgba(15, 88, 124, 0.95)" : "rgba(24, 131, 169, 0.95)",
+      borderColor: isDark ? "rgba(79,140,255,0.25)" : "rgba(255,255,255,0.12)",
+      marginBottom: px(12),
+    },
+    bannerTopRow: { flexDirection: "row", alignItems: "center" },
+    bannerTitle: { color: "#ffffff", fontSize: px(20), fontWeight: "800" },
+    bannerSub: { color: "rgba(255,255,255,0.86)", fontSize: px(12), marginTop: px(3), fontWeight: "700" },
+    infoRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: px(8) },
+    infoLabel: { color: colors.textMuted, fontSize: px(14) },
+    infoValue: { color: colors.text, fontSize: px(14), fontWeight: "700", maxWidth: "55%", textAlign: "right" },
+    divider: { height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(16,33,61,0.08)", marginVertical: 2 },
+    statusCard: {
+      marginBottom: px(12),
+      backgroundColor: isDark ? "rgba(0,208,132,0.14)" : "rgba(0,208,132,0.18)",
+      borderColor: isDark ? "rgba(0,208,132,0.22)" : "rgba(0,208,132,0.28)",
+    },
+    statusText: { color: colors.text, fontWeight: "700", fontSize: px(14) },
+    actionsRow: { flexDirection: "row", marginBottom: px(12) },
+    resultsLink: {
+      color: colors.blue,
+      fontSize: px(13),
+      fontWeight: "700",
+      textAlign: "right",
+      paddingVertical: px(10),
+    },
+    progressTopRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: px(8) },
+    progressLabel: { color: colors.text, fontSize: px(13), fontWeight: "700" },
+    progressValue: { color: colors.green, fontSize: px(13), fontWeight: "700" },
+    progressTrack: { height: px(12), borderRadius: 999, backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(16,33,61,0.12)", overflow: "hidden", marginBottom: px(8) },
+    progressFill: { height: px(12), borderRadius: 999, backgroundColor: "#4CAF50" },
+    progressMeta: { color: colors.textMuted, fontSize: px(12), marginBottom: px(2) },
+    kpiRow: { flexDirection: "row", gap: px(8), marginBottom: px(12) },
+    kpiCard: { flex: 1, minHeight: px(96), alignItems: "center", justifyContent: "center" },
+    kpiIcon: { fontSize: px(20), marginBottom: px(2) },
+    kpiValue: { color: colors.text, fontSize: px(30), fontWeight: "800" },
+    kpiLabel: { color: colors.textMuted, fontSize: px(12), textAlign: "center" },
+    filterRow: { gap: px(8), marginBottom: px(12) },
+    filterPill: {
+      paddingHorizontal: px(14),
+      height: px(38),
+      borderRadius: px(19),
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: isDark ? "rgba(13,31,56,0.85)" : "rgba(79,140,255,0.08)",
+      marginRight: px(8),
+    },
+    filterPillActive: {
+      backgroundColor: colors.blue,
+      borderColor: colors.blue,
+    },
+    filterPillText: { color: colors.textMuted, fontWeight: "600", fontSize: px(13) },
+    filterPillTextActive: { color: "#ffffff", fontWeight: "700" },
+    contactCard: { marginBottom: px(10), paddingHorizontal: px(12), paddingVertical: px(11) },
+    contactTopRow: { flexDirection: "row", alignItems: "center", marginBottom: px(6) },
+    contactBadge: {
+      width: px(24),
+      height: px(24),
+      borderRadius: px(12),
+      backgroundColor: colors.blue,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: px(8),
+    },
+    contactBadgeText: { color: "#fff", fontSize: px(12), fontWeight: "800" },
+    contactTitle: { color: colors.text, fontWeight: "700", fontSize: px(14), flex: 1 },
+    contactMeta: { color: colors.textMuted, fontSize: px(12), marginBottom: px(2) },
+    resultsCard: { marginBottom: px(12), paddingHorizontal: px(12), paddingVertical: px(12) },
+    resultsWrap: { width: "100%", alignItems: "center" },
+    resultsButton: { width: "100%" },
+  });
+}

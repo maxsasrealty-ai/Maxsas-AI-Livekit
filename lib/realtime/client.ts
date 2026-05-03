@@ -1,5 +1,6 @@
 import { RealtimeCallEvent } from "../../shared/contracts";
 import { parseRealtimeCallEvent } from "../adapters/liveEvents";
+import { resolveApiBaseUrl } from "../api/base-url";
 
 export type RealtimeConnectionState =
   | "idle"
@@ -149,5 +150,5 @@ export class SseRealtimeClient implements RealtimeClient {
   }
 }
 
-const defaultApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+const defaultApiBaseUrl = resolveApiBaseUrl();
 export const realtimeClient: RealtimeClient = new SseRealtimeClient(defaultApiBaseUrl);

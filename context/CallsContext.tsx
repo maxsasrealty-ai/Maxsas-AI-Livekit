@@ -16,6 +16,7 @@ import {
   fetchVoiceCalls,
   isVoiceApiConfigured,
 } from "../lib/api/calls";
+import { bootstrapAuthSession, getCurrentTenantId, subscribeAuthSession } from "../lib/auth/session";
 import { RealtimeConnectionState, realtimeClient } from "../lib/realtime/client";
 import {
   ApiEnvelope,
@@ -28,6 +29,7 @@ import {
   VoiceCallsPayload,
   WorkspaceTenantConfig,
 } from "../shared/contracts";
+import { pickState, upsertCallSummary } from "./callsUtils";
 
 export interface LiveCallSnapshot {
   callId: string;
@@ -72,19 +74,8 @@ interface CallsContextValue {
 
 const CallsContext = createContext<CallsContextValue | undefined>(undefined);
 
-const DEFAULT_TENANT_ID = process.env.EXPO_PUBLIC_TENANT_ID || "lexus-demo";
 const MAX_DEDUPED_EVENT_IDS = 500;
-
-const CALL_STATE_RANK: Record<CallState, number> = {
-  queued: 1,
-  initiated: 1,
-  dispatching: 2,
-  ringing: 3,
-  connected: 4,
-  active: 5,
-  completed: 6,
-  failed: 6,
-};
+const FALLBACK_TENANT_ID = process.env.EXPO_PUBLIC_TENANT_ID?.trim() || null;
 
 function stageFromState(state: CallState): LiveCallStage {
   switch (state) {
@@ -105,12 +96,8 @@ function stageFromState(state: CallState): LiveCallStage {
   }
 }
 
-function pickState(current: CallState, incoming: CallState): CallState {
-  if (current === "completed" || current === "failed") {
-    return current;
-  }
-
-  return CALL_STATE_RANK[incoming] >= CALL_STATE_RANK[current] ? incoming : current;
+async function resolveEffectiveTenantId(currentTenantId: string | null): Promise<string | null> {
+  return currentTenantId || (await getCurrentTenantId()) || FALLBACK_TENANT_ID;
 }
 
 function getDefaultLiveSnapshot(call: CallSummary, capabilities: PlanCapabilities | null): LiveCallSnapshot {
@@ -129,38 +116,6 @@ function getDefaultLiveSnapshot(call: CallSummary, capabilities: PlanCapabilitie
     lastEventType: null,
     lastOccurredAt: null,
   };
-}
-
-function upsertCallSummary(existing: CallSummary[], event: RealtimeCallEvent): CallSummary[] {
-  const index = existing.findIndex((item) => item.callId === event.callId);
-  const base: CallSummary =
-    index >= 0
-      ? existing[index]
-      : {
-          callId: event.callId,
-          tenantId: event.tenantId,
-          roomId: event.roomId,
-          state: "dispatching",
-          initiatedAt: event.occurredAt,
-        };
-
-  const nextState = pickState(base.state, event.callState);
-  const merged: CallSummary = {
-    ...base,
-    state: nextState,
-    roomId: event.roomId || base.roomId,
-    connectedAt: nextState === "connected" || nextState === "active" ? event.occurredAt : base.connectedAt,
-    completedAt: nextState === "completed" ? event.occurredAt : base.completedAt,
-    failedAt: nextState === "failed" ? event.occurredAt : base.failedAt,
-  };
-
-  if (index < 0) {
-    return [merged, ...existing];
-  }
-
-  const clone = [...existing];
-  clone[index] = merged;
-  return clone;
 }
 
 function applyLiveEvent(
@@ -234,6 +189,8 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isSessionReady, setIsSessionReady] = useState(false);
   const seenEventIdsRef = useRef<Set<string>>(new Set());
   const seenEventQueueRef = useRef<string[]>([]);
 
@@ -284,6 +241,19 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   const refreshVoiceCalls = useCallback(async () => {
     setIsVoiceLoading(true);
     try {
+      const currentTenantId = await resolveEffectiveTenantId(tenantId);
+
+      if (!currentTenantId) {
+        setVoiceCallsResult({
+          success: false,
+          error: {
+            code: "TENANT_NOT_READY",
+            message: "Tenant session is not ready yet",
+          },
+        });
+        return;
+      }
+
       if (!isVoiceApiConfigured()) {
         setVoiceCallsResult({
           success: true,
@@ -296,12 +266,12 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const response = await fetchVoiceCalls(DEFAULT_TENANT_ID);
+      const response = await fetchVoiceCalls(currentTenantId);
       setVoiceCallsResult(response);
     } finally {
       setIsVoiceLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   const loadVoiceCallDetail = useCallback(async (callId: string): Promise<ApiEnvelope<VoiceCallDetailPayload>> => {
     if (!isVoiceApiConfigured()) {
@@ -330,6 +300,11 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const bootstrapCalls = useCallback(async () => {
+    const currentTenantId = await resolveEffectiveTenantId(tenantId);
+    if (!currentTenantId) {
+      return;
+    }
+
     setIsBootstrapping(true);
     setError(null);
     try {
@@ -337,7 +312,7 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
         fetchCalls(),
         fetchCapabilities(),
         isVoiceApiConfigured()
-          ? fetchVoiceCalls(DEFAULT_TENANT_ID)
+          ? fetchVoiceCalls(currentTenantId)
           : Promise.resolve({
               success: true as const,
               data: {
@@ -375,7 +350,7 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsBootstrapping(false);
     }
-  }, []);
+  }, [tenantId]);
 
   const initiateCall = useCallback(
     async (input: {
@@ -437,14 +412,20 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    if (!capabilities?.features["calls.history"]) {
+    const activeTenantId = tenantId || FALLBACK_TENANT_ID;
+
+    if (!capabilities?.features["calls.history"] || !activeTenantId) {
       return;
     }
 
-    const tenantId = DEFAULT_TENANT_ID;
+    let cancelled = false;
     const subscription = realtimeClient.subscribeToCallEvents(
-      tenantId,
+      activeTenantId,
       (event) => {
+        if (cancelled) {
+          return;
+        }
+
         if (markSeen(event.streamEventId)) {
           return;
         }
@@ -478,9 +459,36 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
-  }, [capabilities, markSeen]);
+  }, [capabilities, markSeen, tenantId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void bootstrapAuthSession().then((currentTenantId) => {
+      if (!mounted) {
+        return;
+      }
+
+      setTenantId(currentTenantId || FALLBACK_TENANT_ID);
+      setIsSessionReady(true);
+    });
+
+    const unsubscribe = subscribeAuthSession((currentTenantUser) => {
+      if (!mounted) {
+        return;
+      }
+
+      setTenantId(currentTenantUser?.tenantId ?? FALLBACK_TENANT_ID);
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -524,8 +532,27 @@ export function CallsProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
+    if (!isSessionReady) {
+      return;
+    }
+
+    const activeTenantId = tenantId || FALLBACK_TENANT_ID;
+
+    if (!activeTenantId) {
+      setCalls([]);
+      setVoiceCallsResult(null);
+      setVoiceCallDetailById({});
+      setLiveByCallId({});
+      setLiveVersionByCallId({});
+      setError(null);
+      setIsLoading(false);
+      setIsVoiceLoading(false);
+      setIsBootstrapping(false);
+      return;
+    }
+
     void bootstrapCalls();
-  }, [bootstrapCalls]);
+  }, [bootstrapCalls, isSessionReady, tenantId]);
 
   useEffect(() => {
     return () => {

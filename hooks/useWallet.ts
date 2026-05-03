@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WalletBalanceResponse, WalletTransactionItem } from "../shared/contracts";
+import { Platform } from "react-native";
 import {
-  createOrder,
-  fetchWalletBalance,
-  fetchWalletTransactions,
+    fetchWalletBalance,
+    fetchWalletTransactions,
+    initiatePayUCheckout,
+    simulatePayUSuccessTopUp,
 } from "../lib/api/payment";
+import { getCurrentAuthUser } from "../lib/auth/session";
+import { WalletBalanceResponse, WalletTransactionItem } from "../shared/contracts";
 
 export interface UseWalletReturn {
   balance: WalletBalanceResponse | null;
@@ -16,6 +19,7 @@ export interface UseWalletReturn {
   topUpResult: { success: boolean; mock: boolean; amountFormatted: string; orderId?: string } | null;
   refreshBalance: () => Promise<void>;
   topUp: (amountPaise: number) => Promise<boolean>;
+  simulateTopUpSuccess: (amountPaise: number) => Promise<boolean>;
   loadMoreTransactions: () => Promise<void>;
 }
 
@@ -29,6 +33,55 @@ export function useWallet(): UseWalletReturn {
   const [topUpResult, setTopUpResult] = useState<UseWalletReturn["topUpResult"]>(null);
   const pageRef = useRef(1);
   const PAGE_SIZE = 20;
+
+  const submitPayUHostedForm = useCallback((data: {
+    payuUrl: string;
+    payuKey: string;
+    merchantTransactionId: string;
+    amount: number;
+    hash: string;
+    email: string;
+    phoneNumber: string;
+    successUrl: string;
+    failureUrl: string;
+  }) => {
+    if (Platform.OS !== "web" || typeof document === "undefined") {
+      throw new Error("PayU hosted checkout is currently supported on web only.");
+    }
+
+    const amountInRupees = (data.amount / 100).toFixed(2);
+    const firstName = (data.email.split("@")[0] || "user").slice(0, 60);
+
+    const fields: Record<string, string> = {
+      key: data.payuKey,
+      txnid: data.merchantTransactionId,
+      amount: amountInRupees,
+      productinfo: "wallet_topup",
+      firstname: firstName,
+      email: data.email,
+      phone: data.phoneNumber,
+      hash: data.hash,
+      surl: data.successUrl,
+      furl: data.failureUrl,
+      service_provider: "payu_paisa",
+    };
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = data.payuUrl;
+    form.style.display = "none";
+
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  }, []);
 
   const refreshBalance = useCallback(async () => {
     setIsLoading(true);
@@ -72,25 +125,77 @@ export function useWallet(): UseWalletReturn {
     setTopUpResult(null);
     setError(null);
     try {
-      const res = await createOrder(amountPaise);
+      const authUser = await getCurrentAuthUser();
+      const fallbackUserId = `web-user-${Date.now()}`;
+      const email = authUser?.email || "demo.user@example.com";
+      const phoneNumber = "9876543210";
+      const userId = authUser?.id || fallbackUserId;
+
+      const redirectBase =
+        Platform.OS === "web" && typeof window !== "undefined"
+          ? window.location.href.split("?")[0]
+          : "http://localhost:8081/wallet";
+
+      const res = await initiatePayUCheckout({
+        amount: amountPaise,
+        description: "Wallet top-up",
+        email,
+        phoneNumber,
+        userId,
+        successUrl: `${redirectBase}?payment=success`,
+        failureUrl: `${redirectBase}?payment=failure`,
+      });
+
       if (!res.success) {
-        setError(res.error?.message ?? "Failed to create Razorpay order");
+        setError(res.error?.message ?? "Failed to initiate PayU checkout");
         return false;
       }
-      // In mock mode, balance is already credited by backend
-      // In real mode, payment must be completed via Razorpay frontend checkout
+
       setTopUpResult({
         success: true,
-        mock: res.data.mock,
-        orderId: res.data.orderId,
+        mock: false,
+        orderId: res.data.paymentOrderId,
         amountFormatted: `₹${(amountPaise / 100).toLocaleString("en-IN")}`,
       });
 
-      // Refresh balance after a short delay to allow webhook processing (mock: instant)
-      setTimeout(() => void refreshBalance(), res.data.mock ? 100 : 3000);
+      submitPayUHostedForm(res.data);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed");
+      return false;
+    } finally {
+      setIsTopUpLoading(false);
+    }
+  }, [submitPayUHostedForm]);
+
+  const simulateTopUpSuccess = useCallback(async (amountPaise: number): Promise<boolean> => {
+    setIsTopUpLoading(true);
+    setTopUpResult(null);
+    setError(null);
+
+    try {
+      const authUser = await getCurrentAuthUser();
+      const res = await simulatePayUSuccessTopUp({
+        amount: amountPaise,
+        userId: authUser?.id,
+      });
+
+      if (!res.success) {
+        setError(res.error?.message ?? "Failed to simulate payment success");
+        return false;
+      }
+
+      setTopUpResult({
+        success: true,
+        mock: true,
+        amountFormatted: `₹${(amountPaise / 100).toLocaleString("en-IN")}`,
+        orderId: res.data.ledgerEntryId,
+      });
+
+      await refreshBalance();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Simulation failed");
       return false;
     } finally {
       setIsTopUpLoading(false);
@@ -111,6 +216,7 @@ export function useWallet(): UseWalletReturn {
     topUpResult,
     refreshBalance,
     topUp,
+    simulateTopUpSuccess,
     loadMoreTransactions,
   };
 }

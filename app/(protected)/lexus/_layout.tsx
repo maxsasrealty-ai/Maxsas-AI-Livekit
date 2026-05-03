@@ -2,39 +2,58 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { CallsProvider } from '../../../context/CallsContext';
-import { useCapabilities } from '../../../hooks/useCapabilities';
+import { LexusThemeProvider, useLexusTheme } from '../../../context/LexusThemeContext';
+
+const TAB_LABEL_STYLE = {
+  fontSize: Platform.OS === 'web' ? 11 : 10,
+  fontWeight: '700' as const,
+  marginTop: 2,
+};
 
 function LexusTabs() {
-  const { vocabulary } = useCapabilities();
+  const { colors, isDark } = useLexusTheme();
 
   return (
     <Tabs
       screenOptions={{
-        sceneStyle: { backgroundColor: '#040c18' },
+        sceneStyle: { backgroundColor: colors.bg },
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           position: 'absolute',
-          bottom: Platform.OS === 'web' ? 24 : 12,
+          bottom: Platform.OS === 'web' ? 18 : 12,
           alignSelf: 'center',
-          width: Platform.OS === 'web' ? '95%' : 'auto',
-          maxWidth: 1024,
+          width: Platform.OS === 'web' ? '100%' : 'auto',
+          maxWidth: Platform.OS === 'web' ? 1120 : 900,
           marginHorizontal: Platform.OS === 'web' ? 'auto' : 16,
-          left: Platform.OS === 'web' ? 0 : 16,
-          right: Platform.OS === 'web' ? 0 : 16,
-          height: 64,
-          borderRadius: 24,
-          backgroundColor: 'rgba(4,12,24,0.94)',
+          left: Platform.OS === 'web' ? 20 : 16,
+          right: Platform.OS === 'web' ? 20 : 16,
+          height: Platform.OS === 'web' ? 68 : 74,
+          borderRadius: Platform.OS === 'web' ? 22 : 26,
+          paddingTop: Platform.OS === 'web' ? 10 : 8,
+          paddingBottom: Platform.OS === 'web' ? 10 : 8,
+          backgroundColor: isDark ? 'rgba(4,12,24,0.94)' : 'rgba(255,255,255,0.96)',
           borderWidth: 1,
-          borderColor: 'rgba(79,140,255,0.25)',
-          shadowColor: '#000',
-          shadowOpacity: 0.35,
+          borderColor: colors.border,
+          shadowColor: colors.shadow,
+          shadowOpacity: isDark ? 0.35 : 0.14,
           shadowRadius: 18,
           shadowOffset: { width: 0, height: 8 },
           elevation: 12,
         },
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: '#4F8CFF',
-        tabBarInactiveTintColor: 'rgba(232,237,245,0.55)',
+        tabBarItemStyle: {
+          borderRadius: Platform.OS === 'web' ? 16 : 18,
+          marginHorizontal: Platform.OS === 'web' ? 6 : 4,
+          marginVertical: 4,
+          paddingVertical: 6,
+        },
+        tabBarLabelStyle: TAB_LABEL_STYLE,
+        tabBarIconStyle: {
+          marginTop: 1,
+        },
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: colors.blue,
+        tabBarInactiveTintColor: colors.textFaint,
       }}
     >
       <Tabs.Screen
@@ -42,21 +61,21 @@ function LexusTabs() {
         options={{
           tabBarIcon: ({ color }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>🏠</Text>
+              <Text style={{ color, fontSize: Platform.OS === 'web' ? 18 : 20 }}>🏠</Text>
             </View>
           ),
           tabBarLabel: 'Home',
         }}
       />
       <Tabs.Screen
-        name="batches/index"
+        name="leads-upload"
         options={{
           tabBarIcon: ({ color }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>📞</Text>
+              <Text style={{ color, fontSize: Platform.OS === 'web' ? 18 : 20 }}>📞</Text>
             </View>
           ),
-          tabBarLabel: vocabulary.leadsLabel,
+          tabBarLabel: 'Upload',
         }}
       />
       <Tabs.Screen
@@ -64,7 +83,7 @@ function LexusTabs() {
         options={{
           tabBarIcon: ({ color }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>💳</Text>
+              <Text style={{ color, fontSize: Platform.OS === 'web' ? 18 : 20 }}>💳</Text>
             </View>
           ),
           tabBarLabel: 'Wallet',
@@ -75,7 +94,7 @@ function LexusTabs() {
         options={{
           tabBarIcon: ({ color }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>📈</Text>
+              <Text style={{ color, fontSize: Platform.OS === 'web' ? 18 : 20 }}>📈</Text>
             </View>
           ),
           tabBarLabel: 'Reports',
@@ -86,7 +105,7 @@ function LexusTabs() {
         options={{
           tabBarIcon: ({ color }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>👤</Text>
+              <Text style={{ color, fontSize: Platform.OS === 'web' ? 18 : 20 }}>👤</Text>
             </View>
           ),
           tabBarLabel: 'Profile',
@@ -98,28 +117,36 @@ function LexusTabs() {
 
 export default function LexusLayout() {
   return (
-    <CallsProvider>
-      <View style={s.webWrapper}>
-        <LexusTabs />
-      </View>
-    </CallsProvider>
+    <LexusThemeProvider>
+      <CallsProvider>
+        <WebFrame>
+          <LexusTabs />
+        </WebFrame>
+      </CallsProvider>
+    </LexusThemeProvider>
+  );
+}
+
+function WebFrame({ children }: { children: React.ReactNode }) {
+  const { colors } = useLexusTheme();
+
+  return (
+    <View style={[s.webWrapper, { backgroundColor: colors.bgSoft, borderColor: colors.border }]}> 
+      {children}
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   webWrapper: {
     flex: 1,
-    backgroundColor: '#02060d', // Darker background outside the SaaS frame on mega-widescreens
-    // Center it on Web and restrict the width to look like a desktop app:
     ...(Platform.OS === 'web'
       ? {
           alignSelf: 'center',
           width: '100%',
-          maxWidth: 1024,
-          overflow: 'hidden',
+          maxWidth: 1120,
           borderLeftWidth: 1,
           borderRightWidth: 1,
-          borderColor: 'rgba(79,140,255,0.1)',
         }
       : {}),
   },

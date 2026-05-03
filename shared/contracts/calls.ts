@@ -40,6 +40,9 @@ export interface CallSummary {
   connectedAt?: string;
   completedAt?: string;
   failedAt?: string;
+  raw_call_outcome?: string | null;
+  raw_call_outcome_confidence?: number | null;
+  lead_bucket?: "Qualified" | "Neutral" | "Retry" | "Failed" | "Unknown" | null;
 }
 
 export interface CallEventSummary {
@@ -83,11 +86,17 @@ export interface LeadResponse {
   tenantId: string;
   extractedAt: string;
   fields: {
-    name: string | null;
-    phone: string | null;
-    summary: string;
+    name?: string | null;
+    phone?: string | null;
+    summary?: string;
+    property_type?: string | null;
+    preferred_location?: string | null;
+    budget_range?: string | null;
+    purchase_timeline?: string | null;
+    [key: string]: any;
   };
-  confidence: number | null;
+  raw_data?: Record<string, any> | null;
+  confidence: number | any | null;
 }
 
 export interface CallsQuery {

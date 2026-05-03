@@ -1,110 +1,82 @@
-import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { ETopBar } from '../../../../components/enterprise/ETopBar';
+import { enterpriseTheme } from '../../../../themes/enterprise.theme';
 
-import EnterpriseSurface from "../../../../components/enterprise/EnterpriseSurface";
-import PillButton from "../../../../components/lexus/PillButton";
-import SectionHeader from "../../../../components/lexus/SectionHeader";
-import StatusPill from "../../../../components/lexus/StatusPill";
-import { C } from "../../../../components/lexus/theme";
-import { useCalls } from "../../../../hooks/useCalls";
-import { useWorkspaceProfile } from "../../../../hooks/useWorkspaceProfile";
-import { formatTime, groupCallsByRoom } from "../../../../lib/adapters/calls";
+const MOCK_CAMPAIGNS = [
+  { id: '1', name: 'Weekend Launch', project: 'Galaxy Heights', contacts: 1200, progress: 100, status: 'Completed' },
+  { id: '2', name: 'NRI Buyers Followup', project: 'Oasis Villas', contacts: 450, progress: 45, status: 'Running' },
+  { id: '3', name: 'Q3 Leads Reactivation', project: 'Galaxy Heights', contacts: 800, progress: 0, status: 'Draft' },
+];
 
-const FILTERS = ["All", "Active", "Completed", "Needs Attention"] as const;
-
-export default function EnterpriseCampaignsList() {
-  const { calls } = useCalls();
-  const { vocabulary } = useWorkspaceProfile();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
-
-  const campaigns = groupCallsByRoom(calls).map((group) => {
-    const status = group.inProgress > 0 ? "active" : group.failed > 0 ? "needs_attention" : "completed";
-    return {
-      id: group.roomId,
-      status,
-      totalCalls: group.total,
-      completed: group.completed,
-      failed: group.failed,
-      inProgress: group.inProgress,
-      updatedAt: group.latestAt,
-    };
-  });
-
-  const filtered = useMemo(() => {
-    if (filter === "All") return campaigns;
-    if (filter === "Active") return campaigns.filter((c) => c.status === "active");
-    if (filter === "Completed") return campaigns.filter((c) => c.status === "completed");
-    return campaigns.filter((c) => c.status === "needs_attention");
-  }, [campaigns, filter]);
+export default function EnterpriseCampaigns() {
+  const [tab, setTab] = useState('All');
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <SectionHeader
-          title={vocabulary.campaignsLabel}
-          subtitle={`Manage enterprise ${vocabulary.campaignsLabel.toLowerCase()} with shared AI call engine`}
-        />
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-          {FILTERS.map((item) => {
-            const active = item === filter;
-            return (
-              <TouchableOpacity key={item} style={[styles.filter, active && styles.filterActive]} onPress={() => setFilter(item)}>
-                <Text style={[styles.filterText, active && styles.filterTextActive]}>{item}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {filtered.length === 0 ? (
-          <EnterpriseSurface padded={true}>
-            <Text style={styles.empty}>{`No ${vocabulary.campaignsLabel.toLowerCase()} in this view.`}</Text>
-          </EnterpriseSurface>
+    <View style={s.container}>
+      <ETopBar 
+        title="Campaigns" 
+        subtitle="Project-linked call campaigns (Reuses Lexus Calling foundations)"
+      />
+      <View style={s.tabRow}>
+        {['All Campaigns', 'Upload', 'Batch History'].map(t => (
+          <Pressable key={t} onPress={() => setTab(t)} style={[s.tab, tab === t && s.tabActive]}>
+            <Text style={[s.tabText, tab === t && s.tabTextActive]}>{t}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <ScrollView contentContainerStyle={s.content}>
+        {tab === 'All Campaigns' || tab === 'All' ? (
+          <View style={s.list}>
+            {MOCK_CAMPAIGNS.map(c => (
+              <View key={c.id} style={s.row}>
+                <View style={s.colMain}>
+                  <Text style={s.campaignName}>{c.name}</Text>
+                  <Text style={s.muted}>Project: {c.project} • {c.contacts} contacts</Text>
+                </View>
+                <View style={s.colProgress}>
+                  <View style={s.progressBg}>
+                    <View style={[s.progressFill, { width: `${c.progress}%`, backgroundColor: c.status === 'Running' ? enterpriseTheme.accent : enterpriseTheme.green }]} />
+                  </View>
+                  <Text style={s.progressText}>{c.progress}%</Text>
+                </View>
+                <View style={s.colStatus}>
+                  <Text style={[s.statusText, { color: c.status === 'Running' ? enterpriseTheme.accent : c.status === 'Completed' ? enterpriseTheme.green : enterpriseTheme.muted }]}>{c.status}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
         ) : (
-          filtered.map((campaign) => (
-            <EnterpriseSurface key={campaign.id} padded={true} style={styles.card}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.cardTitle}>{`Campaign ${campaign.id}`}</Text>
-                <StatusPill
-                  label={campaign.status.replace("_", " ")}
-                  tone={campaign.status === "completed" ? "success" : campaign.status === "needs_attention" ? "danger" : "info"}
-                />
-              </View>
-              <Text style={styles.meta}>{`Updated ${formatTime(campaign.updatedAt)}`}</Text>
-              <Text style={styles.meta}>{`${campaign.totalCalls} ${vocabulary.callsLabel.toLowerCase()} • ${campaign.completed} completed • ${campaign.failed} failed`}</Text>
-              <View style={styles.actionRow}>
-                <PillButton title="Open" variant="secondary" onPress={() => router.push(`/(protected)/enterprise/campaigns/${encodeURIComponent(campaign.id)}` as any)} />
-              </View>
-            </EnterpriseSurface>
-          ))
+          <View style={s.placeholderCard}>
+            <Text style={s.placeholderText}>{tab} screen reuses logic from Lexus UI.</Text>
+            <Text style={s.placeholderMuted}>Project linkage logic to be wired via backend updates.</Text>
+          </View>
         )}
-
-        <View style={{ height: 70 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 30 },
-  filters: { gap: 8, marginBottom: 12 },
-  filter: {
-    borderWidth: 1,
-    borderColor: C.border,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: "rgba(13,31,56,0.9)",
-  },
-  filterActive: { backgroundColor: C.blue, borderColor: C.blue },
-  filterText: { color: C.textMuted, fontWeight: "600", fontSize: 13 },
-  filterTextActive: { color: "#fff" },
-  card: { marginBottom: 10 },
-  rowBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  cardTitle: { color: C.text, fontSize: 16, fontWeight: "700" },
-  meta: { color: C.textMuted, fontSize: 12, marginTop: 4 },
-  actionRow: { marginTop: 10 },
-  empty: { color: C.textFaint, fontSize: 13 },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: enterpriseTheme.bg },
+  tabRow: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1, borderColor: enterpriseTheme.border, backgroundColor: enterpriseTheme.surface },
+  tab: { paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 2, borderColor: 'transparent' },
+  tabActive: { borderColor: enterpriseTheme.accent },
+  tabText: { color: enterpriseTheme.muted, fontWeight: '500' },
+  tabTextActive: { color: enterpriseTheme.accent, fontWeight: 'bold' },
+  content: { padding: 24 },
+  list: { gap: 16 },
+  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: enterpriseTheme.card, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: enterpriseTheme.border },
+  colMain: { flex: 2 },
+  campaignName: { color: enterpriseTheme.text, fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  muted: { color: enterpriseTheme.muted, fontSize: 14 },
+  colProgress: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  progressBg: { flex: 1, height: 6, backgroundColor: enterpriseTheme.surface, borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 3 },
+  progressText: { color: enterpriseTheme.muted, width: 40, textAlign: 'right' },
+  colStatus: { flex: 0.5, alignItems: 'flex-end' },
+  statusText: { fontWeight: 'bold' },
+  placeholderCard: { padding: 40, backgroundColor: enterpriseTheme.card, borderRadius: 8, borderWidth: 1, borderColor: enterpriseTheme.border, alignItems: 'center', justifyContent: 'center' },
+  placeholderText: { color: enterpriseTheme.text, fontSize: 16, marginBottom: 8 },
+  placeholderMuted: { color: enterpriseTheme.muted }
 });

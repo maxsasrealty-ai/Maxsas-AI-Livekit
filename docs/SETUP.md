@@ -79,6 +79,22 @@ BACKEND_WEBHOOK_AUTH_TOKEN="dev_secret_token_livekit_99"
 # Database
 DATABASE_URL="file:./prisma/dev.db"
 
+---
+
+## Lead Upload & Contact Flow
+
+- Upload supports CSV, XLS, XLSX (from 99acres, MagicBricks, CRM, etc)
+- Required column: Number (10-digit Indian mobile, must start 6-9)
+- Optional: Name, Email, Company, City, Source
+- Header row is auto-detected (first 8 rows scanned for best match)
+- Phone normalization: Only valid Indian mobile numbers accepted, deduped by phone/email
+- Manual Add: Only 10-digit Indian mobile allowed, input is hard-capped and validated
+- Contacts are kept local until user starts calls (no DB save before trigger)
+
+**Troubleshooting:**
+- If upload shows 0 contacts, check that your file has a valid header row and 10-digit Indian mobile numbers in the Number/Phone column.
+- Manual Add will only accept 10-digit numbers starting with 6-9.
+
 # Webhook Auth
 VOICE_WEBHOOK_BEARER_TOKEN="dev_secret_token_livekit_99"
 

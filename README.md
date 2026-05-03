@@ -38,6 +38,17 @@ npx tsx --env-file=backend/.env backend/src/index.ts
 ngrok http 4000
 ```
 
+## Lead Upload & Contact Flow
+
+- Upload supports CSV, XLS, XLSX (from 99acres, MagicBricks, CRM, etc)
+- Required column: Number (10-digit Indian mobile, must start 6-9)
+- Optional: Name, Email, Company, City, Source
+- Parser auto-detects header row, dedupes by phone/email, and normalizes phone to +91XXXXXXXXXX
+- Noisy/malformed numbers are rejected; ambiguous/multi-number fields are skipped
+- Manual Add: Only 10-digit Indian mobile allowed, input is hard-capped and validated
+- Contacts are kept local until user starts calls (no DB save before trigger)
+
+See docs/SETUP.md and docs/ARCHITECTURE.md for more details.
 ## Architecture
 
 ```

@@ -1,175 +1,261 @@
-import { router } from 'expo-router';
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import GlassCard from '../../../components/lexus/GlassCard';
-import LiveStageStrip from '../../../components/lexus/live/LiveStageStrip';
-import PillButton from '../../../components/lexus/PillButton';
-import SectionHeader from '../../../components/lexus/SectionHeader';
-import StatusPill from '../../../components/lexus/StatusPill';
-import { C } from '../../../components/lexus/theme';
-import { useCalls } from '../../../hooks/useCalls';
-import { useCapabilities } from '../../../hooks/useCapabilities';
-import { formatBatchName, formatTime, getQuickStats } from '../../../lib/adapters/calls';
-import { connectionLabel } from '../../../lib/adapters/liveEvents';
+import { router } from "expo-router";
+import React, { useMemo } from "react";
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+import GlassCard from "../../../components/lexus/GlassCard";
+import PillButton from "../../../components/lexus/PillButton";
+import SectionHeader from "../../../components/lexus/SectionHeader";
+import StatusPill from "../../../components/lexus/StatusPill";
+import { LexusThemeColors } from "../../../components/lexus/theme";
+import { useLexusTheme } from "../../../context/LexusThemeContext";
+import { useCalls } from "../../../hooks/useCalls";
+// useCapabilities removed because batches list is hidden on the home screen
+import { useResponsive } from "../../../hooks/useResponsive";
+import { formatBatchName, groupCallsByRoom } from "../../../lib/adapters/calls";
+import { connectionLabel } from "../../../lib/adapters/liveEvents";
 
 export default function LexusHome() {
-  const { calls: rawCalls, isLoading, isBootstrapping, error, liveByCallId, liveConnectionState } = useCalls();
-  const calls = Array.isArray(rawCalls) ? rawCalls : [];
-  const { can, planLabel, vocabulary } = useCapabilities();
-  const stats = getQuickStats(calls);
-  const activeCalls = calls.filter((call) => ["initiated", "dispatching", "ringing", "connected", "active"].includes(call.state));
+  const { colors, isDark, plan } = useLexusTheme();
+  const { isDesktop } = useResponsive();
+  const s = useMemo(() => createStyles(colors, isDark, isDesktop, plan), [colors, isDark, isDesktop, plan]);
 
-  const todayStats = [
-    { label: 'In Progress', icon: '📞', value: stats.inProgress, color: '#FF6B9A' },
-    { label: 'Failed', icon: '⛔', value: stats.failed, color: '#FFD36B' },
-    { label: 'Completed', icon: '✅', value: stats.completed, color: '#00D084' },
-  ];
+  const { calls, liveConnectionState } = useCalls();
 
-  const recentActivity = calls.slice(0, 3).map((call) => ({
-    icon: call.state === 'completed' ? '✅' : call.state === 'failed' ? '🔴' : '🟢',
-    text: `Call ${call.callId.slice(0, 8)}... in room ${call.roomId} is ${call.state}`,
-    time: formatTime(call.initiatedAt),
-  }));
+  const grouped = useMemo(() => {
+    return groupCallsByRoom(calls)
+      .map((room) => {
+        const status =
+          room.inProgress > 0
+            ? "running"
+            : room.completed > 0 && room.failed === 0
+            ? "completed"
+            : room.total === 0
+            ? "draft"
+            : "awaiting";
+
+        return {
+          id: room.roomId,
+          label: formatBatchName(room.roomId),
+          status,
+          contacts: room.total,
+          updatedAt: room.latestAt,
+          running: room.inProgress,
+          completed: room.completed,
+          failed: room.failed,
+          pending: Math.max(room.total - room.completed - room.failed, 0),
+        };
+      })
+      .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+  }, [calls]);
+
+  const totalBatches = grouped.length;
+  const runningBatches = grouped.filter((batch) => batch.status === "running").length;
+  const completedBatches = grouped.filter((batch) => batch.status === "completed").length;
+  const awaitingBatches = grouped.filter((batch) => batch.status === "awaiting" || batch.status === "draft").length;
+  // batch list removed from home screen
 
   return (
-    <SafeAreaView style={S.safe}>
-      <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
-        {/* Header Avatar & Title */}
-        <View style={S.headerWrap}>
-          <View style={S.avatar}><Text style={S.avatarText}>M</Text></View>
-          <Text style={S.title}>MAXSAS AI</Text>
-          <Text style={S.subtitle}>Your AI lead strategist is ready.</Text>
-          <GlassCard padded={true} radius={16} style={{ width: '100%', padding: 14 }}>
-            <Text style={S.demoLabel}>System Overview</Text>
-              <Text style={S.demoSubtext}>
-                {isBootstrapping || isLoading
-                  ? 'Loading call system data...'
-                  : error
-                  ? `Backend error: ${error}`
-                  : `Plan ${planLabel} • ${stats.total} persisted calls`}
-              </Text>
-          </GlassCard>
+    <SafeAreaView style={s.safe}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <View style={s.heroWrap}>
+          <View style={s.avatarRing}>
+            <View style={s.avatarInner}>
+              <Text style={s.avatarText}>M</Text>
+            </View>
+          </View>
+          <StatusPill label="MAXSAS AI" tone="success" />
+          <Text style={s.heroTitle}>MAXSAS AI</Text>
+          <Text style={s.heroSubtitle}>Your AI lead strategist is ready.</Text>
         </View>
 
-        {/* Live Status Banner */}
-        <View style={{ alignSelf: 'center', marginBottom: 22 }}>
-            <StatusPill label={can('calls.history') ? '● Live Updates Active' : '● Limited Plan Access'} tone={can('calls.history') ? 'success' : 'warning'} />
-        </View>
-
-        <GlassCard padded={true} radius={14} style={{ marginBottom: 16 }}>
-          <Text style={S.demoLabel}>{connectionLabel(liveConnectionState)}</Text>
-          <Text style={S.demoSubtext}>{activeCalls.length} active call operations</Text>
+        <GlassCard style={s.liveCard} padded={false}>
+          <Text style={s.liveText}>{connectionLabel(liveConnectionState)}</Text>
         </GlassCard>
 
-        <SectionHeader title="Active Operations" />
-        {activeCalls.length === 0 ? (
-          <GlassCard padded={true} radius={14} style={{ marginBottom: 16 }}>
-            <Text style={S.activityText}>No calls are actively processing right now.</Text>
-          </GlassCard>
-        ) : (
-          activeCalls.slice(0, 2).map((call) => (
-            <TouchableOpacity
-              key={call.callId}
-              activeOpacity={0.85}
-              onPress={() => router.push(`/(protected)/lexus/batches/${encodeURIComponent(call.roomId)}` as any)}
-            >
-              <GlassCard padded={true} radius={14} style={{ marginBottom: 12 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <Text style={S.uploadTitle}>{formatBatchName(call.roomId)}</Text>
-                  <StatusPill label={call.state} tone="info" />
-                </View>
-                {liveByCallId[call.callId] && <LiveStageStrip snapshot={liveByCallId[call.callId]} />}
-              </GlassCard>
-            </TouchableOpacity>
-          ))
-        )}
+        <SectionHeader title="Command Center" subtitle="Today's lead performance snapshot" />
 
-        {/* Today Activity */}
+        <GlassCard style={s.ctaCard} padded={false}>
+          <View style={s.ctaIcon}><Text style={s.ctaIconText}>🎙️</Text></View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.ctaTitle}>Try AI Demo Call</Text>
+            <Text style={s.ctaSubtitle}>Experience how it works in seconds</Text>
+          </View>
+          <PillButton title="Start Demo" style={s.ctaButton} onPress={() => router.push("/(protected)/lexus/leads-upload" as any)} />
+        </GlassCard>
+
         <SectionHeader title="Today Activity" />
-        <View style={S.statsRow}>
-          {todayStats.map((stat, i) => (
-            <GlassCard key={stat.label} style={[S.statCard, { marginRight: i < 2 ? 12 : 0 }]} padded={false}> 
-              <Text style={[S.statIcon, { color: stat.color }]}>{stat.icon}</Text>
-              <Text style={S.statValue}>{stat.value}</Text>
-              <Text style={S.statLabel}>{stat.label}</Text>
-            </GlassCard>
-          ))}
+        <View style={s.gridRow}>
+          <StatTile styles={s} label="In Progress" icon="📞" value={runningBatches} />
+          <StatTile styles={s} label="Pending" icon="⏳" value={awaitingBatches} />
+        </View>
+        <View style={s.gridRow}>
+          <StatTile styles={s} label="Completed" icon="✅" value={completedBatches} />
+          <StatTile styles={s} label="Failed" icon="❌" value={grouped.reduce((sum, item) => sum + item.failed, 0)} />
         </View>
 
-        {/* Upload CTA */}
-        <GlassCard padded={true} radius={16} style={{ marginBottom: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <View style={S.uploadIconWrap}><Text style={S.uploadIcon}>📤</Text></View>
-            <View style={{ flex: 1 }}>
-              <Text style={S.uploadTitle}>{`Upload New ${vocabulary.leadsLabel}`}</Text>
-              <Text style={S.uploadSubtitle}>{`Import CSV from portal and start AI ${vocabulary.callsLabel.toLowerCase()}.`}</Text>
-            </View>
-          </View>
-          <PillButton 
-            title={`Upload ${vocabulary.leadsLabel}`}
-            onPress={() => router.push('/(protected)/lexus/leads-upload' as any)} 
-          />
-        </GlassCard>
+        <SectionHeader title="Batch Overview" />
 
-        {/* Completed Campaign Shortcut */}
-        <GlassCard padded={true} radius={16} style={{ marginBottom: 26 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <View style={[S.uploadIconWrap, { backgroundColor: 'rgba(0,208,132,0.13)' }]}>
-              <Text style={[S.uploadIcon, { color: C.green }]}>📂</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={S.uploadTitle}>{`Completed ${vocabulary.batchesLabel}`}</Text>
-              <Text style={S.uploadSubtitle}>{`Review finished ${vocabulary.campaignsLabel.toLowerCase()} and lead temperatures`}</Text>
-            </View>
-          </View>
-          <PillButton 
-            title="View Results" 
-            variant="secondary"
-            onPress={() => router.push('/(protected)/lexus/completed' as any)} 
-          />
-        </GlassCard>
-
-        {/* Recent Activity */}
-        <SectionHeader title="Recent Activity" />
-        <View style={S.activityList}>
-          {(recentActivity.length ? recentActivity : [{ icon: 'ℹ️', text: 'No recent call activity yet.', time: '-' }]).map((item, i) => (
-            <GlassCard key={i} style={S.activityCard} padded={false} radius={12}>
-              <Text style={S.activityIcon}>{item.icon}</Text>
-              <Text style={S.activityText}>{item.text}</Text>
-              <Text style={S.activityTime}>{item.time}</Text>
-            </GlassCard>
-          ))}
+        <View style={s.gridRow}>
+          <StatTile styles={s} label="Total Batches" icon="📊" value={totalBatches} compact />
+          <StatTile styles={s} label="Running" icon="🏃" value={runningBatches} compact />
         </View>
-        
-        {/* Bottom padding for tab bar */}
+
+        <GlassCard style={s.walletCard}>
+          <View style={s.walletTop}>
+            <Text style={s.walletTitle}>AI Wallet Balance</Text>
+            <StatusPill label="Live" tone="success" />
+          </View>
+          <Text style={s.walletValue}>₹{(calls.length * 1060.27).toLocaleString("en-IN", { maximumFractionDigits: 1 })}</Text>
+          <Text style={s.walletMeta}>Total: ₹{(calls.length * 1060.27).toLocaleString("en-IN", { maximumFractionDigits: 1 })}    Locked: ₹0</Text>
+          <View style={s.walletActions}>
+            <PillButton title="Recharge" variant="secondary" style={s.rechargeButton} onPress={() => router.push("/(protected)/lexus/wallet" as any)} />
+            <TouchableOpacity onPress={() => router.push("/(protected)/lexus/wallet" as any)}>
+              <Text style={s.walletLink}>View Details →</Text>
+            </TouchableOpacity>
+          </View>
+        </GlassCard>
+
+        {/* Batch list intentionally removed from home screen */}
+
         <View style={{ height: 60 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const S = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingTop: 36, paddingBottom: 36, paddingHorizontal: 20 },
-  headerWrap: { alignItems: 'center', marginBottom: 20 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.bgCard, alignItems: 'center', justifyContent: 'center', marginBottom: 10, borderWidth: 2, borderColor: C.blue, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 },
-  avatarText: { color: C.blue, fontWeight: 'bold', fontSize: 28, letterSpacing: 1 },
-  title: { color: C.text, fontWeight: '700', fontSize: 20, marginBottom: 2, letterSpacing: 1 },
-  subtitle: { color: C.textMuted, fontSize: 14, marginBottom: 14 },
-  demoLabel: { color: C.text, fontWeight: '600', fontSize: 15 },
-  demoSubtext: { color: C.textFaint, fontSize: 12, marginTop: 6, fontStyle: 'italic' },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 22 },
-  statCard: { flex: 1, alignItems: 'center', paddingVertical: 14 },
-  statIcon: { fontSize: 22, marginBottom: 2 },
-  statValue: { color: C.text, fontWeight: '700', fontSize: 18, marginBottom: 2 },
-  statLabel: { color: C.textMuted, fontSize: 13, fontWeight: '500' },
-  uploadIconWrap: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(79,140,255,0.13)', alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  uploadIcon: { fontSize: 22, color: C.blue },
-  uploadTitle: { color: C.text, fontWeight: '700', fontSize: 16, marginBottom: 2 },
-  uploadSubtitle: { color: C.textMuted, fontSize: 13 },
-  activityList: { marginTop: 8, marginBottom: 24 },
-  activityCard: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 14, marginBottom: 10 },
-  activityIcon: { fontSize: 18, marginRight: 10 },
-  activityText: { color: C.text, fontSize: 14, flex: 1 },
-  activityTime: { color: C.textFaint, fontSize: 12, marginLeft: 8 },
-});
+// MiniMetric removed — batch cards no longer show on home screen
+
+function StatTile({
+  styles,
+  label,
+  icon,
+  value,
+  compact = false,
+}: {
+  styles: ReturnType<typeof createStyles>;
+  label: string;
+  icon: string;
+  value: number;
+  compact?: boolean;
+}) {
+  return (
+    <GlassCard style={[styles.statTile, compact && styles.statTileCompact]} padded={false}>
+      <Text style={styles.statIcon}>{icon}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </GlassCard>
+  );
+}
+
+function createStyles(colors: LexusThemeColors, isDark: boolean, isDesktop: boolean, plan: string) {
+  const isPrestige = plan === "prestige";
+  const scale = isDesktop ? 0.84 : 1;
+  const px = (value: number) => Math.round(value * scale);
+
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    scroll: { paddingHorizontal: px(16), paddingTop: px(18), paddingBottom: px(32) },
+    heroWrap: { alignItems: "center", marginBottom: px(12) },
+    avatarRing: {
+      width: px(126),
+      height: px(126),
+      borderRadius: px(63),
+      backgroundColor: isPrestige ? (isDark ? "rgba(216, 180, 254, 0.15)" : "rgba(216, 180, 254, 0.5)") : (isDark ? "rgba(245,236,210,0.12)" : "rgba(245,236,210,0.7)"),
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: px(10),
+    },
+    avatarInner: {
+      width: px(86),
+      height: px(86),
+      borderRadius: px(43),
+      backgroundColor: isPrestige ? colors.purple : "#0b2457",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarText: { color: "#ffffff", fontSize: px(46), fontWeight: "800" },
+    heroTitle: { color: colors.text, fontSize: px(34), fontWeight: "800", letterSpacing: 0.4, marginTop: px(8) },
+    heroSubtitle: { color: colors.textMuted, fontSize: px(15), marginTop: px(2), marginBottom: px(4) },
+    liveCard: {
+      marginBottom: px(14),
+      minHeight: px(40),
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark ? "rgba(0,208,132,0.1)" : "rgba(0,208,132,0.12)",
+      borderColor: isDark ? "rgba(0,208,132,0.24)" : "rgba(0,168,107,0.2)",
+    },
+    liveText: { color: colors.green, fontSize: px(13), fontWeight: "700" },
+    ctaCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: px(14),
+      paddingHorizontal: px(12),
+      marginBottom: px(16),
+      borderColor: colors.border,
+      backgroundColor: isDark ? (isPrestige ? "rgba(107, 91, 255, 0.15)" : "rgba(79,140,255,0.1)") : "rgba(79,140,255,0.08)",
+    },
+    ctaIcon: {
+      width: px(34),
+      height: px(34),
+      borderRadius: px(17),
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark ? "rgba(16,33,61,0.65)" : "rgba(79,140,255,0.18)",
+      marginRight: px(10),
+    },
+    ctaIconText: { fontSize: px(16) },
+    ctaTitle: { color: colors.text, fontSize: px(16), fontWeight: "700" },
+    ctaSubtitle: { color: colors.textMuted, fontSize: px(12), marginTop: px(2) },
+    ctaButton: { height: px(38), paddingHorizontal: px(16) },
+    gridRow: { flexDirection: "row", gap: px(12), marginBottom: px(12) },
+    statTile: {
+      flex: 1,
+      minHeight: px(118),
+      borderRadius: px(14),
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: px(8),
+    },
+    statTileCompact: {
+      minHeight: px(96),
+    },
+    statIcon: { fontSize: px(22), marginBottom: px(4) },
+    statValue: { color: colors.text, fontSize: px(33), fontWeight: "800", marginBottom: px(2) },
+    statLabel: { color: colors.textMuted, fontSize: px(13), fontWeight: "600" },
+    walletCard: {
+      marginBottom: px(16),
+      backgroundColor: isPrestige ? (isDark ? "#060f22" : colors.blue) : "#0d1f53",
+      borderColor: isPrestige ? (isDark ? colors.purple : "transparent") : "rgba(255,255,255,0.12)",
+    },
+    walletTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: px(10) },
+    walletTitle: { color: "#ffffff", fontSize: px(20), fontWeight: "700" },
+    walletValue: { color: "#ffffff", fontSize: px(46), fontWeight: "800", marginBottom: px(4) },
+    walletMeta: { color: "rgba(255,255,255,0.72)", fontSize: px(13), marginBottom: px(14) },
+    walletActions: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    rechargeButton: {
+      minWidth: px(126),
+      backgroundColor: "rgba(255,255,255,0.92)",
+      borderColor: "rgba(255,255,255,0.92)",
+    },
+    walletLink: { color: "#ffffff", fontSize: px(16), fontWeight: "700" },
+    mutedText: { color: colors.textMuted, fontSize: px(14) },
+    errorText: { color: colors.red, fontSize: px(14) },
+    batchCard: { marginBottom: px(12) },
+    batchTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: px(10) },
+    batchName: { color: colors.text, fontSize: px(18), fontWeight: "700" },
+    batchMeta: { color: colors.textMuted, fontSize: px(12), marginTop: px(2) },
+    batchStatsRow: { flexDirection: "row", gap: px(8), marginBottom: px(10) },
+    miniMetric: {
+      flex: 1,
+      alignItems: "center",
+      borderRadius: px(10),
+      paddingVertical: px(8),
+      backgroundColor: isDark ? "rgba(10,22,40,0.85)" : "rgba(79,140,255,0.08)",
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    miniMetricValue: { color: colors.text, fontSize: px(17), fontWeight: "700" },
+    miniMetricLabel: { color: colors.textMuted, fontSize: px(11), marginTop: px(2) },
+    batchActions: { flexDirection: "row", alignItems: "center" },
+  });
+}

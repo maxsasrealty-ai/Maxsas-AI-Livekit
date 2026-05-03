@@ -1,7 +1,8 @@
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
     Platform,
     SafeAreaView,
@@ -15,7 +16,8 @@ import {
 import * as XLSX from "xlsx";
 import GlassCard from "../../../components/lexus/GlassCard";
 import PillButton from "../../../components/lexus/PillButton";
-import { C } from "../../../components/lexus/theme";
+import { LexusThemeColors } from "../../../components/lexus/theme";
+import { useLexusTheme } from "../../../context/LexusThemeContext";
 import { useCalls } from "../../../hooks/useCalls";
 import { useCapabilities } from "../../../hooks/useCapabilities";
 
@@ -634,6 +636,8 @@ function mergeContacts(existing: LocalContact[], next: LocalContact): LocalConta
 export default function LexusUploadLeads() {
   const { can, premiumPlanLabel, vocabulary, capabilities } = useCapabilities();
   const { initiateCall } = useCalls();
+  const { colors, isDark } = useLexusTheme();
+  const S = useMemo(() => createStyles(colors, isDark), [colors, isDark]);
 
   const [uploadFileName, setUploadFileName] = useState<string | null>(null);
   const [uploadContacts, setUploadContacts] = useState<LocalContact[]>([]);
@@ -647,9 +651,9 @@ export default function LexusUploadLeads() {
 
   const canStartLiveCall = can("calls.live");
 
-  const dispatchContacts = async (contacts: LocalContact[], onSuccessRoute: string) => {
+  const dispatchContacts = async (contacts: LocalContact[]) => {
     if (contacts.length === 0) {
-      return;
+      return null;
     }
 
     const roomId = buildBatchRoomId();
@@ -670,11 +674,11 @@ export default function LexusUploadLeads() {
 
     if (successCount === 0) {
       showMessage("Dispatch failed", "No contacts were dispatched. Please retry after checking backend connectivity.");
-      return;
+      return null;
     }
 
     showMessage("Calls started", `${successCount}/${contacts.length} contacts were started successfully.`);
-    router.replace(onSuccessRoute);
+    return roomId;
   };
 
   const handlePickFile = async () => {
@@ -724,8 +728,12 @@ export default function LexusUploadLeads() {
     }
 
     setIsDispatchingBatch(true);
-    await dispatchContacts(uploadContacts, "/(protected)/lexus/calls");
+    const roomId = await dispatchContacts(uploadContacts);
     setIsDispatchingBatch(false);
+
+    if (roomId) {
+      router.replace(`/(protected)/lexus/batches/${encodeURIComponent(roomId)}` as any);
+    }
   };
 
   const handleAddAnother = () => {
@@ -763,18 +771,32 @@ export default function LexusUploadLeads() {
     }
 
     setIsStartingManual(true);
-    await dispatchContacts(manualContacts, "/(protected)/lexus/calls");
+    const roomId = await dispatchContacts(manualContacts);
     setIsStartingManual(false);
+
+    if (roomId) {
+      router.replace(`/(protected)/lexus/batches/${encodeURIComponent(roomId)}` as any);
+    }
   };
 
   return (
     <SafeAreaView style={S.safe}>
+      {(isUploading || isDispatchingBatch || isStartingManual) && (
+        <View style={S.loadingOverlay} pointerEvents="auto">
+          <View style={S.loadingCard}>
+            <ActivityIndicator color={colors.blue} size="large" />
+            <Text style={S.loadingTitle}>Starting calls</Text>
+            <Text style={S.loadingSubtitle}>Preparing batch details...</Text>
+          </View>
+        </View>
+      )}
+
       <View style={S.headerRow}>
-        <TouchableOpacity style={S.backBtn} onPress={() => router.back()}>
-          <Text style={S.backIcon}>‹</Text>
+        <TouchableOpacity style={S.homeBtn} onPress={() => router.push("/(protected)/lexus" as any)}>
+          <Text style={S.homeBtnText}>Home</Text>
         </TouchableOpacity>
         <Text style={S.headerTitle}>{`Upload ${vocabulary.leadsLabel}`}</Text>
-        <View style={{ width: 36 }} />
+        <View style={{ width: 64 }} />
       </View>
 
       <ScrollView contentContainerStyle={S.scroll} showsVerticalScrollIndicator={false}>
@@ -853,7 +875,7 @@ export default function LexusUploadLeads() {
           <TextInput
             style={S.input}
             placeholder="9876543210"
-            placeholderTextColor={C.textFaint}
+            placeholderTextColor={colors.textFaint}
             value={manualPhone}
             onChangeText={(value) => setManualPhone(value.replace(/\D/g, "").slice(0, 10))}
             keyboardType="phone-pad"
@@ -864,7 +886,7 @@ export default function LexusUploadLeads() {
           <TextInput
             style={S.input}
             placeholder="E.g. Rahul"
-            placeholderTextColor={C.textFaint}
+            placeholderTextColor={colors.textFaint}
             value={manualName}
             onChangeText={setManualName}
           />
@@ -913,34 +935,84 @@ export default function LexusUploadLeads() {
   );
 }
 
-const S = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  headerRow: { flexDirection: "row", alignItems: "center", paddingTop: Platform.OS === "android" ? 18 : 0, paddingHorizontal: 10, marginBottom: 16, height: 56 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(13,31,56,0.85)", borderWidth: 1, borderColor: C.border, marginRight: 2 },
-  backIcon: { color: C.blue, fontSize: 26, fontWeight: "600", marginTop: -2 },
-  headerTitle: { flex: 1, textAlign: "center", color: C.text, fontWeight: "700", fontSize: 18, letterSpacing: 0.5 },
-  scroll: { paddingHorizontal: 18, paddingBottom: 32 },
-  cardMain: { alignItems: "center", marginBottom: 22 },
-  iconCircle: { width: 54, height: 54, borderRadius: 27, backgroundColor: "rgba(79,140,255,0.13)", alignItems: "center", justifyContent: "center", marginBottom: 10 },
-  iconMain: { fontSize: 28, color: C.blue },
-  cardTitle: { color: C.text, fontWeight: "700", fontSize: 17, marginBottom: 4, textAlign: "center" },
-  cardSubtitle: { color: C.textMuted, fontSize: 14, marginBottom: 18, textAlign: "center" },
-  supportedText: { color: C.textFaint, fontSize: 12, marginTop: 2, textAlign: "center" },
-  cardSecondary: { marginBottom: 18 },
-  sectionHeaderRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 },
-  countPill: { color: C.blue, backgroundColor: "rgba(79,140,255,0.12)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, fontSize: 12, fontWeight: "700" },
-  cardTitleSmall: { color: C.text, fontWeight: "700", fontSize: 15, marginBottom: 2 },
-  cardSubtitleSmall: { color: C.textMuted, fontSize: 13 },
-  contactList: { marginTop: 4 },
-  manualList: { marginTop: 10 },
-  contactRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(148,163,184,0.14)" },
-  contactName: { color: C.text, fontSize: 13, fontWeight: "700" },
-  contactMeta: { color: C.textMuted, fontSize: 12, marginTop: 2 },
-  contactSource: { color: C.textFaint, fontSize: 11, marginLeft: 10 },
-  tipsText: { color: C.textFaint, fontSize: 12, marginTop: 10, textAlign: "center", lineHeight: 16, marginBottom: 12 },
-  inputLabel: { color: C.textMuted, fontSize: 13, marginBottom: 6, fontWeight: "600" },
-  input: { backgroundColor: "#0F172A", color: C.text, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16, borderWidth: 1, borderColor: "#334155" },
-  actionRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
-  removeChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: "rgba(239,68,68,0.12)" },
-  removeChipText: { color: "#FCA5A5", fontSize: 12, fontWeight: "700" },
-});
+function createStyles(colors: LexusThemeColors, isDark: boolean) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    headerRow: { flexDirection: "row", alignItems: "center", paddingTop: Platform.OS === "android" ? 18 : 0, paddingHorizontal: 10, marginBottom: 16, height: 56 },
+    homeBtn: {
+      minWidth: 72,
+      height: 36,
+      borderRadius: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark ? "rgba(13,31,56,0.85)" : "rgba(79,140,255,0.12)",
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginRight: 2,
+      paddingHorizontal: 14,
+    },
+    homeBtnText: { color: colors.blue, fontSize: 13, fontWeight: "700" },
+    headerTitle: { flex: 1, textAlign: "center", color: colors.text, fontWeight: "700", fontSize: 18, letterSpacing: 0.5 },
+    loadingOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: 20,
+      backgroundColor: isDark ? "rgba(4,12,24,0.88)" : "rgba(238,243,251,0.88)",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 20,
+    },
+    loadingCard: {
+      width: "100%",
+      maxWidth: 320,
+      borderRadius: 18,
+      paddingVertical: 22,
+      paddingHorizontal: 18,
+      alignItems: "center",
+      backgroundColor: isDark ? "rgba(13,31,56,0.95)" : "rgba(255,255,255,0.98)",
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    loadingTitle: { color: colors.text, fontSize: 16, fontWeight: "800", marginTop: 12 },
+    loadingSubtitle: { color: colors.textMuted, fontSize: 13, marginTop: 4 },
+    scroll: { paddingHorizontal: 18, paddingBottom: 32 },
+    cardMain: { alignItems: "center", marginBottom: 22 },
+    iconCircle: { width: 54, height: 54, borderRadius: 27, backgroundColor: isDark ? "rgba(79,140,255,0.13)" : "rgba(79,140,255,0.14)", alignItems: "center", justifyContent: "center", marginBottom: 10 },
+    iconMain: { fontSize: 28, color: colors.blue },
+    cardTitle: { color: colors.text, fontWeight: "700", fontSize: 17, marginBottom: 4, textAlign: "center" },
+    cardSubtitle: { color: colors.textMuted, fontSize: 14, marginBottom: 18, textAlign: "center" },
+    supportedText: { color: colors.textFaint, fontSize: 12, marginTop: 2, textAlign: "center" },
+    cardSecondary: { marginBottom: 18 },
+    sectionHeaderRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 },
+    countPill: { color: colors.blue, backgroundColor: isDark ? "rgba(79,140,255,0.12)" : "rgba(79,140,255,0.16)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, fontSize: 12, fontWeight: "700" },
+    cardTitleSmall: { color: colors.text, fontWeight: "700", fontSize: 15, marginBottom: 2 },
+    cardSubtitleSmall: { color: colors.textMuted, fontSize: 13 },
+    contactList: { marginTop: 4 },
+    manualList: { marginTop: 10 },
+    contactRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? "rgba(148,163,184,0.14)" : "rgba(16,33,61,0.1)",
+    },
+    contactName: { color: colors.text, fontSize: 13, fontWeight: "700" },
+    contactMeta: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
+    contactSource: { color: colors.textFaint, fontSize: 11, marginLeft: 10 },
+    tipsText: { color: colors.textFaint, fontSize: 12, marginTop: 10, textAlign: "center", lineHeight: 16, marginBottom: 12 },
+    inputLabel: { color: colors.textMuted, fontSize: 13, marginBottom: 6, fontWeight: "600" },
+    input: {
+      backgroundColor: isDark ? "#0F172A" : "#F8FAFC",
+      color: colors.text,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: isDark ? "#334155" : "rgba(16,33,61,0.14)",
+    },
+    actionRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+    removeChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: isDark ? "rgba(239,68,68,0.12)" : "rgba(239,68,68,0.1)" },
+    removeChipText: { color: isDark ? "#FCA5A5" : "#b91c1c", fontSize: 12, fontWeight: "700" },
+  });
+}

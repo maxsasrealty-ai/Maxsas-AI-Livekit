@@ -1,5 +1,6 @@
 import { ApiEnvelope } from "../../shared/contracts";
 
+import { setCurrentAuthUser } from "../auth/session";
 import { apiClient } from "./client";
 
 export interface AuthUser {
@@ -7,6 +8,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   tenantId: string;
+  tenantName?: string;
   createdAt: string;
 }
 
@@ -24,11 +26,21 @@ export interface LoginRequest {
 export async function signupWithEmailPassword(
   payload: SignupRequest
 ): Promise<ApiEnvelope<AuthUser>> {
-  return apiClient.post<SignupRequest, AuthUser>("/auth/signup", payload);
+  const response = await apiClient.post<SignupRequest, AuthUser>("/auth/signup", payload);
+  if (response.success) {
+    await setCurrentAuthUser(response.data);
+  }
+
+  return response;
 }
 
 export async function loginWithEmailPassword(
   payload: LoginRequest
 ): Promise<ApiEnvelope<AuthUser>> {
-  return apiClient.post<LoginRequest, AuthUser>("/auth/login", payload);
+  const response = await apiClient.post<LoginRequest, AuthUser>("/auth/login", payload);
+  if (response.success) {
+    await setCurrentAuthUser(response.data);
+  }
+
+  return response;
 }

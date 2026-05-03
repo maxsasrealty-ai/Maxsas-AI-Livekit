@@ -1,107 +1,166 @@
-import { router } from "expo-router";
-import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { ETopBar } from '../../../components/enterprise/ETopBar';
+import { enterpriseTheme } from '../../../themes/enterprise.theme';
 
-import EnterpriseStatCard from "../../../components/enterprise/EnterpriseStatCard";
-import EnterpriseSurface from "../../../components/enterprise/EnterpriseSurface";
-import EnterpriseWorkspaceBanner from "../../../components/enterprise/EnterpriseWorkspaceBanner";
-import PillButton from "../../../components/lexus/PillButton";
-import SectionHeader from "../../../components/lexus/SectionHeader";
-import StatusPill from "../../../components/lexus/StatusPill";
-import { C } from "../../../components/lexus/theme";
-import { useCalls } from "../../../hooks/useCalls";
-import { useWorkspaceProfile } from "../../../hooks/useWorkspaceProfile";
-import { formatTime, getQuickStats, groupCallsByRoom } from "../../../lib/adapters/calls";
-
-export default function EnterpriseDashboard() {
-  const { calls, liveConnectionState } = useCalls();
-  const { vocabulary } = useWorkspaceProfile();
-
-  const stats = getQuickStats(calls);
-  const campaigns = groupCallsByRoom(calls);
-  const topCampaign = campaigns[0];
-
+export default function EnterpriseHome() {
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <EnterpriseWorkspaceBanner />
-
-        <SectionHeader
-          title="Brokerage Overview"
-          subtitle={`Operational view across ${vocabulary.campaignsLabel.toLowerCase()} and ${vocabulary.callsLabel.toLowerCase()}`}
-        />
-
-        <View style={styles.grid}>
-          <EnterpriseStatCard label={`Active ${vocabulary.callsLabel}`} value={stats.inProgress} hint="Realtime in progress" />
-          <EnterpriseStatCard label={`Total ${vocabulary.callsLabel}`} value={stats.total} hint="Persisted calls" />
-          <EnterpriseStatCard label={`Live ${vocabulary.campaignsLabel}`} value={campaigns.length} hint="Grouped by room" />
+    <View style={s.container}>
+      <ETopBar 
+        title="Operations Console" 
+        subtitle="Real-time visibility into your team and campaigns" 
+      />
+      
+      <ScrollView contentContainerStyle={s.content}>
+        {/* Agent Status Strip */}
+        <View style={s.statusStrip}>
+          <View style={s.statusItem}>
+            <View style={[s.statusDot, { backgroundColor: enterpriseTheme.green }]} />
+            <Text style={s.statusText}>Agent: Provisioned & Ready</Text>
+          </View>
+          <Text style={s.statusMuted}>Model: gpt-4o-realtime-preview | Profile: Real Estate Pro v2</Text>
         </View>
 
-        <EnterpriseSurface style={{ marginTop: 12 }} padded={true}>
-          <View style={styles.rowBetween}>
-            <Text style={styles.blockTitle}>Call Activity Feed</Text>
-            <StatusPill label={liveConnectionState} tone="info" />
+        {/* Stat Tiles */}
+        <View style={s.statsGrid}>
+          <View style={s.statTile}>
+            <Text style={s.statLabel}>Active Projects</Text>
+            <Text style={s.statValue}>3</Text>
           </View>
-          {calls.slice(0, 4).map((call) => (
-            <View key={call.callId} style={styles.feedRow}>
-              <Text style={styles.feedPrimary}>{call.roomId}</Text>
-              <Text style={styles.feedMeta}>{formatTime(call.initiatedAt)}</Text>
-              <Text style={styles.feedState}>{call.state}</Text>
+          <View style={s.statTile}>
+            <Text style={s.statLabel}>Campaigns Ready</Text>
+            <Text style={s.statValue}>1</Text>
+          </View>
+          <View style={s.statTile}>
+            <Text style={s.statLabel}>Calls Today</Text>
+            <Text style={s.statValue}>124</Text>
+          </View>
+          <View style={s.statTile}>
+            <Text style={s.statLabel}>Wallet Balance</Text>
+            <Text style={s.statValue}>₹4,500</Text>
+          </View>
+        </View>
+
+        {/* Two Column Layout for Feed / Projects */}
+        <View style={s.twoCol}>
+          <View style={s.col}>
+            <Text style={s.sectionTitle}>Recent Activity</Text>
+            <View style={s.card}>
+              <Text style={s.mutedText}>10:45 AM - Campaign 'Weekend Launch' completed.</Text>
+              <Text style={s.mutedText}>09:30 AM - New project 'Galaxy Heights' added.</Text>
+              <Text style={s.mutedText}>09:00 AM - Wallet recharged with ₹5000.</Text>
             </View>
-          ))}
-          {calls.length === 0 && <Text style={styles.empty}>No call activity yet.</Text>}
-        </EnterpriseSurface>
-
-        <EnterpriseSurface style={{ marginTop: 12 }} padded={true}>
-          <Text style={styles.blockTitle}>Team Performance Preview</Text>
-          <Text style={styles.muted}>Lead agent scorecards will connect here when team assignment data is enabled.</Text>
-          <View style={styles.teamList}>
-            <View style={styles.teamRow}><Text style={styles.teamName}>North Brokerage Desk</Text><Text style={styles.teamMetric}>32 qualified</Text></View>
-            <View style={styles.teamRow}><Text style={styles.teamName}>Central Broker Desk</Text><Text style={styles.teamMetric}>18 qualified</Text></View>
-            <View style={styles.teamRow}><Text style={styles.teamName}>Prime Rentals Desk</Text><Text style={styles.teamMetric}>11 qualified</Text></View>
           </View>
-        </EnterpriseSurface>
-
-        <EnterpriseSurface style={{ marginTop: 12 }} padded={true}>
-          <Text style={styles.blockTitle}>Top Campaign Snapshot</Text>
-          {topCampaign ? (
-            <>
-              <Text style={styles.muted}>{`Campaign ${topCampaign.roomId} • ${topCampaign.total} ${vocabulary.callsLabel.toLowerCase()}`}</Text>
-              <Text style={styles.muted}>{`Completed: ${topCampaign.completed} • Failed: ${topCampaign.failed}`}</Text>
-              <View style={styles.actionRow}>
-                <PillButton title="Open Campaign" onPress={() => router.push(`/(protected)/enterprise/campaigns/${encodeURIComponent(topCampaign.roomId)}` as any)} />
+          <View style={s.col}>
+            <Text style={s.sectionTitle}>Active Projects Preview</Text>
+            <View style={s.card}>
+              <View style={s.projectRow}>
+                <Text style={s.text}>Galaxy Heights</Text>
+                <Text style={s.mutedText}>45 Qualified Calls</Text>
               </View>
-            </>
-          ) : (
-            <Text style={styles.empty}>No campaigns have started yet.</Text>
-          )}
-        </EnterpriseSurface>
-
-        <View style={{ height: 70 }} />
+              <View style={s.projectRow}>
+                <Text style={s.text}>Oasis Villas</Text>
+                <Text style={s.mutedText}>12 Qualified Calls</Text>
+              </View>
+            </View>
+          </View>
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 30 },
-  grid: { flexDirection: "row", gap: 10 },
-  rowBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  blockTitle: { color: C.text, fontSize: 16, fontWeight: "700", marginBottom: 8 },
-  muted: { color: C.textMuted, fontSize: 13, marginBottom: 4 },
-  feedRow: {
-    paddingVertical: 9,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(79,140,255,0.1)",
+const s = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: enterpriseTheme.bg,
   },
-  feedPrimary: { color: C.text, fontWeight: "600" },
-  feedMeta: { color: C.textFaint, fontSize: 12, marginTop: 2 },
-  feedState: { color: C.blue, fontSize: 12, marginTop: 2, textTransform: "capitalize" },
-  empty: { color: C.textFaint, fontSize: 13, marginTop: 2 },
-  teamList: { marginTop: 8, gap: 8 },
-  teamRow: { flexDirection: "row", justifyContent: "space-between" },
-  teamName: { color: C.text, fontSize: 13, fontWeight: "600" },
-  teamMetric: { color: C.green, fontSize: 13, fontWeight: "700" },
-  actionRow: { marginTop: 10 },
+  content: {
+    padding: 24,
+    gap: 24,
+  },
+  statusStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: enterpriseTheme.card,
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: enterpriseTheme.border,
+  },
+  statusItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  statusText: {
+    color: enterpriseTheme.text,
+    fontWeight: '600',
+  },
+  statusMuted: {
+    color: enterpriseTheme.muted,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statTile: {
+    flex: 1,
+    backgroundColor: enterpriseTheme.card,
+    padding: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: enterpriseTheme.border,
+  },
+  statLabel: {
+    color: enterpriseTheme.muted,
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  statValue: {
+    color: enterpriseTheme.text,
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  twoCol: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  col: {
+    flex: 1,
+    gap: 16,
+  },
+  sectionTitle: {
+    color: enterpriseTheme.text,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  card: {
+    backgroundColor: enterpriseTheme.card,
+    padding: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: enterpriseTheme.border,
+    gap: 12,
+  },
+  mutedText: {
+    color: enterpriseTheme.muted,
+  },
+  text: {
+    color: enterpriseTheme.text,
+    fontWeight: '500',
+  },
+  projectRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderColor: enterpriseTheme.border2,
+  }
 });

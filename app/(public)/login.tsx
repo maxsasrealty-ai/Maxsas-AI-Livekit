@@ -297,6 +297,13 @@ export default function PremiumLoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const fillDevCredentials = () => {
+    setMode("login");
+    setEmail("admin@maxsas.com");
+    setPassword("Admin@123456");
+    setErrorMessage(null);
+  };
+
   const handleAuth = async () => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedFullName = fullName.trim();
@@ -328,7 +335,11 @@ export default function PremiumLoginScreen() {
             });
 
       if (!response.success) {
-        setErrorMessage(response.error.message || "Authentication failed.");
+        if (__DEV__ && response.error.code === "INVALID_CREDENTIALS") {
+          setErrorMessage("Invalid email or password. Try dev login: admin@maxsas.com / Admin@123456");
+        } else {
+          setErrorMessage(response.error.message || "Authentication failed.");
+        }
         return;
       }
 
@@ -518,6 +529,20 @@ export default function PremiumLoginScreen() {
               {/* Dev Shortcut - De-emphasized slightly */}
               {__DEV__ && (
                 <View style={{ gap: 8, marginTop: 4 }}>
+                  <TouchableOpacity
+                    onPress={fillDevCredentials}
+                    style={{
+                      backgroundColor: 'rgba(79,140,255,0.08)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(79,140,255,0.28)',
+                      height: 40,
+                      borderRadius: 8,
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Text style={{ color: C.blue, fontSize: 12, fontWeight: '700' }}>Use Dev Credentials</Text>
+                  </TouchableOpacity>
                   <Text style={{ color: C.textFaint, fontSize: 11, fontWeight: '700', textAlign: 'center', letterSpacing: 1, marginBottom: 4 }}>DEV QUICK ACCESS</Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <TouchableOpacity 
